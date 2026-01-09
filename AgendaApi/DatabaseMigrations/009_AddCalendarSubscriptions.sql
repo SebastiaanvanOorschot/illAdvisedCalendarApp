@@ -31,8 +31,11 @@ ALTER TABLE Events ADD IsFromSubscription BIT NOT NULL DEFAULT 0;
 ALTER TABLE Events ADD IsReadOnly BIT NOT NULL DEFAULT 0;
 
 -- Create foreign key for CalendarSubscriptionId
+-- Note: Using NO ACTION instead of CASCADE to avoid multiple cascade paths
+-- (Events already cascades from Users, and CalendarSubscriptions also cascades from Users)
+-- Deletion of subscription events will be handled in application code
 ALTER TABLE Events ADD CONSTRAINT FK_Events_CalendarSubscriptions
-    FOREIGN KEY (CalendarSubscriptionId) REFERENCES CalendarSubscriptions(Id) ON DELETE CASCADE;
+    FOREIGN KEY (CalendarSubscriptionId) REFERENCES CalendarSubscriptions(Id) ON DELETE NO ACTION;
 
 -- Create indexes for subscription events
 CREATE INDEX IX_Events_CalendarSubscriptionId ON Events(CalendarSubscriptionId)

@@ -159,6 +159,9 @@ public class AgendaDbContext : DbContext
                 .WithMany()
                 .HasForeignKey(cs => cs.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            // Note: Events relationship uses NO ACTION to avoid multiple cascade paths
+            // Event deletion is handled in controller code when subscription is deleted
         });
     }
 }
