@@ -15,6 +15,7 @@ public class AgendaDbContext : DbContext
     public DbSet<MonthImage> MonthImages { get; set; }
     public DbSet<CalendarShare> CalendarShares { get; set; }
     public DbSet<CalendarShareInvite> CalendarShareInvites { get; set; }
+    public DbSet<CalendarSubscription> CalendarSubscriptions { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -137,6 +138,27 @@ public class AgendaDbContext : DbContext
 
             // Ensure owner and shared user are different
             entity.ToTable(t => t.HasCheckConstraint("CK_CalendarShares_DifferentUsers", "[OwnerUserId] != [SharedWithUserId]"));
+        });
+
+        modelBuilder.Entity<CalendarSubscription>(entity =>
+        {
+            entity.HasKey(cs => cs.Id);
+            entity.Property(cs => cs.Name).IsRequired().HasMaxLength(200);
+            entity.Property(cs => cs.ICalUrl).IsRequired().HasMaxLength(2000);
+            entity.Property(cs => cs.Color).HasMaxLength(7); // #RRGGBB
+            entity.Property(cs => cs.SyncIntervalMinutes).IsRequired().HasDefaultValue(60);
+            entity.Property(cs => cs.IsActive).IsRequired().HasDefaultValue(true);
+            entity.Property(cs => cs.CreatedAt).IsRequired();
+            entity.Property(cs => cs.UpdatedAt).IsRequired();
+            entity.Property(cs => cs.UserId).IsRequired();
+
+            entity.HasIndex(cs => cs.UserId);
+            entity.HasIndex(cs => new { cs.UserId, cs.IsActive });
+
+            entity.HasOne(cs => cs.User)
+                .WithMany()
+                .HasForeignKey(cs => cs.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
         });
     }
 }

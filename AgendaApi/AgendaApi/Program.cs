@@ -14,6 +14,7 @@ builder.Services.AddDbContext<AgendaDbContext>(options =>
 // Register HttpClient for services
 builder.Services.AddHttpClient<WeatherService>();
 builder.Services.AddHttpClient<GoogleAuthService>();
+builder.Services.AddHttpClient(); // Generic HttpClient for ICalSyncService
 
 // Register authentication services
 builder.Services.AddScoped<JwtService>();
@@ -26,6 +27,12 @@ builder.Services.AddScoped<IGoogleCalendarService, GoogleCalendarService>();
 
 // Register Calendar Share service
 builder.Services.AddScoped<CalendarShareService>();
+
+// Register iCal Sync service
+builder.Services.AddScoped<ICalSyncService>();
+
+// Register Background Service for calendar sync
+builder.Services.AddHostedService<CalendarSyncBackgroundService>();
 
 // Configure JWT authentication
 var jwtSecretKey = builder.Configuration["Jwt:SecretKey"];
