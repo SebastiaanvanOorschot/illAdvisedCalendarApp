@@ -35,6 +35,12 @@ public class Event
     public bool IsImportedFromGoogle { get; set; } // Track if event was imported from Google
     public bool IsLocallyModified { get; set; } // Track if imported event was modified locally (prevents sync overwrites)
 
+    // iCal subscription integration
+    public int? CalendarSubscriptionId { get; set; } // Reference to CalendarSubscription if event is from external calendar
+    public string? ExternalEventId { get; set; } // UID from iCal file
+    public bool IsFromSubscription { get; set; } // Track if event was imported from subscription
+    public bool IsReadOnly { get; set; } // Prevents editing of external events
+
     // User ownership
     public int UserId { get; set; }
 

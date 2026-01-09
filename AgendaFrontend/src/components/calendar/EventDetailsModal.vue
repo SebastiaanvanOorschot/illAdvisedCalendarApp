@@ -7,7 +7,20 @@
             </div>
 
             <div class="event-details-content">
-                <div v-if="!isOwnEvent" class="owner-indicator">
+                <div v-if="isExternalEvent" class="external-indicator">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                        <line x1="16" y1="2" x2="16" y2="6"></line>
+                        <line x1="8" y1="2" x2="8" y2="6"></line>
+                        <line x1="3" y1="10" x2="21" y2="10"></line>
+                    </svg>
+                    <div class="indicator-content">
+                        <span class="indicator-title">{{ event.subscriptionName || 'External Calendar' }}</span>
+                        <span class="indicator-subtitle">Read-only subscription</span>
+                    </div>
+                </div>
+
+                <div v-else-if="!isOwnEvent" class="owner-indicator">
                     <div class="owner-avatar">{{ ownerInitials }}</div>
                     <div class="owner-info">
                         <span class="owner-name">{{ event.ownerName }}'s Event</span>
@@ -88,12 +101,19 @@ const isRecurringEvent = computed(() => {
     return props.event && (props.event.isRecurring || !!props.event.recurrenceRule);
 });
 
+const isExternalEvent = computed(() => {
+    return props.event?.isFromSubscription || props.event?.isReadOnly;
+});
+
 const isOwnEvent = computed(() => {
     const eventWithOwner = props.event as EventWithOwner;
     return eventWithOwner?.isOwnEvent === undefined || eventWithOwner?.isOwnEvent === true;
 });
 
 const canEdit = computed(() => {
+    // External events are always read-only
+    if (isExternalEvent.value) return false;
+
     const eventWithOwner = props.event as EventWithOwner;
 
     // Owner always has edit access
@@ -284,6 +304,39 @@ function handleDelete() {
 
 .recurring-indicator svg {
     flex-shrink: 0;
+}
+
+.external-indicator {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    background: #fff3e0;
+    border-left: 3px solid #ff9800;
+    border-radius: 4px;
+    margin-bottom: 16px;
+}
+
+.external-indicator svg {
+    flex-shrink: 0;
+    color: #e65100;
+}
+
+.indicator-content {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.indicator-title {
+    font-weight: 600;
+    color: #e65100;
+    font-size: 14px;
+}
+
+.indicator-subtitle {
+    font-size: 12px;
+    color: #f57c00;
 }
 
 .owner-indicator {

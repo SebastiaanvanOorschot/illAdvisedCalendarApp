@@ -34,6 +34,12 @@
 
           <!-- Google Calendar Sync Component -->
           <GoogleCalendarSync />
+
+          <!-- iCal Subscriptions Component -->
+          <div class="subsection-divider"></div>
+          <h4 class="subsection-title">Calendar Subscriptions</h4>
+          <p class="subsection-description">Subscribe to external calendars (e.g., school agenda, work calendar) using iCal/ICS URLs</p>
+          <CalendarSubscriptions />
         </div>
       </div>
     </div>
@@ -44,6 +50,7 @@
 import GoogleCalendarSync from '@/components/calendar/GoogleCalendarSync.vue';
 import CalendarSharing from '@/components/calendar/CalendarSharing.vue';
 import CalendarPreferences from '@/components/calendar/CalendarPreferences.vue';
+import CalendarSubscriptions from '@/components/calendar/CalendarSubscriptions.vue';
 
 // OAuth callback is now handled by GoogleCalendarSync component
 </script>
@@ -123,6 +130,25 @@ import CalendarPreferences from '@/components/calendar/CalendarPreferences.vue';
   margin: 0 0 24px 0;
   color: #666;
   font-size: 14px;
+}
+
+.subsection-divider {
+  height: 1px;
+  background: #e0e0e0;
+  margin: 32px 0 24px 0;
+}
+
+.subsection-title {
+  margin: 0 0 6px 0;
+  font-size: 16px;
+  color: #333;
+  font-weight: 600;
+}
+
+.subsection-description {
+  margin: 0 0 16px 0;
+  color: #666;
+  font-size: 13px;
 }
 
 /* Mobile responsive adjustments */

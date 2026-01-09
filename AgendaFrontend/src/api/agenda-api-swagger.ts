@@ -98,6 +98,36 @@ export interface IAgendaAPI {
     /**
      * @return Success
      */
+    calendarSubscriptionAll(): Promise<CalendarSubscription[]>;
+    /**
+     * @param body (optional) 
+     * @return Success
+     */
+    calendarSubscriptionPOST(body?: CalendarSubscriptionRequest | undefined): Promise<CalendarSubscription>;
+    /**
+     * @return Success
+     */
+    calendarSubscriptionGET(id: number): Promise<CalendarSubscription>;
+    /**
+     * @param body (optional) 
+     * @return Success
+     */
+    calendarSubscriptionPUT(id: number, body?: CalendarSubscriptionRequest | undefined): Promise<void>;
+    /**
+     * @return Success
+     */
+    calendarSubscriptionDELETE(id: number): Promise<void>;
+    /**
+     * @return Success
+     */
+    sync(id: number): Promise<void>;
+    /**
+     * @return Success
+     */
+    toggle(id: number): Promise<void>;
+    /**
+     * @return Success
+     */
     eventsAll(): Promise<EventWithOwner[]>;
     /**
      * @param body (optional) 
@@ -1000,6 +1030,393 @@ export class AgendaAPI extends BaseAPI implements IAgendaAPI {
             return throwException("An unexpected server error occurred.", status, _responseText, _headers);
         }
         return Promise.resolve<CalendarShare>(null as any);
+    }
+
+    /**
+     * @return Success
+     */
+    calendarSubscriptionAll( cancelToken?: CancelToken): Promise<CalendarSubscription[]> {
+        let url_ = this.baseUrl + "/api/CalendarSubscription";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_: AxiosRequestConfig = {
+            method: "GET",
+            url: url_,
+            headers: {
+                "Accept": "text/plain"
+            },
+            cancelToken
+        };
+
+        return this.transformOptions(options_).then(transformedOptions_ => {
+            return this.instance.request(transformedOptions_);
+        }).catch((_error: any) => {
+            if (isAxiosError(_error) && _error.response) {
+                return _error.response;
+            } else {
+                throw _error;
+            }
+        }).then((_response: AxiosResponse) => {
+            return this.processCalendarSubscriptionAll(_response);
+        });
+    }
+
+    protected processCalendarSubscriptionAll(response: AxiosResponse): Promise<CalendarSubscription[]> {
+        const status = response.status;
+        let _headers: any = {};
+        if (response.headers && typeof response.headers === "object") {
+            for (const k in response.headers) {
+                if (response.headers.hasOwnProperty(k)) {
+                    _headers[k] = response.headers[k];
+                }
+            }
+        }
+        if (status === 200) {
+            const _responseText = response.data;
+            let result200: any = null;
+            let resultData200  = _responseText;
+            if (Array.isArray(resultData200)) {
+                result200 = [] as any;
+                for (let item of resultData200)
+                    result200!.push(CalendarSubscription.fromJS(item));
+            }
+            else {
+                result200 = <any>null;
+            }
+            return Promise.resolve<CalendarSubscription[]>(result200);
+
+        } else if (status !== 200 && status !== 204) {
+            const _responseText = response.data;
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+        }
+        return Promise.resolve<CalendarSubscription[]>(null as any);
+    }
+
+    /**
+     * @param body (optional) 
+     * @return Success
+     */
+    calendarSubscriptionPOST(body?: CalendarSubscriptionRequest | undefined, cancelToken?: CancelToken): Promise<CalendarSubscription> {
+        let url_ = this.baseUrl + "/api/CalendarSubscription";
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(body);
+
+        let options_: AxiosRequestConfig = {
+            data: content_,
+            method: "POST",
+            url: url_,
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "text/plain"
+            },
+            cancelToken
+        };
+
+        return this.transformOptions(options_).then(transformedOptions_ => {
+            return this.instance.request(transformedOptions_);
+        }).catch((_error: any) => {
+            if (isAxiosError(_error) && _error.response) {
+                return _error.response;
+            } else {
+                throw _error;
+            }
+        }).then((_response: AxiosResponse) => {
+            return this.processCalendarSubscriptionPOST(_response);
+        });
+    }
+
+    protected processCalendarSubscriptionPOST(response: AxiosResponse): Promise<CalendarSubscription> {
+        const status = response.status;
+        let _headers: any = {};
+        if (response.headers && typeof response.headers === "object") {
+            for (const k in response.headers) {
+                if (response.headers.hasOwnProperty(k)) {
+                    _headers[k] = response.headers[k];
+                }
+            }
+        }
+        if (status === 200) {
+            const _responseText = response.data;
+            let result200: any = null;
+            let resultData200  = _responseText;
+            result200 = CalendarSubscription.fromJS(resultData200);
+            return Promise.resolve<CalendarSubscription>(result200);
+
+        } else if (status !== 200 && status !== 204) {
+            const _responseText = response.data;
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+        }
+        return Promise.resolve<CalendarSubscription>(null as any);
+    }
+
+    /**
+     * @return Success
+     */
+    calendarSubscriptionGET(id: number, cancelToken?: CancelToken): Promise<CalendarSubscription> {
+        let url_ = this.baseUrl + "/api/CalendarSubscription/{id}";
+        if (id === undefined || id === null)
+            throw new Error("The parameter 'id' must be defined.");
+        url_ = url_.replace("{id}", encodeURIComponent("" + id));
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_: AxiosRequestConfig = {
+            method: "GET",
+            url: url_,
+            headers: {
+                "Accept": "text/plain"
+            },
+            cancelToken
+        };
+
+        return this.transformOptions(options_).then(transformedOptions_ => {
+            return this.instance.request(transformedOptions_);
+        }).catch((_error: any) => {
+            if (isAxiosError(_error) && _error.response) {
+                return _error.response;
+            } else {
+                throw _error;
+            }
+        }).then((_response: AxiosResponse) => {
+            return this.processCalendarSubscriptionGET(_response);
+        });
+    }
+
+    protected processCalendarSubscriptionGET(response: AxiosResponse): Promise<CalendarSubscription> {
+        const status = response.status;
+        let _headers: any = {};
+        if (response.headers && typeof response.headers === "object") {
+            for (const k in response.headers) {
+                if (response.headers.hasOwnProperty(k)) {
+                    _headers[k] = response.headers[k];
+                }
+            }
+        }
+        if (status === 200) {
+            const _responseText = response.data;
+            let result200: any = null;
+            let resultData200  = _responseText;
+            result200 = CalendarSubscription.fromJS(resultData200);
+            return Promise.resolve<CalendarSubscription>(result200);
+
+        } else if (status !== 200 && status !== 204) {
+            const _responseText = response.data;
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+        }
+        return Promise.resolve<CalendarSubscription>(null as any);
+    }
+
+    /**
+     * @param body (optional) 
+     * @return Success
+     */
+    calendarSubscriptionPUT(id: number, body?: CalendarSubscriptionRequest | undefined, cancelToken?: CancelToken): Promise<void> {
+        let url_ = this.baseUrl + "/api/CalendarSubscription/{id}";
+        if (id === undefined || id === null)
+            throw new Error("The parameter 'id' must be defined.");
+        url_ = url_.replace("{id}", encodeURIComponent("" + id));
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(body);
+
+        let options_: AxiosRequestConfig = {
+            data: content_,
+            method: "PUT",
+            url: url_,
+            headers: {
+                "Content-Type": "application/json",
+            },
+            cancelToken
+        };
+
+        return this.transformOptions(options_).then(transformedOptions_ => {
+            return this.instance.request(transformedOptions_);
+        }).catch((_error: any) => {
+            if (isAxiosError(_error) && _error.response) {
+                return _error.response;
+            } else {
+                throw _error;
+            }
+        }).then((_response: AxiosResponse) => {
+            return this.processCalendarSubscriptionPUT(_response);
+        });
+    }
+
+    protected processCalendarSubscriptionPUT(response: AxiosResponse): Promise<void> {
+        const status = response.status;
+        let _headers: any = {};
+        if (response.headers && typeof response.headers === "object") {
+            for (const k in response.headers) {
+                if (response.headers.hasOwnProperty(k)) {
+                    _headers[k] = response.headers[k];
+                }
+            }
+        }
+        if (status === 200) {
+            const _responseText = response.data;
+            return Promise.resolve<void>(null as any);
+
+        } else if (status !== 200 && status !== 204) {
+            const _responseText = response.data;
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+        }
+        return Promise.resolve<void>(null as any);
+    }
+
+    /**
+     * @return Success
+     */
+    calendarSubscriptionDELETE(id: number, cancelToken?: CancelToken): Promise<void> {
+        let url_ = this.baseUrl + "/api/CalendarSubscription/{id}";
+        if (id === undefined || id === null)
+            throw new Error("The parameter 'id' must be defined.");
+        url_ = url_.replace("{id}", encodeURIComponent("" + id));
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_: AxiosRequestConfig = {
+            method: "DELETE",
+            url: url_,
+            headers: {
+            },
+            cancelToken
+        };
+
+        return this.transformOptions(options_).then(transformedOptions_ => {
+            return this.instance.request(transformedOptions_);
+        }).catch((_error: any) => {
+            if (isAxiosError(_error) && _error.response) {
+                return _error.response;
+            } else {
+                throw _error;
+            }
+        }).then((_response: AxiosResponse) => {
+            return this.processCalendarSubscriptionDELETE(_response);
+        });
+    }
+
+    protected processCalendarSubscriptionDELETE(response: AxiosResponse): Promise<void> {
+        const status = response.status;
+        let _headers: any = {};
+        if (response.headers && typeof response.headers === "object") {
+            for (const k in response.headers) {
+                if (response.headers.hasOwnProperty(k)) {
+                    _headers[k] = response.headers[k];
+                }
+            }
+        }
+        if (status === 200) {
+            const _responseText = response.data;
+            return Promise.resolve<void>(null as any);
+
+        } else if (status !== 200 && status !== 204) {
+            const _responseText = response.data;
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+        }
+        return Promise.resolve<void>(null as any);
+    }
+
+    /**
+     * @return Success
+     */
+    sync(id: number, cancelToken?: CancelToken): Promise<void> {
+        let url_ = this.baseUrl + "/api/CalendarSubscription/{id}/sync";
+        if (id === undefined || id === null)
+            throw new Error("The parameter 'id' must be defined.");
+        url_ = url_.replace("{id}", encodeURIComponent("" + id));
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_: AxiosRequestConfig = {
+            method: "POST",
+            url: url_,
+            headers: {
+            },
+            cancelToken
+        };
+
+        return this.transformOptions(options_).then(transformedOptions_ => {
+            return this.instance.request(transformedOptions_);
+        }).catch((_error: any) => {
+            if (isAxiosError(_error) && _error.response) {
+                return _error.response;
+            } else {
+                throw _error;
+            }
+        }).then((_response: AxiosResponse) => {
+            return this.processSync(_response);
+        });
+    }
+
+    protected processSync(response: AxiosResponse): Promise<void> {
+        const status = response.status;
+        let _headers: any = {};
+        if (response.headers && typeof response.headers === "object") {
+            for (const k in response.headers) {
+                if (response.headers.hasOwnProperty(k)) {
+                    _headers[k] = response.headers[k];
+                }
+            }
+        }
+        if (status === 200) {
+            const _responseText = response.data;
+            return Promise.resolve<void>(null as any);
+
+        } else if (status !== 200 && status !== 204) {
+            const _responseText = response.data;
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+        }
+        return Promise.resolve<void>(null as any);
+    }
+
+    /**
+     * @return Success
+     */
+    toggle(id: number, cancelToken?: CancelToken): Promise<void> {
+        let url_ = this.baseUrl + "/api/CalendarSubscription/{id}/toggle";
+        if (id === undefined || id === null)
+            throw new Error("The parameter 'id' must be defined.");
+        url_ = url_.replace("{id}", encodeURIComponent("" + id));
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_: AxiosRequestConfig = {
+            method: "PUT",
+            url: url_,
+            headers: {
+            },
+            cancelToken
+        };
+
+        return this.transformOptions(options_).then(transformedOptions_ => {
+            return this.instance.request(transformedOptions_);
+        }).catch((_error: any) => {
+            if (isAxiosError(_error) && _error.response) {
+                return _error.response;
+            } else {
+                throw _error;
+            }
+        }).then((_response: AxiosResponse) => {
+            return this.processToggle(_response);
+        });
+    }
+
+    protected processToggle(response: AxiosResponse): Promise<void> {
+        const status = response.status;
+        let _headers: any = {};
+        if (response.headers && typeof response.headers === "object") {
+            for (const k in response.headers) {
+                if (response.headers.hasOwnProperty(k)) {
+                    _headers[k] = response.headers[k];
+                }
+            }
+        }
+        if (status === 200) {
+            const _responseText = response.data;
+            return Promise.resolve<void>(null as any);
+
+        } else if (status !== 200 && status !== 204) {
+            const _responseText = response.data;
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+        }
+        return Promise.resolve<void>(null as any);
     }
 
     /**
@@ -2356,6 +2773,130 @@ export interface ICalendarShareInvite {
     respondedAt?: Date | undefined;
 }
 
+export class CalendarSubscription implements ICalendarSubscription {
+    id?: number;
+    name?: string | undefined;
+    iCalUrl?: string | undefined;
+    color?: string | undefined;
+    syncIntervalMinutes?: number;
+    isActive?: boolean;
+    lastSyncedAt?: Date | undefined;
+    lastSyncError?: string | undefined;
+    createdAt?: Date;
+    updatedAt?: Date;
+    userId?: number;
+
+    constructor(data?: ICalendarSubscription) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.id = _data["id"];
+            this.name = _data["name"];
+            this.iCalUrl = _data["iCalUrl"];
+            this.color = _data["color"];
+            this.syncIntervalMinutes = _data["syncIntervalMinutes"];
+            this.isActive = _data["isActive"];
+            this.lastSyncedAt = _data["lastSyncedAt"] ? new Date(_data["lastSyncedAt"].toString()) : <any>undefined;
+            this.lastSyncError = _data["lastSyncError"];
+            this.createdAt = _data["createdAt"] ? new Date(_data["createdAt"].toString()) : <any>undefined;
+            this.updatedAt = _data["updatedAt"] ? new Date(_data["updatedAt"].toString()) : <any>undefined;
+            this.userId = _data["userId"];
+        }
+    }
+
+    static fromJS(data: any): CalendarSubscription {
+        data = typeof data === 'object' ? data : {};
+        let result = new CalendarSubscription();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["id"] = this.id;
+        data["name"] = this.name;
+        data["iCalUrl"] = this.iCalUrl;
+        data["color"] = this.color;
+        data["syncIntervalMinutes"] = this.syncIntervalMinutes;
+        data["isActive"] = this.isActive;
+        data["lastSyncedAt"] = this.lastSyncedAt ? this.lastSyncedAt.toISOString() : <any>undefined;
+        data["lastSyncError"] = this.lastSyncError;
+        data["createdAt"] = this.createdAt ? this.createdAt.toISOString() : <any>undefined;
+        data["updatedAt"] = this.updatedAt ? this.updatedAt.toISOString() : <any>undefined;
+        data["userId"] = this.userId;
+        return data;
+    }
+}
+
+export interface ICalendarSubscription {
+    id?: number;
+    name?: string | undefined;
+    iCalUrl?: string | undefined;
+    color?: string | undefined;
+    syncIntervalMinutes?: number;
+    isActive?: boolean;
+    lastSyncedAt?: Date | undefined;
+    lastSyncError?: string | undefined;
+    createdAt?: Date;
+    updatedAt?: Date;
+    userId?: number;
+}
+
+export class CalendarSubscriptionRequest implements ICalendarSubscriptionRequest {
+    name?: string | undefined;
+    iCalUrl?: string | undefined;
+    color?: string | undefined;
+    syncIntervalMinutes?: number | undefined;
+
+    constructor(data?: ICalendarSubscriptionRequest) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.name = _data["name"];
+            this.iCalUrl = _data["iCalUrl"];
+            this.color = _data["color"];
+            this.syncIntervalMinutes = _data["syncIntervalMinutes"];
+        }
+    }
+
+    static fromJS(data: any): CalendarSubscriptionRequest {
+        data = typeof data === 'object' ? data : {};
+        let result = new CalendarSubscriptionRequest();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["name"] = this.name;
+        data["iCalUrl"] = this.iCalUrl;
+        data["color"] = this.color;
+        data["syncIntervalMinutes"] = this.syncIntervalMinutes;
+        return data;
+    }
+}
+
+export interface ICalendarSubscriptionRequest {
+    name?: string | undefined;
+    iCalUrl?: string | undefined;
+    color?: string | undefined;
+    syncIntervalMinutes?: number | undefined;
+}
+
 export class ConnectRequest implements IConnectRequest {
     accessToken?: string | undefined;
 
@@ -2469,6 +3010,10 @@ export class Event implements IEvent {
     googleEventId?: string | undefined;
     isImportedFromGoogle?: boolean;
     isLocallyModified?: boolean;
+    calendarSubscriptionId?: number | undefined;
+    externalEventId?: string | undefined;
+    isFromSubscription?: boolean;
+    isReadOnly?: boolean;
     userId?: number;
 
     constructor(data?: IEvent) {
@@ -2502,6 +3047,10 @@ export class Event implements IEvent {
             this.googleEventId = _data["googleEventId"];
             this.isImportedFromGoogle = _data["isImportedFromGoogle"];
             this.isLocallyModified = _data["isLocallyModified"];
+            this.calendarSubscriptionId = _data["calendarSubscriptionId"];
+            this.externalEventId = _data["externalEventId"];
+            this.isFromSubscription = _data["isFromSubscription"];
+            this.isReadOnly = _data["isReadOnly"];
             this.userId = _data["userId"];
         }
     }
@@ -2535,6 +3084,10 @@ export class Event implements IEvent {
         data["googleEventId"] = this.googleEventId;
         data["isImportedFromGoogle"] = this.isImportedFromGoogle;
         data["isLocallyModified"] = this.isLocallyModified;
+        data["calendarSubscriptionId"] = this.calendarSubscriptionId;
+        data["externalEventId"] = this.externalEventId;
+        data["isFromSubscription"] = this.isFromSubscription;
+        data["isReadOnly"] = this.isReadOnly;
         data["userId"] = this.userId;
         return data;
     }
@@ -2561,6 +3114,10 @@ export interface IEvent {
     googleEventId?: string | undefined;
     isImportedFromGoogle?: boolean;
     isLocallyModified?: boolean;
+    calendarSubscriptionId?: number | undefined;
+    externalEventId?: string | undefined;
+    isFromSubscription?: boolean;
+    isReadOnly?: boolean;
     userId?: number;
 }
 
@@ -2665,6 +3222,10 @@ export class EventWithOwner implements IEventWithOwner {
     ownerEmail?: string | undefined;
     isOwnEvent?: boolean;
     permission?: SharePermission;
+    isFromSubscription?: boolean;
+    isReadOnly?: boolean;
+    subscriptionName?: string | undefined;
+    calendarSubscriptionId?: number | undefined;
 
     constructor(data?: IEventWithOwner) {
         if (data) {
@@ -2701,6 +3262,10 @@ export class EventWithOwner implements IEventWithOwner {
             this.ownerEmail = _data["ownerEmail"];
             this.isOwnEvent = _data["isOwnEvent"];
             this.permission = _data["permission"];
+            this.isFromSubscription = _data["isFromSubscription"];
+            this.isReadOnly = _data["isReadOnly"];
+            this.subscriptionName = _data["subscriptionName"];
+            this.calendarSubscriptionId = _data["calendarSubscriptionId"];
         }
     }
 
@@ -2737,6 +3302,10 @@ export class EventWithOwner implements IEventWithOwner {
         data["ownerEmail"] = this.ownerEmail;
         data["isOwnEvent"] = this.isOwnEvent;
         data["permission"] = this.permission;
+        data["isFromSubscription"] = this.isFromSubscription;
+        data["isReadOnly"] = this.isReadOnly;
+        data["subscriptionName"] = this.subscriptionName;
+        data["calendarSubscriptionId"] = this.calendarSubscriptionId;
         return data;
     }
 }
@@ -2766,6 +3335,10 @@ export interface IEventWithOwner {
     ownerEmail?: string | undefined;
     isOwnEvent?: boolean;
     permission?: SharePermission;
+    isFromSubscription?: boolean;
+    isReadOnly?: boolean;
+    subscriptionName?: string | undefined;
+    calendarSubscriptionId?: number | undefined;
 }
 
 export class GoogleCalendarInfo implements IGoogleCalendarInfo {

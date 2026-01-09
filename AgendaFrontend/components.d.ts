@@ -9,6 +9,7 @@ declare module 'vue' {
   export interface GlobalComponents {
     CalendarPreferences: typeof import('./src/components/calendar/CalendarPreferences.vue')['default']
     CalendarSharing: typeof import('./src/components/calendar/CalendarSharing.vue')['default']
+    CalendarSubscriptions: typeof import('./src/components/calendar/CalendarSubscriptions.vue')['default']
     CreateEventModal: typeof import('./src/components/calendar/CreateEventModal.vue')['default']
     DatePickerPopover: typeof import('./src/components/calendar/DatePickerPopover.vue')['default']
     DayModal: typeof import('./src/components/calendar/DayModal.vue')['default']
