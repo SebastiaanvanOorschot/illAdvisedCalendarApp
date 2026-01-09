@@ -139,7 +139,6 @@ public class CalendarSubscriptionController : ControllerBase
     {
         var userId = GetUserId();
         var subscription = await _context.CalendarSubscriptions
-            .AsNoTracking() // Don't track to avoid EF loading related entities
             .FirstOrDefaultAsync(s => s.Id == id && s.UserId == userId);
 
         if (subscription == null)
@@ -147,16 +146,23 @@ public class CalendarSubscriptionController : ControllerBase
             return NotFound();
         }
 
-        // Delete associated events using raw SQL to completely bypass EF change tracking
-        var eventCount = await _context.Database.ExecuteSqlRawAsync(
-            "DELETE FROM Events WHERE CalendarSubscriptionId = {0}", id);
+        // Delete associated events first (EF Core handles this fine)
+        var events = await _context.Events
+            .Where(e => e.CalendarSubscriptionId == id)
+            .ToListAsync();
 
-        // Delete subscription using raw SQL as well to avoid any EF batching
-        await _context.Database.ExecuteSqlRawAsync(
-            "DELETE FROM CalendarSubscriptions WHERE Id = {0}", id);
+        if (events.Any())
+        {
+            _context.Events.RemoveRange(events);
+            await _context.SaveChangesAsync();
+        }
+
+        // Now delete the subscription
+        _context.CalendarSubscriptions.Remove(subscription);
+        await _context.SaveChangesAsync();
 
         _logger.LogInformation("Deleted subscription {SubscriptionId} and {EventCount} associated events",
-            id, eventCount);
+            id, events.Count);
 
         return NoContent();
     }

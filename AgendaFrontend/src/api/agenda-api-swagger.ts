@@ -3222,6 +3222,10 @@ export class EventWithOwner implements IEventWithOwner {
     ownerEmail?: string | undefined;
     isOwnEvent?: boolean;
     permission?: SharePermission;
+    isFromSubscription?: boolean;
+    isReadOnly?: boolean;
+    subscriptionName?: string | undefined;
+    calendarSubscriptionId?: number | undefined;
 
     constructor(data?: IEventWithOwner) {
         if (data) {
@@ -3258,6 +3262,10 @@ export class EventWithOwner implements IEventWithOwner {
             this.ownerEmail = _data["ownerEmail"];
             this.isOwnEvent = _data["isOwnEvent"];
             this.permission = _data["permission"];
+            this.isFromSubscription = _data["isFromSubscription"];
+            this.isReadOnly = _data["isReadOnly"];
+            this.subscriptionName = _data["subscriptionName"];
+            this.calendarSubscriptionId = _data["calendarSubscriptionId"];
         }
     }
 
@@ -3294,6 +3302,10 @@ export class EventWithOwner implements IEventWithOwner {
         data["ownerEmail"] = this.ownerEmail;
         data["isOwnEvent"] = this.isOwnEvent;
         data["permission"] = this.permission;
+        data["isFromSubscription"] = this.isFromSubscription;
+        data["isReadOnly"] = this.isReadOnly;
+        data["subscriptionName"] = this.subscriptionName;
+        data["calendarSubscriptionId"] = this.calendarSubscriptionId;
         return data;
     }
 }
@@ -3323,6 +3335,10 @@ export interface IEventWithOwner {
     ownerEmail?: string | undefined;
     isOwnEvent?: boolean;
     permission?: SharePermission;
+    isFromSubscription?: boolean;
+    isReadOnly?: boolean;
+    subscriptionName?: string | undefined;
+    calendarSubscriptionId?: number | undefined;
 }
 
 export class GoogleCalendarInfo implements IGoogleCalendarInfo {
