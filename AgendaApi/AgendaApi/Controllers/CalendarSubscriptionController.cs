@@ -146,22 +146,16 @@ public class CalendarSubscriptionController : ControllerBase
             return NotFound();
         }
 
-        // Delete associated events first (must be done before deleting subscription)
-        var associatedEvents = await _context.Events
-            .Where(e => e.CalendarSubscriptionId == id)
-            .ToListAsync();
-
-        _context.Events.RemoveRange(associatedEvents);
-
-        // Save changes to delete events first
-        await _context.SaveChangesAsync();
+        // Delete associated events first using direct SQL to avoid EF batching issues
+        var eventCount = await _context.Database.ExecuteSqlRawAsync(
+            "DELETE FROM Events WHERE CalendarSubscriptionId = {0}", id);
 
         // Now delete the subscription
         _context.CalendarSubscriptions.Remove(subscription);
         await _context.SaveChangesAsync();
 
         _logger.LogInformation("Deleted subscription {SubscriptionId} and {EventCount} associated events",
-            id, associatedEvents.Count);
+            id, eventCount);
 
         return NoContent();
     }
