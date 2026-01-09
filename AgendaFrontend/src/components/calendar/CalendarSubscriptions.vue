@@ -145,7 +145,8 @@
 
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue';
-import { CalendarSubscriptionClient, CalendarSubscriptionRequest, CalendarSubscription } from '@/api/agenda-api-swagger';
+import { AgendaAPI, CalendarSubscriptionRequest, CalendarSubscription } from '@/api/agenda-api-swagger';
+import { authenticatedAxios, getApiBaseUrl } from '@/api/axios-config';
 
 const subscriptions = ref<CalendarSubscription[]>([]);
 const showAddForm = ref(false);
@@ -160,7 +161,7 @@ const formData = ref({
   syncIntervalMinutes: 60
 });
 
-const client = new CalendarSubscriptionClient();
+const api = new AgendaAPI(getApiBaseUrl(), authenticatedAxios);
 
 const isFormValid = computed(() => {
   return formData.value.name.trim() !== '' && formData.value.iCalUrl.trim() !== '';
@@ -168,7 +169,7 @@ const isFormValid = computed(() => {
 
 async function loadSubscriptions() {
   try {
-    subscriptions.value = await client.getSubscriptions();
+    subscriptions.value = await api.calendarSubscriptionAll();
   } catch (err: any) {
     console.error('Failed to load subscriptions:', err);
     error.value = 'Failed to load subscriptions';
@@ -201,7 +202,7 @@ async function syncSubscription(subscription: CalendarSubscription) {
   error.value = '';
 
   try {
-    await client.syncSubscription(subscription.id!);
+    await api.sync(subscription.id!);
     await loadSubscriptions();
   } catch (err: any) {
     console.error('Failed to sync subscription:', err);
@@ -213,7 +214,7 @@ async function syncSubscription(subscription: CalendarSubscription) {
 
 async function toggleSubscription(subscription: CalendarSubscription) {
   try {
-    await client.toggleSubscription(subscription.id!);
+    await api.toggle(subscription.id!);
     await loadSubscriptions();
   } catch (err: any) {
     console.error('Failed to toggle subscription:', err);
@@ -240,7 +241,7 @@ function confirmDelete(subscription: CalendarSubscription) {
 
 async function deleteSubscription(subscription: CalendarSubscription) {
   try {
-    await client.deleteSubscription(subscription.id!);
+    await api.calendarSubscriptionDELETE(subscription.id!);
     await loadSubscriptions();
   } catch (err: any) {
     console.error('Failed to delete subscription:', err);
@@ -260,9 +261,9 @@ async function saveSubscription() {
 
   try {
     if (editingSubscription.value) {
-      await client.updateSubscription(editingSubscription.value.id!, request);
+      await api.calendarSubscriptionPUT(editingSubscription.value.id!, request);
     } else {
-      await client.createSubscription(request);
+      await api.calendarSubscriptionPOST(request);
     }
 
     await loadSubscriptions();
