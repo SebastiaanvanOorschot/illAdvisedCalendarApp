@@ -1,0 +1,241 @@
+using AgendaApi.Data;
+using AgendaApi.Models;
+using AgendaApi.Services;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
+
+namespace AgendaApi.Controllers;
+
+[Authorize]
+[ApiController]
+[Route("api/[controller]")]
+public class GoogleCalendarController : ControllerBase
+{
+    private readonly IGoogleCalendarService _googleCalendarService;
+    private readonly AgendaDbContext _context;
+    private readonly ILogger<GoogleCalendarController> _logger;
+
+    public GoogleCalendarController(
+        IGoogleCalendarService googleCalendarService,
+        AgendaDbContext context,
+        ILogger<GoogleCalendarController> logger)
+    {
+        _googleCalendarService = googleCalendarService;
+        _context = context;
+        _logger = logger;
+    }
+
+    private int GetCurrentUserId()
+    {
+        var userIdClaim = User.FindFirst("sub")?.Value ?? User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (userIdClaim == null || !int.TryParse(userIdClaim, out int userId))
+        {
+            throw new UnauthorizedAccessException("User ID not found in token");
+        }
+        return userId;
+    }
+
+    /// <summary>
+    /// Store Google Calendar access token for the user
+    /// </summary>
+    [HttpPost("connect")]
+    public async Task<ActionResult> ConnectGoogleCalendar([FromBody] ConnectRequest request)
+    {
+        try
+        {
+            var userId = GetCurrentUserId();
+            var user = await _context.Users.FindAsync(userId);
+
+            if (user == null)
+            {
+                return NotFound(new { message = "User not found" });
+            }
+
+            // Store the calendar access token
+            // Note: This is the same field as the main Google token, but now with calendar scope
+            user.GoogleAccessToken = request.AccessToken;
+            user.GoogleTokenExpiry = DateTime.UtcNow.AddHours(1); // Google tokens typically expire in 1 hour
+
+            await _context.SaveChangesAsync();
+
+            _logger.LogInformation($"Stored Google Calendar token for user {userId}");
+
+            return Ok(new { message = "Successfully connected to Google Calendar" });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error storing Google Calendar token");
+            return StatusCode(500, new { message = "Failed to connect to Google Calendar" });
+        }
+    }
+
+    /// <summary>
+    /// Get all Google Calendars accessible to the user
+    /// </summary>
+    [HttpGet("calendars")]
+    public async Task<ActionResult<List<GoogleCalendarInfo>>> GetCalendars()
+    {
+        try
+        {
+            var userId = GetCurrentUserId();
+            var calendars = await _googleCalendarService.GetUserCalendarsAsync(userId);
+            return Ok(calendars);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error retrieving Google Calendars");
+            return StatusCode(500, new { message = "Failed to retrieve calendars. Please ensure you've granted calendar access." });
+        }
+    }
+
+    /// <summary>
+    /// Import events from selected Google Calendars
+    /// </summary>
+    [HttpPost("import")]
+    public async Task<ActionResult<ImportResult>> ImportCalendars([FromBody] ImportRequest request)
+    {
+        try
+        {
+            var userId = GetCurrentUserId();
+
+            if (request.Calendars == null || !request.Calendars.Any())
+            {
+                return BadRequest(new { message = "No calendars selected for import" });
+            }
+
+            var totalImported = 0;
+            var errors = new List<string>();
+
+            // Calculate date range for import
+            var startDate = DateTime.Today; // Today
+            var endDate = DateTime.Today.AddYears(1); // +1 year for non-recurring events
+
+            // Use a transaction to ensure all-or-nothing import
+            using var transaction = await _context.Database.BeginTransactionAsync();
+
+            try
+            {
+                foreach (var calendarRequest in request.Calendars)
+                {
+                    try
+                    {
+                        _logger.LogInformation($"Importing calendar {calendarRequest.CalendarId} with color {calendarRequest.Color}");
+
+                        var events = await _googleCalendarService.ImportCalendarEventsAsync(
+                            userId,
+                            calendarRequest.CalendarId,
+                            calendarRequest.Color,
+                            startDate,
+                            endDate
+                        );
+
+                        // Save or update events in database
+                        foreach (var evt in events)
+                        {
+                            // Check if event already exists
+                            var existing = await _context.Events
+                                .FirstOrDefaultAsync(e => e.UserId == userId && e.GoogleEventId == evt.GoogleEventId);
+
+                            if (existing != null)
+                            {
+                                // Update existing event (only if not locally modified)
+                                if (!existing.IsLocallyModified)
+                                {
+                                    existing.Title = evt.Title;
+                                    existing.Description = evt.Description;
+                                    existing.StartDateTime = evt.StartDateTime;
+                                    existing.EndDateTime = evt.EndDateTime;
+                                    existing.Color = evt.Color;
+                                    existing.IsRecurring = evt.IsRecurring;
+                                    existing.RecurrenceRule = evt.RecurrenceRule;
+                                    existing.ExceptionDates = evt.ExceptionDates;
+                                    existing.UpdatedAt = DateTime.UtcNow;
+                                    _context.Events.Update(existing);
+                                    totalImported++;
+                                }
+                            }
+                            else
+                            {
+                                // Add new event
+                                _context.Events.Add(evt);
+                                totalImported++;
+                            }
+                        }
+
+                        await _context.SaveChangesAsync();
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, $"Error importing calendar {calendarRequest.CalendarId}");
+                        errors.Add($"Failed to import calendar {calendarRequest.CalendarId}: {ex.Message}");
+                        // Rollback transaction on any error
+                        await transaction.RollbackAsync();
+                        throw;
+                    }
+                }
+
+                // Commit transaction if all calendars imported successfully
+                await transaction.CommitAsync();
+
+                return Ok(new ImportResult
+                {
+                    Success = true,
+                    TotalImported = totalImported,
+                    Message = $"Successfully imported {totalImported} events",
+                    Errors = errors
+                });
+            }
+            catch (Exception)
+            {
+                // Transaction already rolled back in catch block above
+                return StatusCode(500, new ImportResult
+                {
+                    Success = false,
+                    TotalImported = 0,
+                    Message = "Import failed. No events were imported.",
+                    Errors = errors
+                });
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error during calendar import");
+            return StatusCode(500, new { message = "An error occurred during import. Please try again later." });
+        }
+    }
+}
+
+/// <summary>
+/// Request model for importing calendars
+/// </summary>
+public class ImportRequest
+{
+    public List<CalendarImportItem> Calendars { get; set; } = new();
+}
+
+public class CalendarImportItem
+{
+    public string CalendarId { get; set; } = string.Empty;
+    public string Color { get; set; } = "#000000";
+}
+
+/// <summary>
+/// Result of calendar import operation
+/// </summary>
+public class ImportResult
+{
+    public bool Success { get; set; }
+    public int TotalImported { get; set; }
+    public string Message { get; set; } = string.Empty;
+    public List<string> Errors { get; set; } = new();
+}
+
+/// <summary>
+/// Request model for connecting Google Calendar
+/// </summary>
+public class ConnectRequest
+{
+    public string AccessToken { get; set; } = string.Empty;
+}

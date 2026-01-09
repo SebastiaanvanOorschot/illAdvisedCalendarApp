@@ -1,0 +1,108 @@
+// Load events for a date range
+async function loadEventsForRange(start: dayjs.Dayjs, end: dayjs.Dayjs) {
+    loadingEvents.value = true;
+
+    try {
+        const occurrences = await api.occurrences(start.toDate(), end.toDate());
+
+        // Convert occurrences directly to Event objects for display (no individual API calls)
+        occurrences.forEach(occurrence => {
+            if (!occurrence.occurrenceStart || !occurrence.eventId) return;
+
+            // Create a display event from occurrence data
+            const displayEvent: Event = {
+                id: occurrence.eventId,
+                startDateTime: occurrence.occurrenceStart,
+                endDateTime: occurrence.occurrenceEnd,
+                title: occurrence.title || '',
+                description: occurrence.description,
+                color: occurrence.color,
+                isRecurring: occurrence.isRecurring,
+                userId: 0 // Not needed for display
+            };
+
+            const eventDate = dayjs(occurrence.occurrenceStart);
+            const dayIndex = days.value.findIndex(d =>
+                d.date === eventDate.date() &&
+                d.month === eventDate.month() &&
+                d.year === eventDate.year()
+            );
+
+            if (dayIndex !== -1) {
+                days.value[dayIndex].events.push(displayEvent);
+            }
+        });
+
+        // Sort events by start time for each day
+        days.value.forEach(day => {
+            day.events.sort((a, b) => {
+                if (!a.startDateTime || !b.startDateTime) return 0;
+                return new Date(a.startDateTime).getTime() - new Date(b.startDateTime).getTime();
+            });
+        });
+    } catch (error) {
+        console.error('Failed to load events:', error);
+    } finally {
+        loadingEvents.value = false;
+    }
+}
+
+// In loadPreviousDays() function, replace lines 344-384 with:
+        const occurrences = await api.occurrences(prevMonthStart.toDate(), prevMonthEnd.toDate());
+
+        // Convert occurrences directly to Event objects for display (no individual API calls)
+        occurrences.forEach(occurrence => {
+            if (!occurrence.occurrenceStart || !occurrence.eventId) return;
+
+            const displayEvent: Event = {
+                id: occurrence.eventId,
+                startDateTime: occurrence.occurrenceStart,
+                endDateTime: occurrence.occurrenceEnd,
+                title: occurrence.title || '',
+                description: occurrence.description,
+                color: occurrence.color,
+                isRecurring: occurrence.isRecurring,
+                userId: 0
+            };
+
+            const eventDate = dayjs(occurrence.occurrenceStart);
+            const dayIndex = newDays.findIndex(d =>
+                d.date === eventDate.date() &&
+                d.month === eventDate.month() &&
+                d.year === eventDate.year()
+            );
+
+            if (dayIndex !== -1) {
+                newDays[dayIndex].events.push(displayEvent);
+            }
+        });
+
+// In loadMoreDays() function, replace lines 447-487 with:
+        const occurrences = await api.occurrences(nextMonthStart.toDate(), nextMonthEnd.toDate());
+
+        // Convert occurrences directly to Event objects for display (no individual API calls)
+        occurrences.forEach(occurrence => {
+            if (!occurrence.occurrenceStart || !occurrence.eventId) return;
+
+            const displayEvent: Event = {
+                id: occurrence.eventId,
+                startDateTime: occurrence.occurrenceStart,
+                endDateTime: occurrence.occurrenceEnd,
+                title: occurrence.title || '',
+                description: occurrence.description,
+                color: occurrence.color,
+                isRecurring: occurrence.isRecurring,
+                userId: 0
+            };
+
+            const eventDate = dayjs(occurrence.occurrenceStart);
+            const dayIndex = days.value.findIndex(d =>
+                d.date === eventDate.date() &&
+                d.month === eventDate.month() &&
+                d.year === eventDate.year()
+            );
+
+            if (dayIndex !== -1) {
+                days.value[dayIndex].events.push(displayEvent);
+            }
+        });

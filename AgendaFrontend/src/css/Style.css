@@ -1,0 +1,265 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap');
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Poppins', sans-serif;    
+}
+
+body {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100dvh;
+  background: #f0f0f0;
+}
+
+
+/* flexboxes */
+.column {
+  display: flex;
+  flex-direction: column;
+}
+.row {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: row;
+}
+
+
+/* nav menu */
+.navMenu {
+  justify-content: right;
+  gap: 10px;
+  margin: 10px;
+  flex-wrap: wrap;
+}
+.navMenu button {
+  font-weight: 500;
+  color: #fff;
+  min-width: 80px;
+  width: auto;
+  padding: 0 20px;
+  height: 35px;
+  background: none;
+  border: none;
+  flex-shrink: 0;
+}
+.navMenu button:hover {
+  color: #262626;
+  background: #fff;
+}
+
+
+/* calendar */
+.calendar {
+  width: 55vw;
+  height: 100vh;
+  background: #fff;
+  box-sizing: border-box;
+  box-shadow: 0 5px 50px rgba(0, 0, 0, 5);
+  display: flex;
+  flex-direction: column;
+}
+.calendar .image {
+  position: relative;
+  display: flex;
+  justify-content: left;
+  align-items: top;
+  width: 100%;
+  height: 40vh;
+  min-height: 40vh;
+  padding: 40px;
+  /* Ensure banner content stays below status bar */
+  padding-top: max(40px, calc(40px + env(safe-area-inset-top)));
+  flex-shrink: 0;
+}
+.calendar .image h2,
+.calendar .image h3 {
+  margin: 0;
+  padding: 0;
+  color: #fff;
+  text-shadow:
+    0 0 3px rgba(0, 0, 0, 0.8),
+    0 0 5px rgba(0, 0, 0, 0.6),
+    0 2px 4px rgba(0, 0, 0, 0.4),
+    -1px -1px 0 rgba(0, 0, 0, 0.5),
+    1px -1px 0 rgba(0, 0, 0, 0.5),
+    -1px 1px 0 rgba(0, 0, 0, 0.5),
+    1px 1px 0 rgba(0, 0, 0, 0.5);
+}
+.calendar .image h3 {
+  font-weight: 500;
+}
+.calendar .image .dateGroupDay {
+  display: flex;
+  justify-content: center;
+  width: 230px;
+}
+.calendar .image .dateGroupYear {
+  display: flex;
+  justify-content: space-between;
+  width: 230px;
+}
+.calendar .image .dateGroupYear .dateNav {
+  width: 25px;
+  background: none;
+  border: none;
+  color: #FFF;
+  text-shadow:
+    0 0 3px rgba(0, 0, 0, 0.8),
+    0 0 5px rgba(0, 0, 0, 0.6),
+    0 2px 4px rgba(0, 0, 0, 0.4),
+    -1px -1px 0 rgba(0, 0, 0, 0.5),
+    1px -1px 0 rgba(0, 0, 0, 0.5),
+    -1px 1px 0 rgba(0, 0, 0, 0.5),
+    1px 1px 0 rgba(0, 0, 0, 0.5);
+  font-size: 1.25rem;
+  font-weight: 800;
+}
+.calendar .image .dateGroupYear .dateNav:hover {
+  color: #262626;
+  background: #fff;
+}
+.calendar .days {
+  height: 60vh;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
+  grid-template-rows: 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
+  box-sizing: border-box;
+}
+.calendar .days div.day {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: #262626;
+}
+.calendar .days button {  
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: #262626;
+  border: none;
+  background: none;
+}
+.calendar .days div.day {  
+  font-weight: 700;
+}
+.calendar .days div.day:nth-child(7n +7),
+.calendar .days button.number:nth-child(7n +7),
+.calendar .days button.numberInThisMonth:nth-child(7n +7) {  
+  color: #ff685d;
+  font-weight: 700;
+}
+.calendar .days button.number:focus,
+.calendar .days button.number:hover,
+.calendar .days button.numberInThisMonth:focus,
+.calendar .days button.numberInThisMonth:hover {
+  background: #009688;
+  color: #fff;
+  font-weight: 700;
+  cursor: pointer;
+}
+.calendar .days button.numberInThisMonth {  
+  background: hsla(0, 0%, 15%, 0.116);
+}
+.week-view {
+    display: flex;
+    height: 60vh;
+    padding: 0;
+    gap: 0;
+}
+
+
+/* Tablet and medium screens */
+@media screen and (max-width: 1024px) {
+  .calendar {
+    width: 90vw;
+  }
+}
+
+/* On smaller screens, where width is less than 800px */
+@media screen and (max-width: 800px) {
+  body {
+    height: 100dvh;
+    align-items: flex-start;
+  }
+
+  .navMenu {
+    margin: 5px;
+    gap: 5px;
+  }
+
+  .navMenu button {
+    width: 80px;
+    height: 30px;
+    font-size: 0.8rem;
+  }
+
+  .calendar {
+    width: 100vw;
+    height: 100vh;
+    background: #fff;
+    box-sizing: border-box;
+    box-shadow: 0 5px 50px rgba(0, 0, 0, 5);
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1;
+  }
+
+  .calendar .image {
+    position: relative;
+    height: 200px;
+    min-height: 200px;
+    padding: 20px;
+    /* Ensure banner content stays below status bar */
+    padding-top: max(20px, calc(20px + env(safe-area-inset-top)));
+    flex-shrink: 0;
+    background-size: cover;
+    background-position: center;
+    /* Prevent flickering during image transitions */
+    will-change: background-image;
+  }
+
+  .calendar .image h2 {
+    font-size: 1.2rem;
+  }
+
+  .calendar .image h3 {
+    font-size: 0.9rem;
+  }
+
+  .calendar .image .dateGroupDay {
+    width: 100%;
+  }
+
+  .calendar .image .dateGroupYear {
+    width: 100%;
+  }
+
+  .calendar .image .dateGroupYear .dateNav {
+    font-size: 1rem;
+  }
+
+  .calendar .days {
+    padding: 2px;
+    height: calc(100vh - 200px);
+    min-height: unset;
+  }
+
+  .calendar .days div.day {
+    font-size: 0.7rem;
+  }
+
+  .calendar .days button {
+    font-size: 0.8rem;
+  }
+
+  .week-view {
+    height: calc(100vh - 200px);
+  }
+} 

@@ -1,0 +1,33 @@
+# Apache Configuration for Calendar App
+# Add this to your existing sebaslive.xyz VirtualHost configuration
+
+# Calendar Frontend - Serve static files from /calendar
+Alias /calendar /var/www/calendar-frontend
+<Directory /var/www/calendar-frontend>
+    Options -Indexes +FollowSymLinks
+    AllowOverride All
+    Require all granted
+
+    # Handle client-side routing - redirect all requests to index.html
+    <IfModule mod_rewrite.c>
+        RewriteEngine On
+        RewriteBase /calendar
+        RewriteRule ^index\.html$ - [L]
+        RewriteCond %{REQUEST_FILENAME} !-f
+        RewriteCond %{REQUEST_FILENAME} !-d
+        RewriteRule . /calendar/index.html [L]
+    </IfModule>
+</Directory>
+
+# Calendar API - Proxy to .NET backend
+<Location /calendarapi>
+    ProxyPass http://localhost:5001
+    ProxyPassReverse http://localhost:5001
+    ProxyPreserveHost On
+</Location>
+
+# Enable required Apache modules (run these commands on your server):
+# sudo a2enmod proxy
+# sudo a2enmod proxy_http
+# sudo a2enmod rewrite
+# sudo systemctl restart apache2
