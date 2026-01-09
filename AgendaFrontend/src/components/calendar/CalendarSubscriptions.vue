@@ -290,7 +290,12 @@ async function saveSubscription() {
     cancelForm();
   } catch (err: any) {
     console.error('Failed to save subscription:', err);
-    error.value = err.message || 'Failed to save subscription';
+    // Extract error message from various possible error structures
+    const errorMessage = err.response?.data?.error
+      || err.response?.data?.message
+      || err.message
+      || 'Failed to save subscription';
+    error.value = errorMessage;
   }
 }
 
@@ -511,15 +516,13 @@ onMounted(() => {
 .color-option {
   width: 32px;
   height: 32px;
-  border-radius: 50% !important;
-  border: 2px solid transparent;
+  border-radius: 6px;
+  border: 2px solid #e0e0e0;
   cursor: pointer;
   transition: all 0.2s;
   padding: 0;
-  position: relative;
   flex-shrink: 0;
   box-sizing: border-box;
-  overflow: hidden;
 }
 
 .color-option:hover {
@@ -528,8 +531,9 @@ onMounted(() => {
 }
 
 .color-option.selected {
-  border-color: #333;
-  box-shadow: 0 0 0 2px white, 0 0 0 4px #333;
+  border-color: #4285f4;
+  border-width: 3px;
+  box-shadow: 0 0 0 2px rgba(66, 133, 244, 0.2);
 }
 
 .form-hint {
