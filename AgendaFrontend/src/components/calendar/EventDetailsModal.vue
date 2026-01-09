@@ -14,7 +14,10 @@
                         <line x1="8" y1="2" x2="8" y2="6"></line>
                         <line x1="3" y1="10" x2="21" y2="10"></line>
                     </svg>
-                    <span>External Calendar Event (Read-only)</span>
+                    <div class="indicator-content">
+                        <span class="indicator-title">{{ event.subscriptionName || 'External Calendar' }}</span>
+                        <span class="indicator-subtitle">Read-only subscription</span>
+                    </div>
                 </div>
 
                 <div v-else-if="!isOwnEvent" class="owner-indicator">
@@ -306,19 +309,34 @@ function handleDelete() {
 .external-indicator {
     display: flex;
     align-items: center;
-    gap: 8px;
-    padding: 8px 12px;
+    gap: 12px;
+    padding: 12px;
     background: #fff3e0;
     border-left: 3px solid #ff9800;
     border-radius: 4px;
     margin-bottom: 16px;
-    font-size: 14px;
-    color: #e65100;
-    font-weight: 500;
 }
 
 .external-indicator svg {
     flex-shrink: 0;
+    color: #e65100;
+}
+
+.indicator-content {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.indicator-title {
+    font-weight: 600;
+    color: #e65100;
+    font-size: 14px;
+}
+
+.indicator-subtitle {
+    font-size: 12px;
+    color: #f57c00;
 }
 
 .owner-indicator {

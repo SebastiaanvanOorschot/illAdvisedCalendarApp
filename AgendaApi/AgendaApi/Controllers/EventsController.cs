@@ -50,6 +50,15 @@ public class EventsController : ControllerBase
             permission = SharePermission.ReadWrite; // Owners have full access
         }
 
+        // Fetch subscription name if event is from a subscription
+        string? subscriptionName = null;
+        if (e.CalendarSubscriptionId.HasValue)
+        {
+            var subscription = await _context.CalendarSubscriptions
+                .FirstOrDefaultAsync(s => s.Id == e.CalendarSubscriptionId.Value);
+            subscriptionName = subscription?.Name;
+        }
+
         return new EventWithOwner
         {
             Id = e.Id,
@@ -75,7 +84,11 @@ public class EventsController : ControllerBase
             OwnerName = e.User?.Name,
             OwnerEmail = e.User?.Email,
             IsOwnEvent = isOwnEvent,
-            Permission = permission
+            Permission = permission,
+            IsFromSubscription = e.IsFromSubscription,
+            IsReadOnly = e.IsReadOnly,
+            SubscriptionName = subscriptionName,
+            CalendarSubscriptionId = e.CalendarSubscriptionId
         };
     }
 
@@ -521,4 +534,10 @@ public class EventWithOwner
     public string? OwnerEmail { get; set; }
     public bool IsOwnEvent { get; set; }
     public SharePermission? Permission { get; set; }
+
+    // Subscription information
+    public bool IsFromSubscription { get; set; }
+    public bool IsReadOnly { get; set; }
+    public string? SubscriptionName { get; set; }
+    public int? CalendarSubscriptionId { get; set; }
 }
