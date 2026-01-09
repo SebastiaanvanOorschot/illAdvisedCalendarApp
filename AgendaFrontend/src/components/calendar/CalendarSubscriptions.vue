@@ -290,6 +290,16 @@ async function saveSubscription() {
     cancelForm();
   } catch (err: any) {
     console.error('Failed to save subscription:', err);
+
+    // Check if this is actually an error or just a non-200 status code
+    // Status 201 (Created) is a success, not an error
+    if (err.status === 201 || err.response?.status === 201) {
+      // This is actually a success, reload subscriptions and clear form
+      await loadSubscriptions();
+      cancelForm();
+      return;
+    }
+
     // Extract error message from various possible error structures
     const errorMessage = err.response?.data?.error
       || err.response?.data?.message
