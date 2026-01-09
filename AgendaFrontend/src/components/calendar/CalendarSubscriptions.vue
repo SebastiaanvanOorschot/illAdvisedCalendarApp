@@ -110,12 +110,17 @@
 
       <div class="form-group">
         <label>Color</label>
-        <div class="color-picker">
-          <input
-            v-model="formData.color"
-            type="color"
-          />
-          <span class="color-value">{{ formData.color || '#667eea' }}</span>
+        <div class="color-options">
+          <button
+            v-for="color in colorOptions"
+            :key="color"
+            type="button"
+            class="color-option"
+            :class="{ selected: formData.color === color }"
+            :style="{ backgroundColor: color }"
+            @click="formData.color = color"
+            :title="color"
+          ></button>
         </div>
       </div>
 
@@ -157,11 +162,24 @@ const error = ref('');
 const formData = ref({
   name: '',
   iCalUrl: '',
-  color: '#667eea',
+  color: '#0000FF',
   syncIntervalMinutes: 60
 });
 
 const api = new AgendaAPI(getApiBaseUrl(), authenticatedAxios);
+
+// Color options matching Google Calendar style
+const colorOptions = [
+  '#000000', // Black
+  '#FF0000', // Red
+  '#00FF00', // Green
+  '#0000FF', // Blue
+  '#FFFF00', // Yellow
+  '#FF00FF', // Magenta
+  '#00FFFF', // Cyan
+  '#FF8800', // Orange
+  '#8800FF', // Purple
+];
 
 const isFormValid = computed(() => {
   return formData.value.name.trim() !== '' && formData.value.iCalUrl.trim() !== '';
@@ -227,7 +245,7 @@ function editSubscription(subscription: CalendarSubscription) {
   formData.value = {
     name: subscription.name,
     iCalUrl: subscription.iCalUrl,
-    color: subscription.color || '#667eea',
+    color: subscription.color || '#0000FF',
     syncIntervalMinutes: subscription.syncIntervalMinutes || 60
   };
   showAddForm.value = false;
@@ -280,7 +298,7 @@ function cancelForm() {
   formData.value = {
     name: '',
     iCalUrl: '',
-    color: '#667eea',
+    color: '#0000FF',
     syncIntervalMinutes: 60
   };
   error.value = '';
@@ -482,24 +500,31 @@ onMounted(() => {
   border-color: #667eea;
 }
 
-.color-picker {
+.color-options {
   display: flex;
-  align-items: center;
-  gap: 12px;
+  gap: 8px;
+  flex-wrap: wrap;
 }
 
-.color-picker input[type="color"] {
-  width: 60px;
-  height: 40px;
-  border: 1px solid #ddd;
-  border-radius: 6px;
+.color-option {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 2px solid transparent;
   cursor: pointer;
+  transition: all 0.2s;
+  padding: 0;
+  position: relative;
 }
 
-.color-value {
-  font-family: monospace;
-  font-size: 13px;
-  color: #666;
+.color-option:hover {
+  transform: scale(1.1);
+  border-color: #999;
+}
+
+.color-option.selected {
+  border-color: #333;
+  box-shadow: 0 0 0 2px white, 0 0 0 4px #333;
 }
 
 .form-hint {
