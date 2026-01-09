@@ -249,6 +249,7 @@ function editSubscription(subscription: CalendarSubscription) {
     syncIntervalMinutes: subscription.syncIntervalMinutes || 60
   };
   showAddForm.value = false;
+  error.value = ''; // Clear any previous errors
 }
 
 function confirmDelete(subscription: CalendarSubscription) {
@@ -261,9 +262,10 @@ async function deleteSubscription(subscription: CalendarSubscription) {
   try {
     await api.calendarSubscriptionDELETE(subscription.id!);
     await loadSubscriptions();
+    error.value = ''; // Clear any errors on success
   } catch (err: any) {
     console.error('Failed to delete subscription:', err);
-    error.value = 'Failed to delete subscription';
+    error.value = err.response?.data?.error || err.message || 'Failed to delete subscription';
   }
 }
 
@@ -509,12 +511,15 @@ onMounted(() => {
 .color-option {
   width: 32px;
   height: 32px;
-  border-radius: 50%;
+  border-radius: 50% !important;
   border: 2px solid transparent;
   cursor: pointer;
   transition: all 0.2s;
   padding: 0;
   position: relative;
+  flex-shrink: 0;
+  box-sizing: border-box;
+  overflow: hidden;
 }
 
 .color-option:hover {
