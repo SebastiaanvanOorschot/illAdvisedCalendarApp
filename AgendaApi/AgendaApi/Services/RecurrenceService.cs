@@ -78,17 +78,60 @@ public class RecurrenceService : IRecurrenceService
 
         try
         {
+            var eventDuration = evt.EndDateTime - evt.StartDateTime;
+
+            // Skip DtStart ahead to just before rangeStart in whole recurrence-period steps.
+            // Ical.Net iterates from DtStart internally, so events that started years ago
+            // would otherwise iterate through hundreds of past occurrences.
+            // Skipping by exact multiples of the period preserves BYDAY/BYMONTH alignment.
+            // Do NOT skip for COUNT-based rules — skipping would miscount remaining occurrences.
+            var effectiveStart = evt.StartDateTime;
+            if (effectiveStart < rangeStart)
+            {
+                var tempPattern = new RecurrencePattern(evt.RecurrenceRule);
+                if (tempPattern.Count <= 0) // only skip for infinite / UNTIL-bounded rules
+                {
+                    var interval = tempPattern.Interval > 0 ? tempPattern.Interval : 1;
+                    switch (tempPattern.Frequency)
+                    {
+                        case FrequencyType.Daily:
+                        {
+                            var periods = Math.Max(0, (int)(rangeStart - effectiveStart).TotalDays / interval - 1);
+                            effectiveStart = effectiveStart.AddDays(periods * interval);
+                            break;
+                        }
+                        case FrequencyType.Weekly:
+                        {
+                            var periods = Math.Max(0, (int)(rangeStart - effectiveStart).TotalDays / (7 * interval) - 1);
+                            effectiveStart = effectiveStart.AddDays(periods * 7 * interval);
+                            break;
+                        }
+                        case FrequencyType.Monthly:
+                        {
+                            var totalMonths = (rangeStart.Year - effectiveStart.Year) * 12 + rangeStart.Month - effectiveStart.Month;
+                            var periods = Math.Max(0, totalMonths / interval - 1);
+                            effectiveStart = effectiveStart.AddMonths(periods * interval);
+                            break;
+                        }
+                        case FrequencyType.Yearly:
+                        {
+                            var periods = Math.Max(0, (rangeStart.Year - effectiveStart.Year) / interval - 1);
+                            effectiveStart = effectiveStart.AddYears(periods * interval);
+                            break;
+                        }
+                    }
+                }
+            }
+
             var calEvent = new CalendarEvent
             {
-                DtStart = new CalDateTime(evt.StartDateTime),
-                DtEnd = new CalDateTime(evt.EndDateTime),
+                DtStart = new CalDateTime(effectiveStart),
+                DtEnd = new CalDateTime(effectiveStart + eventDuration),
                 RecurrenceRules = new List<RecurrencePattern>
                 {
                     new RecurrencePattern(evt.RecurrenceRule)
                 }
             };
-
-            var eventDuration = evt.EndDateTime - evt.StartDateTime;
 
             // TakeWhileBefore is Ical.Net's built-in range terminator — it signals the
             // evaluation engine to stop generating occurrences at rangeEnd, which is
