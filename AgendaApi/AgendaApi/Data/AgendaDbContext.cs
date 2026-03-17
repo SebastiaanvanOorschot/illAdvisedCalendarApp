@@ -34,7 +34,7 @@ public class AgendaDbContext : DbContext
             // Indexes for recurring event lookups
             entity.HasIndex(e => e.RecurrenceId);
             entity.HasIndex(e => new { e.ParentEventId, e.RecurrenceId })
-                .HasFilter("[RecurrenceId] IS NOT NULL");
+                .HasFilter("\"RecurrenceId\" IS NOT NULL");
 
             entity.HasOne(e => e.User)
                 .WithMany(u => u.Events)
@@ -101,7 +101,7 @@ public class AgendaDbContext : DbContext
             entity.HasIndex(csi => csi.SenderUserId);
             entity.HasIndex(csi => csi.RecipientEmail);
             entity.HasIndex(csi => csi.RecipientUserId)
-                .HasFilter("[RecipientUserId] IS NOT NULL");
+                .HasFilter("\"RecipientUserId\" IS NOT NULL");
             entity.HasIndex(csi => csi.Status);
 
             entity.HasOne(csi => csi.SenderUser)
@@ -136,7 +136,7 @@ public class AgendaDbContext : DbContext
                 .OnDelete(DeleteBehavior.Cascade);
 
             // Ensure owner and shared user are different
-            entity.ToTable(t => t.HasCheckConstraint("CK_CalendarShares_DifferentUsers", "[OwnerUserId] != [SharedWithUserId]"));
+            entity.ToTable(t => t.HasCheckConstraint("CK_CalendarShares_DifferentUsers", "\"OwnerUserId\" != \"SharedWithUserId\""));
         });
     }
 }
