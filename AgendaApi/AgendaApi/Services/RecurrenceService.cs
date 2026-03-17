@@ -90,12 +90,10 @@ public class RecurrenceService : IRecurrenceService
 
             var eventDuration = evt.EndDateTime - evt.StartDateTime;
 
-            // Get occurrences and filter by date range
-            // Note: We can't pass an end date to GetOccurrences, but we filter immediately
-            // to stop enumeration early and avoid processing too many occurrences
-            var calendarOccurrences = calEvent.GetOccurrences(new CalDateTime(rangeStart))
-                .TakeWhile(o => o.Period.StartTime.Value < rangeEnd.AddDays(1)) // Take until just past our range
-                .Where(o => o.Period.StartTime.Value < rangeEnd) // Filter to exact range
+            // Get occurrences within the date range by passing both start and end to Ical.Net,
+            // which allows the library to limit enumeration internally (critical for infinite recurrences)
+            var calendarOccurrences = calEvent
+                .GetOccurrences(new CalDateTime(rangeStart), new CalDateTime(rangeEnd))
                 .ToList();
 
             // Parse exception dates and filter them out manually
@@ -171,6 +169,31 @@ public class RecurrenceService : IRecurrenceService
 
         // Parse exception dates
         var exceptionDates = ParseExceptionDates(evt.ExceptionDates);
+
+        // Skip ahead to near rangeStart to avoid iterating through years of past occurrences
+        if (current < rangeStart)
+        {
+            var approxDaysPerStep = evt.RecurrencePattern?.ToLower() switch
+            {
+                "daily"   => (double)interval,
+                "weekly"  => 7.0 * interval,
+                "monthly" => 30.44 * interval,
+                "yearly"  => 365.25 * interval,
+                _         => 1.0
+            };
+            var stepsToSkip = (int)Math.Max(0, Math.Floor((rangeStart - current).TotalDays / approxDaysPerStep) - 2);
+            for (var i = 0; i < stepsToSkip; i++)
+            {
+                current = evt.RecurrencePattern?.ToLower() switch
+                {
+                    "daily"   => current.AddDays(interval),
+                    "weekly"  => current.AddDays(7 * interval),
+                    "monthly" => current.AddMonths(interval),
+                    "yearly"  => current.AddYears(interval),
+                    _         => current.AddDays(1)
+                };
+            }
+        }
 
         // Prevent infinite loops
         var maxOccurrences = 1000;
