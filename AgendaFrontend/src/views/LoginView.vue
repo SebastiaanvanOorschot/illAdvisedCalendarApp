@@ -30,9 +30,8 @@ onMounted(() => {
   // Initialize Google Sign-In
   const initGoogleSignIn = () => {
     if (typeof google !== 'undefined' && google.accounts) {
-      console.log('Initializing Google Sign-In...');
       google.accounts.id.initialize({
-        client_id: '210057685866-ektli26tc1i7kv46ftc9bmc6eo2g1ggv.apps.googleusercontent.com',
+        client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID,
         callback: handleGoogleResponse
       });
 
@@ -45,9 +44,7 @@ onMounted(() => {
           width: 300
         }
       );
-      console.log('Google Sign-In initialized successfully');
     } else {
-      console.log('Google Sign-In library not yet loaded, retrying...');
       setTimeout(initGoogleSignIn, 100);
     }
   };
@@ -56,16 +53,11 @@ onMounted(() => {
 });
 
 const handleGoogleResponse = async (response: any) => {
-  console.log('Google Sign-In callback triggered', response);
   try {
     error.value = null;
-    console.log('Calling login API...');
     await login(response.credential);
-    console.log('Login successful, redirecting to /agenda');
-    // Redirect to calendar on successful login
     router.push('/agenda');
   } catch (err: any) {
-    console.error('Login failed:', err);
     error.value = err.message || 'Failed to sign in with Google';
   }
 };

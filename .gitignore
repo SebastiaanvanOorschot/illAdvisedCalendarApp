@@ -14,6 +14,7 @@ publish/
 .vscode/
 .vs/
 .idea/
+.claude/
 *.suo
 *.ntvs*
 *.njsproj
@@ -27,6 +28,7 @@ publish/
 .env.*.local
 appsettings.Local.json
 appsettings.Production.json
+appsettings.Development.json
 
 # Logs
 logs/

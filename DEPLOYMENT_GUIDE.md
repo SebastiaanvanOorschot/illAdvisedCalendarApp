@@ -53,6 +53,13 @@ sudo mv /tmp/calendar-api/* /var/www/calendar-api/
 sudo chown -R www-data:www-data /var/www/calendar-api
 sudo chmod -R 755 /var/www/calendar-api
 
+# Create uploads directory (persistent across deployments)
+sudo mkdir -p /var/www/calendar-uploads/month-images
+
+# Set proper permissions for uploads
+sudo chown -R www-data:www-data /var/www/calendar-uploads
+sudo chmod -R 755 /var/www/calendar-uploads
+
 # Install the systemd service
 sudo mv /tmp/calendar-api.service /etc/systemd/system/
 
@@ -90,6 +97,9 @@ Add the following content (adjust connection string to match your database):
       "Default": "Information",
       "Microsoft.AspNetCore": "Warning"
     }
+  },
+  "FileStorage": {
+    "UploadsPath": "/var/www/calendar-uploads"
   }
 }
 ```
@@ -264,6 +274,9 @@ sudo mv /tmp/calendar-api-update/* /var/www/calendar-api/
 # Restore appsettings.Production.json if needed
 sudo chown -R www-data:www-data /var/www/calendar-api
 sudo systemctl start calendar-api.service
+
+# Note: Uploaded images are stored in /var/www/calendar-uploads/
+# and are NOT affected by API updates
 ```
 
 ## Security Considerations
@@ -282,3 +295,44 @@ Based on your existing server configuration:
 - Calendar app: sebaslive.xyz/calendar (new)
 - API service likely running on a different port (check your existing systemd services)
 - Calendar API: Running on port 5001
+
+## Migration Guide for Existing Installations
+
+If you already have the calendar app deployed and want to migrate existing uploaded images to the new persistent storage location:
+
+```bash
+# SSH into your server
+ssh your-user@your-server-ip
+
+# Create the new uploads directory
+sudo mkdir -p /var/www/calendar-uploads/month-images
+
+# Copy existing images from old location to new location (if they exist)
+# Old location was: /var/www/calendar-api/uploads/month-images/
+if [ -d "/var/www/calendar-api/uploads/month-images" ]; then
+    sudo cp -r /var/www/calendar-api/uploads/month-images/* /var/www/calendar-uploads/month-images/ 2>/dev/null || true
+    echo "Migrated existing images to new location"
+fi
+
+# Set proper permissions
+sudo chown -R www-data:www-data /var/www/calendar-uploads
+sudo chmod -R 755 /var/www/calendar-uploads
+
+# Update appsettings.Production.json to include FileStorage configuration
+sudo nano /var/www/calendar-api/appsettings.Production.json
+# Add the following section:
+# "FileStorage": {
+#   "UploadsPath": "/var/www/calendar-uploads"
+# }
+
+# Restart the API service
+sudo systemctl restart calendar-api.service
+
+# Verify images are accessible
+ls -la /var/www/calendar-uploads/month-images/
+```
+
+**Important Notes:**
+- The new uploads directory `/var/www/calendar-uploads/` is separate from the application directory
+- This ensures uploaded images persist across deployments
+- Old images in `/var/www/calendar-api/uploads/` will be deleted during the next deployment if not migrated

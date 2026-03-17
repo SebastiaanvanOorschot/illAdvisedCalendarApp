@@ -51,17 +51,11 @@ export function useAuth() {
     error.value = null;
 
     try {
-      console.log('Creating GoogleLoginRequest with token:', googleIdToken.substring(0, 20) + '...');
       const request = new GoogleLoginRequest({
         googleIdToken: googleIdToken
       });
-      console.log('Request object created:', request);
-      console.log('API base URL:', getApiBaseUrl());
-      console.log('Calling api.googleLogin...');
 
       const response: AuthResponse = await api.googleLogin(request);
-
-      console.log('API response received:', response);
 
       // Store tokens
       accessToken.value = response.accessToken;
@@ -77,10 +71,6 @@ export function useAuth() {
         profilePictureUrl: response.user.profilePictureUrl
       };
     } catch (err: any) {
-      console.error('Full error object:', err);
-      console.error('Error message:', err.message);
-      console.error('Error stack:', err.stack);
-      console.error('Error response:', err.response);
       error.value = err.message || 'Login failed';
       throw err;
     } finally {

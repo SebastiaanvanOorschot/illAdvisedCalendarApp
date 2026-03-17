@@ -13,19 +13,38 @@ namespace AgendaApi.Controllers;
 public class MonthImagesController : ControllerBase
 {
     private readonly AgendaDbContext _context;
-    private readonly IWebHostEnvironment _environment;
+    private readonly IConfiguration _configuration;
     private readonly ILogger<MonthImagesController> _logger;
     private const long MaxFileSize = 10 * 1024 * 1024; // 10MB
     private static readonly string[] AllowedExtensions = { ".jpg", ".jpeg", ".png", ".gif", ".webp" };
 
     public MonthImagesController(
         AgendaDbContext context,
-        IWebHostEnvironment environment,
+        IConfiguration configuration,
         ILogger<MonthImagesController> logger)
     {
         _context = context;
-        _environment = environment;
+        _configuration = configuration;
         _logger = logger;
+    }
+
+    private string GetUploadsPath()
+    {
+        // Get the configured uploads path, or fall back to a default
+        var uploadsPath = _configuration["FileStorage:UploadsPath"];
+
+        if (string.IsNullOrEmpty(uploadsPath))
+        {
+            _logger.LogWarning("FileStorage:UploadsPath not configured, using default path");
+            uploadsPath = Path.Combine(Path.GetTempPath(), "calendar-uploads");
+        }
+
+        var monthImagesPath = Path.Combine(uploadsPath, "month-images");
+
+        // Ensure directory exists
+        Directory.CreateDirectory(monthImagesPath);
+
+        return monthImagesPath;
     }
 
     private int GetCurrentUserId()
@@ -51,7 +70,7 @@ public class MonthImagesController : ControllerBase
             return NotFound();
         }
 
-        var uploadsPath = Path.Combine(_environment.ContentRootPath, "uploads", "month-images");
+        var uploadsPath = GetUploadsPath();
         var filePath = Path.Combine(uploadsPath, monthImage.FileName);
 
         if (!System.IO.File.Exists(filePath))
@@ -96,9 +115,8 @@ public class MonthImagesController : ControllerBase
         var existingImage = await _context.MonthImages
             .FirstOrDefaultAsync(mi => mi.UserId == userId && mi.Month == month);
 
-        // Create uploads directory if it doesn't exist
-        var uploadsPath = Path.Combine(_environment.ContentRootPath, "uploads", "month-images");
-        Directory.CreateDirectory(uploadsPath);
+        // Get the uploads directory path
+        var uploadsPath = GetUploadsPath();
 
         // Generate unique filename
         var fileName = $"{userId}_{month}_{Guid.NewGuid()}{extension}";
@@ -158,7 +176,7 @@ public class MonthImagesController : ControllerBase
         }
 
         // Delete file
-        var uploadsPath = Path.Combine(_environment.ContentRootPath, "uploads", "month-images");
+        var uploadsPath = GetUploadsPath();
         var filePath = Path.Combine(uploadsPath, monthImage.FileName);
         if (System.IO.File.Exists(filePath))
         {

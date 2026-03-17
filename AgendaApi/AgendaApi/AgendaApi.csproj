@@ -5,6 +5,7 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <InvariantGlobalization>false</InvariantGlobalization>
+    <UserSecretsId>agenda-api-dev-secrets</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
