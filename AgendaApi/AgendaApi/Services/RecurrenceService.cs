@@ -74,109 +74,206 @@ public class RecurrenceService : IRecurrenceService
 
     private List<EventOccurrence> GetRRuleOccurrences(Event evt, DateTime rangeStart, DateTime rangeEnd)
     {
-        var occurrences = new List<EventOccurrence>();
-
         try
         {
-            var eventDuration = evt.EndDateTime - evt.StartDateTime;
+            var pattern      = new RecurrencePattern(evt.RecurrenceRule);
+            var duration     = evt.EndDateTime - evt.StartDateTime;
+            var exceptions   = new HashSet<DateTime>(ParseExceptionDates(evt.ExceptionDates).Select(d => d.Date));
+            var interval     = pattern.Interval > 0 ? pattern.Interval : 1;
 
-            // Skip DtStart ahead to just before rangeStart in whole recurrence-period steps.
-            // Ical.Net iterates from DtStart internally, so events that started years ago
-            // would otherwise iterate through hundreds of past occurrences.
-            // Skipping by exact multiples of the period preserves BYDAY/BYMONTH alignment.
-            // Do NOT skip for COUNT-based rules — skipping would miscount remaining occurrences.
-            var effectiveStart = evt.StartDateTime;
-            if (effectiveStart < rangeStart)
+            // Effective recurrence end — honour UNTIL if it is earlier than the requested range end
+            var recEnd = rangeEnd;
+            if (pattern.Until != null && pattern.Until.Value < recEnd)
+                recEnd = pattern.Until.Value;
+
+            // Fall back to Ical.Net for patterns our fast path does not cover:
+            //   COUNT-based, BYSETPOS, BYWEEKNO, BYMONTH, BYMONTHDAY, BYHOUR, BYMINUTE,
+            //   BYSECOND, or BYDAY with ordinals (e.g. "1MO" = first Monday of month).
+            bool hasComplexRule =
+                pattern.Count > 0 ||
+                pattern.BySetPosition.Any() ||
+                pattern.ByWeekNo.Any() ||
+                pattern.ByMonth.Any() ||
+                pattern.ByMonthDay.Any() ||
+                pattern.ByHour.Any() ||
+                pattern.ByMinute.Any() ||
+                pattern.BySecond.Any() ||
+                (pattern.ByDay.Any() && pattern.Frequency != FrequencyType.Weekly) ||
+                pattern.ByDay.Any(d => d.Offset != 0);
+
+            if (hasComplexRule)
+                return GetIcalNetOccurrences(evt, rangeStart, recEnd, pattern, duration, exceptions);
+
+            var result = new List<EventOccurrence>();
+
+            switch (pattern.Frequency)
             {
-                var tempPattern = new RecurrencePattern(evt.RecurrenceRule);
-                if (tempPattern.Count <= 0) // only skip for infinite / UNTIL-bounded rules
-                {
-                    var interval = tempPattern.Interval > 0 ? tempPattern.Interval : 1;
-                    switch (tempPattern.Frequency)
-                    {
-                        case FrequencyType.Daily:
-                        {
-                            var periods = Math.Max(0, (int)(rangeStart - effectiveStart).TotalDays / interval - 1);
-                            effectiveStart = effectiveStart.AddDays(periods * interval);
-                            break;
-                        }
-                        case FrequencyType.Weekly:
-                        {
-                            var periods = Math.Max(0, (int)(rangeStart - effectiveStart).TotalDays / (7 * interval) - 1);
-                            effectiveStart = effectiveStart.AddDays(periods * 7 * interval);
-                            break;
-                        }
-                        case FrequencyType.Monthly:
-                        {
-                            var totalMonths = (rangeStart.Year - effectiveStart.Year) * 12 + rangeStart.Month - effectiveStart.Month;
-                            var periods = Math.Max(0, totalMonths / interval - 1);
-                            effectiveStart = effectiveStart.AddMonths(periods * interval);
-                            break;
-                        }
-                        case FrequencyType.Yearly:
-                        {
-                            var periods = Math.Max(0, (rangeStart.Year - effectiveStart.Year) / interval - 1);
-                            effectiveStart = effectiveStart.AddYears(periods * interval);
-                            break;
-                        }
-                    }
-                }
+                case FrequencyType.Daily:
+                    ExpandDaily(evt, rangeStart, recEnd, interval, duration, exceptions, result);
+                    break;
+                case FrequencyType.Weekly:
+                    ExpandWeekly(evt, rangeStart, recEnd, interval, pattern.ByDay, duration, exceptions, result);
+                    break;
+                case FrequencyType.Monthly:
+                    ExpandMonthly(evt, rangeStart, recEnd, interval, duration, exceptions, result);
+                    break;
+                case FrequencyType.Yearly:
+                    ExpandYearly(evt, rangeStart, recEnd, interval, duration, exceptions, result);
+                    break;
+                default:
+                    return GetIcalNetOccurrences(evt, rangeStart, recEnd, pattern, duration, exceptions);
             }
 
-            var calEvent = new CalendarEvent
-            {
-                DtStart = new CalDateTime(effectiveStart),
-                DtEnd = new CalDateTime(effectiveStart + eventDuration),
-                RecurrenceRules = new List<RecurrencePattern>
-                {
-                    new RecurrencePattern(evt.RecurrenceRule)
-                }
-            };
-
-            // TakeWhileBefore is Ical.Net's built-in range terminator — it signals the
-            // evaluation engine to stop generating occurrences at rangeEnd, which is
-            // critical for infinite recurrences (no UNTIL/COUNT) to avoid huge enumerations
-            var calendarOccurrences = calEvent
-                .GetOccurrences(new CalDateTime(rangeStart))
-                .TakeWhileBefore(new CalDateTime(rangeEnd))
-                .ToList();
-
-            // Parse exception dates and filter them out manually
-            var exceptionDates = ParseExceptionDates(evt.ExceptionDates);
-            if (exceptionDates.Any())
-            {
-                // Remove occurrences that match exception dates (compare by date only)
-                calendarOccurrences = calendarOccurrences
-                    .Where(o => !exceptionDates.Any(ex =>
-                        o.Period.StartTime.Value.Date == ex.Date))
-                    .ToList();
-            }
-
-            foreach (var occurrence in calendarOccurrences)
-            {
-                var startTime = occurrence.Period.StartTime.Value;
-                var endTime = startTime + eventDuration;
-
-                occurrences.Add(new EventOccurrence
-                {
-                    EventId = evt.Id,
-                    OccurrenceStart = startTime,
-                    OccurrenceEnd = endTime,
-                    Title = evt.Title,
-                    Description = evt.Description,
-                    Color = evt.Color,
-                    IsRecurring = true
-                });
-            }
+            return result;
         }
-        catch (Exception)
+        catch
         {
-            // If RRULE parsing fails, fall back to simple recurrence or single event
             return GetSimpleRecurrenceOccurrences(evt, rangeStart, rangeEnd);
         }
-
-        return occurrences;
     }
+
+    // ── Fast-path expanders (pure C# — no Ical.Net overhead) ─────────────────
+
+    private void ExpandDaily(Event evt, DateTime rangeStart, DateTime rangeEnd,
+        int interval, TimeSpan duration, HashSet<DateTime> exceptions, List<EventOccurrence> result)
+    {
+        var cur = evt.StartDateTime;
+        if (cur < rangeStart)
+        {
+            var skip = Math.Max(0, (int)Math.Floor((rangeStart - cur).TotalDays / interval) - 1);
+            cur = cur.AddDays(skip * interval);
+        }
+        for (var n = 0; cur < rangeEnd && n < 10000; n++, cur = cur.AddDays(interval))
+            if (cur >= rangeStart && !exceptions.Contains(cur.Date))
+                result.Add(MakeOccurrence(evt, cur, duration));
+    }
+
+    private void ExpandWeekly(Event evt, DateTime rangeStart, DateTime rangeEnd,
+        int interval, IList<WeekDay> byDay, TimeSpan duration, HashSet<DateTime> exceptions,
+        List<EventOccurrence> result)
+    {
+        var dtStart = evt.StartDateTime;
+
+        if (byDay.Any())
+        {
+            // BYDAY weekly — e.g. FREQ=WEEKLY;BYDAY=MO,WE
+            var targetDays = byDay.Select(wd => wd.DayOfWeek).OrderBy(d => d).ToList();
+
+            // Anchor to the start of the week that contains dtStart
+            var anchor = dtStart;
+            if (anchor < rangeStart)
+            {
+                var weeksToSkip = Math.Max(0, (int)Math.Floor((rangeStart - anchor).TotalDays / (7.0 * interval)) - 1);
+                anchor = anchor.AddDays(weeksToSkip * 7 * interval);
+            }
+
+            for (var n = 0; anchor < rangeEnd && n < 10000; n++, anchor = anchor.AddDays(7 * interval))
+            {
+                foreach (var dow in targetDays)
+                {
+                    var daysFromAnchor = ((int)dow - (int)anchor.DayOfWeek + 7) % 7;
+                    var occ = anchor.Date.AddDays(daysFromAnchor).Add(dtStart.TimeOfDay);
+                    if (occ >= dtStart && occ >= rangeStart && occ < rangeEnd && !exceptions.Contains(occ.Date))
+                        result.Add(MakeOccurrence(evt, occ, duration));
+                }
+            }
+        }
+        else
+        {
+            // Simple weekly — same day of week as DtStart
+            var cur = dtStart;
+            if (cur < rangeStart)
+            {
+                var skip = Math.Max(0, (int)Math.Floor((rangeStart - cur).TotalDays / (7.0 * interval)) - 1);
+                cur = cur.AddDays(skip * 7 * interval);
+            }
+            for (var n = 0; cur < rangeEnd && n < 10000; n++, cur = cur.AddDays(7 * interval))
+                if (cur >= rangeStart && !exceptions.Contains(cur.Date))
+                    result.Add(MakeOccurrence(evt, cur, duration));
+        }
+    }
+
+    private void ExpandMonthly(Event evt, DateTime rangeStart, DateTime rangeEnd,
+        int interval, TimeSpan duration, HashSet<DateTime> exceptions, List<EventOccurrence> result)
+    {
+        var cur = evt.StartDateTime;
+        if (cur < rangeStart)
+        {
+            var totalMonths = (rangeStart.Year - cur.Year) * 12 + rangeStart.Month - cur.Month;
+            var skip = Math.Max(0, totalMonths / interval - 1) * interval;
+            cur = cur.AddMonths(skip);
+        }
+        for (var n = 0; cur < rangeEnd && n < 10000; n++, cur = cur.AddMonths(interval))
+            if (cur >= rangeStart && !exceptions.Contains(cur.Date))
+                result.Add(MakeOccurrence(evt, cur, duration));
+    }
+
+    private void ExpandYearly(Event evt, DateTime rangeStart, DateTime rangeEnd,
+        int interval, TimeSpan duration, HashSet<DateTime> exceptions, List<EventOccurrence> result)
+    {
+        var cur = evt.StartDateTime;
+        if (cur < rangeStart)
+        {
+            var skip = Math.Max(0, (rangeStart.Year - cur.Year) / interval - 1) * interval;
+            cur = cur.AddYears(skip);
+        }
+        for (var n = 0; cur < rangeEnd && n < 10000; n++, cur = cur.AddYears(interval))
+            if (cur >= rangeStart && !exceptions.Contains(cur.Date))
+                result.Add(MakeOccurrence(evt, cur, duration));
+    }
+
+    // Ical.Net fallback for complex patterns — reuses already-parsed RecurrencePattern
+    private List<EventOccurrence> GetIcalNetOccurrences(Event evt, DateTime rangeStart, DateTime rangeEnd,
+        RecurrencePattern pattern, TimeSpan duration, HashSet<DateTime> exceptions)
+    {
+        var effectiveStart = evt.StartDateTime;
+        if (effectiveStart < rangeStart && pattern.Count <= 0)
+        {
+            var interval = pattern.Interval > 0 ? pattern.Interval : 1;
+            switch (pattern.Frequency)
+            {
+                case FrequencyType.Daily:
+                    effectiveStart = effectiveStart.AddDays(Math.Max(0, (int)(rangeStart - effectiveStart).TotalDays / interval - 1) * interval);
+                    break;
+                case FrequencyType.Weekly:
+                    effectiveStart = effectiveStart.AddDays(Math.Max(0, (int)(rangeStart - effectiveStart).TotalDays / (7 * interval) - 1) * 7 * interval);
+                    break;
+                case FrequencyType.Monthly:
+                    var months = (rangeStart.Year - effectiveStart.Year) * 12 + rangeStart.Month - effectiveStart.Month;
+                    effectiveStart = effectiveStart.AddMonths(Math.Max(0, months / interval - 1) * interval);
+                    break;
+                case FrequencyType.Yearly:
+                    effectiveStart = effectiveStart.AddYears(Math.Max(0, (rangeStart.Year - effectiveStart.Year) / interval - 1) * interval);
+                    break;
+            }
+        }
+
+        var calEvent = new CalendarEvent
+        {
+            DtStart = new CalDateTime(effectiveStart),
+            DtEnd   = new CalDateTime(effectiveStart + duration),
+            RecurrenceRules = new List<RecurrencePattern> { pattern }
+        };
+
+        return calEvent
+            .GetOccurrences(new CalDateTime(rangeStart))
+            .TakeWhileBefore(new CalDateTime(rangeEnd))
+            .Where(o => !exceptions.Contains(o.Period.StartTime.Value.Date))
+            .Select(o => MakeOccurrence(evt, o.Period.StartTime.Value, duration))
+            .ToList();
+    }
+
+    private EventOccurrence MakeOccurrence(Event evt, DateTime start, TimeSpan duration) =>
+        new EventOccurrence
+        {
+            EventId        = evt.Id,
+            OccurrenceStart = start,
+            OccurrenceEnd   = start + duration,
+            Title          = evt.Title,
+            Description    = evt.Description,
+            Color          = evt.Color,
+            IsRecurring    = true
+        };
 
     /// <summary>
     /// Parse comma-separated exception dates from string

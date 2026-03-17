@@ -108,6 +108,25 @@ using (var scope = app.Services.CreateScope())
     db.Database.ExecuteSqlRaw(@"CREATE INDEX IF NOT EXISTS ""IX_Events_UserId_StartDateTime"" ON ""Events"" (""UserId"", ""StartDateTime"")");
 }
 
+// Pre-warm Ical.Net: force JIT compilation and static timezone/rule initialisation
+// at startup so the very first user request doesn't pay this cost.
+try
+{
+    var warmup = new Ical.Net.CalendarComponents.CalendarEvent
+    {
+        DtStart = new Ical.Net.DataTypes.CalDateTime(DateTime.Today),
+        DtEnd   = new Ical.Net.DataTypes.CalDateTime(DateTime.Today.AddHours(1)),
+        RecurrenceRules = new List<Ical.Net.DataTypes.RecurrencePattern>
+        {
+            new Ical.Net.DataTypes.RecurrencePattern("FREQ=WEEKLY")
+        }
+    };
+    warmup.GetOccurrences(new Ical.Net.DataTypes.CalDateTime(DateTime.Today))
+          .TakeWhileBefore(new Ical.Net.DataTypes.CalDateTime(DateTime.Today.AddDays(7)))
+          .ToList();
+}
+catch { /* non-fatal — worst case first request pays the init cost */ }
+
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
