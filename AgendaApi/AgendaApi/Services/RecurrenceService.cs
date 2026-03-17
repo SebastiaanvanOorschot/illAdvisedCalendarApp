@@ -34,6 +34,11 @@ public interface IRecurrenceService
 
 public class RecurrenceService : IRecurrenceService
 {
+    // Diagnostic counters — reset each request via ResetCounters(), read via FastCount/SlowCount
+    public int FastCount { get; private set; }
+    public int SlowCount { get; private set; }
+    public void ResetCounters() { FastCount = 0; SlowCount = 0; }
+
     public List<EventOccurrence> GetOccurrences(Event evt, DateTime rangeStart, DateTime rangeEnd)
     {
         var occurrences = new List<EventOccurrence>();
@@ -84,7 +89,8 @@ public class RecurrenceService : IRecurrenceService
         public bool IsComplex   { get; init; }             // needs Ical.Net fallback
     }
 
-    private static SimpleRRule ParseRRule(string rrule)
+    // dtStart is needed to verify that BYMONTH/BYMONTHDAY are redundant (match the anchor date).
+    private static SimpleRRule ParseRRule(string rrule, DateTime dtStart)
     {
         static DayOfWeek? DayCode(string s) => s.ToUpperInvariant() switch
         {
@@ -96,7 +102,9 @@ public class RecurrenceService : IRecurrenceService
 
         string freq = ""; int interval = 1; int count = -1;
         DateTime? until = null;
-        var byDay = new List<DayOfWeek>();
+        var byDay   = new List<DayOfWeek>();
+        int byMonth    = -1;   // -1 = not specified
+        int byMonthDay = 0;    // 0  = not specified
         bool isComplex = false;
 
         foreach (var part in rrule.Split(';'))
@@ -111,6 +119,7 @@ public class RecurrenceService : IRecurrenceService
                 case "FREQ":     freq = v.ToUpperInvariant(); break;
                 case "INTERVAL": if (int.TryParse(v, out var iv)) interval = iv; break;
                 case "COUNT":    if (int.TryParse(v, out var cv)) count = cv;    break;
+                case "WKST":     break; // week-start is harmless to ignore
                 case "UNTIL":
                     // Handles YYYYMMDDTHHMMSSZ, YYYYMMDDTHHMMSS, YYYYMMDD
                     if (DateTime.TryParseExact(v, new[]{"yyyyMMddTHHmmssZ","yyyyMMddTHHmmss","yyyyMMdd"},
@@ -128,8 +137,21 @@ public class RecurrenceService : IRecurrenceService
                         if (dow.HasValue) byDay.Add(dow.Value);
                     }
                     break;
-                case "BYSETPOS": case "BYWEEKNO": case "BYMONTH":
-                case "BYMONTHDAY": case "BYHOUR": case "BYMINUTE":
+                case "BYMONTH":
+                    // Single month value only; multiple or negative → complex
+                    if (!v.Contains(',') && int.TryParse(v, out var bm) && bm >= 1 && bm <= 12)
+                        byMonth = bm;
+                    else
+                        isComplex = true;
+                    break;
+                case "BYMONTHDAY":
+                    // Single positive day only; multiple or negative (last-day) → complex
+                    if (!v.Contains(',') && int.TryParse(v, out var bmd) && bmd >= 1 && bmd <= 31)
+                        byMonthDay = bmd;
+                    else
+                        isComplex = true;
+                    break;
+                case "BYSETPOS": case "BYWEEKNO": case "BYHOUR": case "BYMINUTE":
                 case "BYSECOND":  case "BYYEARDAY":
                     isComplex = true; break;
             }
@@ -137,6 +159,16 @@ public class RecurrenceService : IRecurrenceService
 
         // BYDAY is only handled for WEEKLY in our fast path
         if (byDay.Any() && freq != "WEEKLY") isComplex = true;
+
+        // BYMONTH: only safe when YEARLY and the value matches dtStart.Month
+        // (e.g. FREQ=YEARLY;BYMONTH=12 on a Dec event — ExpandYearly already hits Dec every year)
+        if (byMonth != -1 && !(freq == "YEARLY" && byMonth == dtStart.Month))
+            isComplex = true;
+
+        // BYMONTHDAY: safe when the value matches dtStart.Day and freq is MONTHLY or YEARLY
+        // (e.g. FREQ=MONTHLY;BYMONTHDAY=15 on a 15th-day event — ExpandMonthly already hits the 15th)
+        if (byMonthDay != 0 && !((freq == "MONTHLY" || freq == "YEARLY") && byMonthDay == dtStart.Day))
+            isComplex = true;
 
         return new SimpleRRule
         {
@@ -149,7 +181,7 @@ public class RecurrenceService : IRecurrenceService
     {
         try
         {
-            var r        = ParseRRule(evt.RecurrenceRule!);
+            var r        = ParseRRule(evt.RecurrenceRule!, evt.StartDateTime);
             var duration = evt.EndDateTime - evt.StartDateTime;
             var except   = new HashSet<DateTime>(ParseExceptionDates(evt.ExceptionDates).Select(d => d.Date));
 
@@ -158,7 +190,10 @@ public class RecurrenceService : IRecurrenceService
 
             // Complex or COUNT-based: fall back to Ical.Net (rare)
             if (r.IsComplex || r.Count > 0)
+            {
+                SlowCount++;
                 return GetIcalNetOccurrences(evt, rangeStart, recEnd, duration, except);
+            }
 
             var result = new List<EventOccurrence>();
 
@@ -168,9 +203,12 @@ public class RecurrenceService : IRecurrenceService
                 case "WEEKLY":  ExpandWeekly (evt, rangeStart, recEnd, r.Interval, r.ByDay,  duration, except, result); break;
                 case "MONTHLY": ExpandMonthly(evt, rangeStart, recEnd, r.Interval, duration, except, result); break;
                 case "YEARLY":  ExpandYearly (evt, rangeStart, recEnd, r.Interval, duration, except, result); break;
-                default: return GetIcalNetOccurrences(evt, rangeStart, recEnd, duration, except);
+                default:
+                    SlowCount++;
+                    return GetIcalNetOccurrences(evt, rangeStart, recEnd, duration, except);
             }
 
+            FastCount++;
             return result;
         }
         catch

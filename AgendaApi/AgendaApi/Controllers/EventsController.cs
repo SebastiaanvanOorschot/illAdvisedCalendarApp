@@ -257,6 +257,9 @@ public class EventsController : ControllerBase
 
         var allOccurrences = new List<EventOccurrence>();
 
+        // Reset per-request fast/slow counters (cast is safe — concrete type is always RecurrenceService)
+        if (_recurrenceService is RecurrenceService rs) rs.ResetCounters();
+
         // Calculate occurrences for each event
         foreach (var evt in events)
         {
@@ -295,7 +298,9 @@ public class EventsController : ControllerBase
         _cache.Set(cacheKey, result, TimeSpan.FromMinutes(10));
 
         // Diagnostic headers — remove once performance is confirmed
-        Response.Headers["X-Timing"] = $"shares={t1}ms db={t2 - t1}ms recurrence={t3 - t2}ms events={events.Count} total={t3}ms";
+        var fastCount = (_recurrenceService is RecurrenceService rs2) ? rs2.FastCount : -1;
+        var slowCount = (_recurrenceService is RecurrenceService rs3) ? rs3.SlowCount : -1;
+        Response.Headers["X-Timing"] = $"shares={t1}ms db={t2 - t1}ms recurrence={t3 - t2}ms events={events.Count} fast={fastCount} slow={slowCount} total={t3}ms";
 
         return result;
     }
