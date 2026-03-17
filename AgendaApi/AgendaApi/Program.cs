@@ -106,6 +106,9 @@ using (var scope = app.Services.CreateScope())
     db.Database.ExecuteSqlRaw(@"CREATE INDEX IF NOT EXISTS ""IX_CalendarSubscriptions_UserId"" ON ""CalendarSubscriptions"" (""UserId"")");
     db.Database.ExecuteSqlRaw(@"CREATE INDEX IF NOT EXISTS ""IX_Events_UserId"" ON ""Events"" (""UserId"")");
     db.Database.ExecuteSqlRaw(@"CREATE INDEX IF NOT EXISTS ""IX_Events_UserId_StartDateTime"" ON ""Events"" (""UserId"", ""StartDateTime"")");
+
+    // Store image bytes in DB so images survive redeployments (ephemeral Railway filesystem)
+    db.Database.ExecuteSqlRaw(@"ALTER TABLE ""MonthImages"" ADD COLUMN IF NOT EXISTS ""ImageData"" BYTEA");
 }
 
 // Pre-warm Ical.Net: force JIT compilation and static timezone/rule initialisation

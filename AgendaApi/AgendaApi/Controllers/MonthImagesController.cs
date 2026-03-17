@@ -13,38 +13,16 @@ namespace AgendaApi.Controllers;
 public class MonthImagesController : ControllerBase
 {
     private readonly AgendaDbContext _context;
-    private readonly IConfiguration _configuration;
     private readonly ILogger<MonthImagesController> _logger;
     private const long MaxFileSize = 10 * 1024 * 1024; // 10MB
     private static readonly string[] AllowedExtensions = { ".jpg", ".jpeg", ".png", ".gif", ".webp" };
 
     public MonthImagesController(
         AgendaDbContext context,
-        IConfiguration configuration,
         ILogger<MonthImagesController> logger)
     {
         _context = context;
-        _configuration = configuration;
         _logger = logger;
-    }
-
-    private string GetUploadsPath()
-    {
-        // Get the configured uploads path, or fall back to a default
-        var uploadsPath = _configuration["FileStorage:UploadsPath"];
-
-        if (string.IsNullOrEmpty(uploadsPath))
-        {
-            _logger.LogWarning("FileStorage:UploadsPath not configured, using default path");
-            uploadsPath = Path.Combine(Path.GetTempPath(), "calendar-uploads");
-        }
-
-        var monthImagesPath = Path.Combine(uploadsPath, "month-images");
-
-        // Ensure directory exists
-        Directory.CreateDirectory(monthImagesPath);
-
-        return monthImagesPath;
     }
 
     private int GetCurrentUserId()
@@ -65,22 +43,12 @@ public class MonthImagesController : ControllerBase
         var monthImage = await _context.MonthImages
             .FirstOrDefaultAsync(mi => mi.UserId == userId && mi.Month == month);
 
-        if (monthImage == null)
+        if (monthImage?.ImageData == null)
         {
             return NotFound();
         }
 
-        var uploadsPath = GetUploadsPath();
-        var filePath = Path.Combine(uploadsPath, monthImage.FileName);
-
-        if (!System.IO.File.Exists(filePath))
-        {
-            _logger.LogWarning($"Image file not found: {filePath}");
-            return NotFound();
-        }
-
-        var fileBytes = await System.IO.File.ReadAllBytesAsync(filePath);
-        return File(fileBytes, monthImage.ContentType);
+        return File(monthImage.ImageData, monthImage.ContentType);
     }
 
     [HttpPost]
@@ -89,72 +57,45 @@ public class MonthImagesController : ControllerBase
         [FromForm] int month)
     {
         if (file == null || file.Length == 0)
-        {
             return BadRequest("No file uploaded");
-        }
 
         if (file.Length > MaxFileSize)
-        {
             return BadRequest($"File size exceeds maximum of {MaxFileSize / 1024 / 1024}MB");
-        }
 
         var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
         if (!AllowedExtensions.Contains(extension))
-        {
             return BadRequest($"File type {extension} is not allowed. Allowed types: {string.Join(", ", AllowedExtensions)}");
-        }
 
         if (month < 1 || month > 12)
-        {
             return BadRequest("Month must be between 1 and 12");
-        }
 
         var userId = GetCurrentUserId();
 
-        // Check if image already exists for this month
+        using var ms = new MemoryStream();
+        await file.CopyToAsync(ms);
+        var imageData = ms.ToArray();
+
         var existingImage = await _context.MonthImages
             .FirstOrDefaultAsync(mi => mi.UserId == userId && mi.Month == month);
 
-        // Get the uploads directory path
-        var uploadsPath = GetUploadsPath();
-
-        // Generate unique filename
-        var fileName = $"{userId}_{month}_{Guid.NewGuid()}{extension}";
-        var filePath = Path.Combine(uploadsPath, fileName);
-
-        // Save file
-        using (var stream = new FileStream(filePath, FileMode.Create))
-        {
-            await file.CopyToAsync(stream);
-        }
-
         if (existingImage != null)
         {
-            // Delete old file
-            var oldFilePath = Path.Combine(uploadsPath, existingImage.FileName);
-            if (System.IO.File.Exists(oldFilePath))
-            {
-                System.IO.File.Delete(oldFilePath);
-            }
-
-            // Update existing record
-            existingImage.FileName = fileName;
+            existingImage.FileName = file.FileName;
             existingImage.ContentType = file.ContentType;
             existingImage.UploadedAt = DateTime.UtcNow;
+            existingImage.ImageData = imageData;
         }
         else
         {
-            // Create new record
-            var monthImage = new MonthImage
+            _context.MonthImages.Add(new MonthImage
             {
                 UserId = userId,
                 Month = month,
-                FileName = fileName,
+                FileName = file.FileName,
                 ContentType = file.ContentType,
-                UploadedAt = DateTime.UtcNow
-            };
-
-            _context.MonthImages.Add(monthImage);
+                UploadedAt = DateTime.UtcNow,
+                ImageData = imageData
+            });
         }
 
         await _context.SaveChangesAsync();
@@ -171,19 +112,8 @@ public class MonthImagesController : ControllerBase
             .FirstOrDefaultAsync(mi => mi.UserId == userId && mi.Month == month);
 
         if (monthImage == null)
-        {
             return NotFound();
-        }
 
-        // Delete file
-        var uploadsPath = GetUploadsPath();
-        var filePath = Path.Combine(uploadsPath, monthImage.FileName);
-        if (System.IO.File.Exists(filePath))
-        {
-            System.IO.File.Delete(filePath);
-        }
-
-        // Delete record
         _context.MonthImages.Remove(monthImage);
         await _context.SaveChangesAsync();
 

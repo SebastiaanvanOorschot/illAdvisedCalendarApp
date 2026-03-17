@@ -8,6 +8,7 @@ public class MonthImage
     public required string FileName { get; set; }
     public required string ContentType { get; set; }
     public DateTime UploadedAt { get; set; }
+    public byte[]? ImageData { get; set; }
 
     public User User { get; set; } = null!;
 }
