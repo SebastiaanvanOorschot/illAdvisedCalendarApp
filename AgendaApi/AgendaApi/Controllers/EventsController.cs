@@ -260,24 +260,23 @@ public class EventsController : ControllerBase
         // Reset per-request fast/slow counters (cast is safe — concrete type is always RecurrenceService)
         if (_recurrenceService is RecurrenceService rs) rs.ResetCounters();
 
+        // Pre-fetch permissions for each unique shared owner — avoids N+1 DB calls inside the event loop
+        var sharedOwnerPermissions = new Dictionary<int, SharePermission?>();
+        foreach (var ownerId in sharedOwnerIds)
+        {
+            var (_, perm) = await _shareService.CheckEventAccessAsync(userId, ownerId);
+            sharedOwnerPermissions[ownerId] = perm;
+        }
+
         // Calculate occurrences for each event
         foreach (var evt in events)
         {
             var occurrences = _recurrenceService.GetOccurrences(evt, startDate, endDate);
 
-            // Add owner information and permission to each occurrence
             var isOwnEvent = evt.UserId == userId;
-            SharePermission? permission = null;
-
-            if (!isOwnEvent)
-            {
-                var (hasAccess, eventPermission) = await _shareService.CheckEventAccessAsync(userId, evt.UserId);
-                permission = eventPermission;
-            }
-            else
-            {
-                permission = SharePermission.ReadWrite; // Owners have full access
-            }
+            var permission = isOwnEvent
+                ? SharePermission.ReadWrite
+                : sharedOwnerPermissions.GetValueOrDefault(evt.UserId);
 
             foreach (var occurrence in occurrences)
             {
