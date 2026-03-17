@@ -122,7 +122,7 @@ try
         }
     };
     warmup.GetOccurrences(new Ical.Net.DataTypes.CalDateTime(DateTime.Today))
-          .TakeWhileBefore(new Ical.Net.DataTypes.CalDateTime(DateTime.Today.AddDays(7)))
+          .Take(5)
           .ToList();
 }
 catch { /* non-fatal — worst case first request pays the init cost */ }
