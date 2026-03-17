@@ -4,6 +4,7 @@ using AgendaApi.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 using System.Security.Claims;
 
 namespace AgendaApi.Controllers;
@@ -16,13 +17,39 @@ public class EventsController : ControllerBase
     private readonly AgendaDbContext _context;
     private readonly IRecurrenceService _recurrenceService;
     private readonly CalendarShareService _shareService;
+    private readonly IMemoryCache _cache;
 
-    public EventsController(AgendaDbContext context, IRecurrenceService recurrenceService, CalendarShareService shareService)
+    public EventsController(AgendaDbContext context, IRecurrenceService recurrenceService, CalendarShareService shareService, IMemoryCache cache)
     {
         _context = context;
         _recurrenceService = recurrenceService;
         _shareService = shareService;
+        _cache = cache;
     }
+
+    // ── Cache helpers ────────────────────────────────────────────────────────
+    // Each user gets a "buster" value stored in the cache.  Occurrence cache
+    // keys include the buster so that any event mutation instantly invalidates
+    // all previously cached results for that user without needing to enumerate
+    // them.  Stale entries expire naturally via the 10-minute TTL.
+
+    private string OccurrencesCacheKey(int userId, DateTime start, DateTime end)
+    {
+        var buster = _cache.GetOrCreate($"occ_buster:{userId}", e =>
+        {
+            e.Priority = CacheItemPriority.NeverRemove;
+            return DateTime.UtcNow.Ticks;
+        });
+        return $"occ:{userId}:{buster}:{start:yyyyMMddHHmm}:{end:yyyyMMddHHmm}";
+    }
+
+    private void BustOccurrencesCache(int userId)
+    {
+        // Overwrite the buster — all existing occurrence cache keys become stale
+        _cache.Set($"occ_buster:{userId}", DateTime.UtcNow.Ticks,
+            new MemoryCacheEntryOptions { Priority = CacheItemPriority.NeverRemove });
+    }
+    // ────────────────────────────────────────────────────────────────────────
 
     private int GetCurrentUserId()
     {
@@ -194,11 +221,22 @@ public class EventsController : ControllerBase
     public async Task<ActionResult<IEnumerable<EventOccurrence>>> GetEventOccurrences([FromQuery] DateTime startDate, [FromQuery] DateTime endDate)
     {
         var userId = GetCurrentUserId();
+        var cacheKey = OccurrencesCacheKey(userId, startDate, endDate);
+
+        if (_cache.TryGetValue(cacheKey, out List<EventOccurrence>? cached) && cached != null)
+        {
+            Response.Headers["X-Timing"] = "cache-hit";
+            return cached;
+        }
+
+        var sw = System.Diagnostics.Stopwatch.StartNew();
 
         // Get shared calendar owner IDs
         var sharedOwnerIds = await _shareService.GetSharedCalendarOwnerIdsAsync(userId);
         var allOwnerIds = new List<int> { userId };
         allOwnerIds.AddRange(sharedOwnerIds);
+
+        var t1 = sw.ElapsedMilliseconds;
 
         // Get events that could potentially have occurrences in the date range
         // This includes:
@@ -214,6 +252,8 @@ public class EventsController : ControllerBase
                     (e.RecurrenceEndDate == null || e.RecurrenceEndDate >= startDate))
             ))
             .ToListAsync();
+
+        var t2 = sw.ElapsedMilliseconds;
 
         var allOccurrences = new List<EventOccurrence>();
 
@@ -247,8 +287,15 @@ public class EventsController : ControllerBase
             allOccurrences.AddRange(occurrences);
         }
 
+        var t3 = sw.ElapsedMilliseconds;
+
         // Sort by occurrence start time
         var result = allOccurrences.OrderBy(o => o.OccurrenceStart).ToList();
+
+        _cache.Set(cacheKey, result, TimeSpan.FromMinutes(10));
+
+        // Diagnostic headers — remove once performance is confirmed
+        Response.Headers["X-Timing"] = $"shares={t1}ms db={t2 - t1}ms recurrence={t3 - t2}ms events={events.Count} total={t3}ms";
 
         return result;
     }
@@ -274,6 +321,8 @@ public class EventsController : ControllerBase
 
         _context.Events.Add(eventItem);
         await _context.SaveChangesAsync();
+
+        BustOccurrencesCache(userId);
 
         // Return 200 OK instead of 201 Created for compatibility with NSwag client
         return Ok(eventItem);
@@ -358,6 +407,8 @@ public class EventsController : ControllerBase
             }
         }
 
+        BustOccurrencesCache(userId);
+
         return NoContent();
     }
 
@@ -387,6 +438,8 @@ public class EventsController : ControllerBase
 
         _context.Events.Remove(eventItem);
         await _context.SaveChangesAsync();
+
+        BustOccurrencesCache(userId);
 
         return NoContent();
     }
