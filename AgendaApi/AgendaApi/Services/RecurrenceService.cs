@@ -90,10 +90,12 @@ public class RecurrenceService : IRecurrenceService
 
             var eventDuration = evt.EndDateTime - evt.StartDateTime;
 
-            // Get occurrences within the date range by passing both start and end to Ical.Net,
-            // which allows the library to limit enumeration internally (critical for infinite recurrences)
+            // TakeWhileBefore is Ical.Net's built-in range terminator — it signals the
+            // evaluation engine to stop generating occurrences at rangeEnd, which is
+            // critical for infinite recurrences (no UNTIL/COUNT) to avoid huge enumerations
             var calendarOccurrences = calEvent
-                .GetOccurrences(new CalDateTime(rangeStart), new CalDateTime(rangeEnd))
+                .GetOccurrences(new CalDateTime(rangeStart))
+                .TakeWhileBefore(new CalDateTime(rangeEnd))
                 .ToList();
 
             // Parse exception dates and filter them out manually
