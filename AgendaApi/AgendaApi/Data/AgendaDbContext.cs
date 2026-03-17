@@ -32,6 +32,11 @@ public class AgendaDbContext : DbContext
             entity.Property(e => e.UpdatedAt).IsRequired();
             entity.Property(e => e.UserId).IsRequired();
 
+            // Primary lookup index — most queries filter by UserId
+            entity.HasIndex(e => e.UserId);
+            // Composite index for date-range queries (GetEventOccurrences, GetEventsByDateRange)
+            entity.HasIndex(e => new { e.UserId, e.StartDateTime });
+
             // Indexes for recurring event lookups
             entity.HasIndex(e => e.RecurrenceId);
             entity.HasIndex(e => new { e.ParentEventId, e.RecurrenceId })

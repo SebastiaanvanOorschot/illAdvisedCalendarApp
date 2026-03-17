@@ -81,6 +81,30 @@ using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AgendaDbContext>();
     db.Database.EnsureCreated();
+
+    // CalendarSubscriptions was added after the first deploy so EnsureCreated skipped it.
+    // Create it now if missing.  All statements use IF NOT EXISTS — safe to re-run.
+    db.Database.ExecuteSqlRaw(@"
+        CREATE TABLE IF NOT EXISTS ""CalendarSubscriptions"" (
+            ""Id""                  SERIAL        PRIMARY KEY,
+            ""Name""                VARCHAR(255)  NOT NULL,
+            ""ICalUrl""             VARCHAR(2000) NOT NULL,
+            ""Color""               VARCHAR(7),
+            ""SyncIntervalMinutes"" INT           NOT NULL DEFAULT 60,
+            ""IsActive""            BOOLEAN       NOT NULL DEFAULT TRUE,
+            ""LastSyncedAt""        TIMESTAMP,
+            ""LastSyncError""       TEXT,
+            ""CreatedAt""           TIMESTAMP     NOT NULL,
+            ""UpdatedAt""           TIMESTAMP     NOT NULL,
+            ""UserId""              INT           NOT NULL,
+            CONSTRAINT ""FK_CalendarSubscriptions_Users_UserId""
+                FOREIGN KEY (""UserId"") REFERENCES ""Users""(""Id"") ON DELETE CASCADE
+        )");
+
+    // Add performance indexes that were missing from the initial schema
+    db.Database.ExecuteSqlRaw(@"CREATE INDEX IF NOT EXISTS ""IX_CalendarSubscriptions_UserId"" ON ""CalendarSubscriptions"" (""UserId"")");
+    db.Database.ExecuteSqlRaw(@"CREATE INDEX IF NOT EXISTS ""IX_Events_UserId"" ON ""Events"" (""UserId"")");
+    db.Database.ExecuteSqlRaw(@"CREATE INDEX IF NOT EXISTS ""IX_Events_UserId_StartDateTime"" ON ""Events"" (""UserId"", ""StartDateTime"")");
 }
 
 if (app.Environment.IsDevelopment())
