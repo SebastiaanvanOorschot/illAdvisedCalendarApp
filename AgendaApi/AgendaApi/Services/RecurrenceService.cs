@@ -72,56 +72,103 @@ public class RecurrenceService : IRecurrenceService
         return occurrences;
     }
 
+    // Lightweight RRULE parser — avoids the ~150ms cost of new RecurrencePattern(string)
+    // for the common cases.  Only touches Ical.Net for genuinely complex rules.
+    private sealed class SimpleRRule
+    {
+        public string Freq      { get; init; } = "";
+        public int    Interval  { get; init; } = 1;
+        public int    Count     { get; init; } = -1;       // -1 = unlimited
+        public DateTime? Until  { get; init; }
+        public List<DayOfWeek> ByDay { get; init; } = new();
+        public bool IsComplex   { get; init; }             // needs Ical.Net fallback
+    }
+
+    private static SimpleRRule ParseRRule(string rrule)
+    {
+        static DayOfWeek? DayCode(string s) => s.ToUpperInvariant() switch
+        {
+            "MO" => DayOfWeek.Monday,   "TU" => DayOfWeek.Tuesday,
+            "WE" => DayOfWeek.Wednesday,"TH" => DayOfWeek.Thursday,
+            "FR" => DayOfWeek.Friday,   "SA" => DayOfWeek.Saturday,
+            "SU" => DayOfWeek.Sunday,   _    => null
+        };
+
+        string freq = ""; int interval = 1; int count = -1;
+        DateTime? until = null;
+        var byDay = new List<DayOfWeek>();
+        bool isComplex = false;
+
+        foreach (var part in rrule.Split(';'))
+        {
+            var eq = part.IndexOf('=');
+            if (eq < 0) continue;
+            var k = part[..eq].Trim().ToUpperInvariant();
+            var v = part[(eq + 1)..].Trim();
+
+            switch (k)
+            {
+                case "FREQ":     freq = v.ToUpperInvariant(); break;
+                case "INTERVAL": if (int.TryParse(v, out var iv)) interval = iv; break;
+                case "COUNT":    if (int.TryParse(v, out var cv)) count = cv;    break;
+                case "UNTIL":
+                    // Handles YYYYMMDDTHHMMSSZ, YYYYMMDDTHHMMSS, YYYYMMDD
+                    if (DateTime.TryParseExact(v, new[]{"yyyyMMddTHHmmssZ","yyyyMMddTHHmmss","yyyyMMdd"},
+                            System.Globalization.CultureInfo.InvariantCulture,
+                            System.Globalization.DateTimeStyles.AssumeUniversal, out var u))
+                        until = u;
+                    break;
+                case "BYDAY":
+                    foreach (var d in v.Split(','))
+                    {
+                        var code = d.Trim();
+                        // Ordinal prefix like "1MO" or "-1FR" → complex
+                        if (code.Length > 2) { isComplex = true; break; }
+                        var dow = DayCode(code);
+                        if (dow.HasValue) byDay.Add(dow.Value);
+                    }
+                    break;
+                case "BYSETPOS": case "BYWEEKNO": case "BYMONTH":
+                case "BYMONTHDAY": case "BYHOUR": case "BYMINUTE":
+                case "BYSECOND":  case "BYYEARDAY":
+                    isComplex = true; break;
+            }
+        }
+
+        // BYDAY is only handled for WEEKLY in our fast path
+        if (byDay.Any() && freq != "WEEKLY") isComplex = true;
+
+        return new SimpleRRule
+        {
+            Freq = freq, Interval = interval, Count = count,
+            Until = until, ByDay = byDay, IsComplex = isComplex
+        };
+    }
+
     private List<EventOccurrence> GetRRuleOccurrences(Event evt, DateTime rangeStart, DateTime rangeEnd)
     {
         try
         {
-            var pattern      = new RecurrencePattern(evt.RecurrenceRule);
-            var duration     = evt.EndDateTime - evt.StartDateTime;
-            var exceptions   = new HashSet<DateTime>(ParseExceptionDates(evt.ExceptionDates).Select(d => d.Date));
-            var interval     = pattern.Interval > 0 ? pattern.Interval : 1;
+            var r        = ParseRRule(evt.RecurrenceRule!);
+            var duration = evt.EndDateTime - evt.StartDateTime;
+            var except   = new HashSet<DateTime>(ParseExceptionDates(evt.ExceptionDates).Select(d => d.Date));
 
-            // Effective recurrence end — honour UNTIL if it is earlier than the requested range end
             var recEnd = rangeEnd;
-            if (pattern.Until != null && pattern.Until.Value < recEnd)
-                recEnd = pattern.Until.Value;
+            if (r.Until.HasValue && r.Until.Value < recEnd) recEnd = r.Until.Value;
 
-            // Fall back to Ical.Net for patterns our fast path does not cover:
-            //   COUNT-based, BYSETPOS, BYWEEKNO, BYMONTH, BYMONTHDAY, BYHOUR, BYMINUTE,
-            //   BYSECOND, or BYDAY with ordinals (e.g. "1MO" = first Monday of month).
-            bool hasComplexRule =
-                pattern.Count > 0 ||
-                pattern.BySetPosition.Any() ||
-                pattern.ByWeekNo.Any() ||
-                pattern.ByMonth.Any() ||
-                pattern.ByMonthDay.Any() ||
-                pattern.ByHour.Any() ||
-                pattern.ByMinute.Any() ||
-                pattern.BySecond.Any() ||
-                (pattern.ByDay.Any() && pattern.Frequency != FrequencyType.Weekly) ||
-                pattern.ByDay.Any(d => d.Offset != 0);
-
-            if (hasComplexRule)
-                return GetIcalNetOccurrences(evt, rangeStart, recEnd, pattern, duration, exceptions);
+            // Complex or COUNT-based: fall back to Ical.Net (rare)
+            if (r.IsComplex || r.Count > 0)
+                return GetIcalNetOccurrences(evt, rangeStart, recEnd, duration, except);
 
             var result = new List<EventOccurrence>();
 
-            switch (pattern.Frequency)
+            switch (r.Freq)
             {
-                case FrequencyType.Daily:
-                    ExpandDaily(evt, rangeStart, recEnd, interval, duration, exceptions, result);
-                    break;
-                case FrequencyType.Weekly:
-                    ExpandWeekly(evt, rangeStart, recEnd, interval, pattern.ByDay, duration, exceptions, result);
-                    break;
-                case FrequencyType.Monthly:
-                    ExpandMonthly(evt, rangeStart, recEnd, interval, duration, exceptions, result);
-                    break;
-                case FrequencyType.Yearly:
-                    ExpandYearly(evt, rangeStart, recEnd, interval, duration, exceptions, result);
-                    break;
-                default:
-                    return GetIcalNetOccurrences(evt, rangeStart, recEnd, pattern, duration, exceptions);
+                case "DAILY":   ExpandDaily  (evt, rangeStart, recEnd, r.Interval, duration, except, result); break;
+                case "WEEKLY":  ExpandWeekly (evt, rangeStart, recEnd, r.Interval, r.ByDay,  duration, except, result); break;
+                case "MONTHLY": ExpandMonthly(evt, rangeStart, recEnd, r.Interval, duration, except, result); break;
+                case "YEARLY":  ExpandYearly (evt, rangeStart, recEnd, r.Interval, duration, except, result); break;
+                default: return GetIcalNetOccurrences(evt, rangeStart, recEnd, duration, except);
             }
 
             return result;
@@ -149,7 +196,7 @@ public class RecurrenceService : IRecurrenceService
     }
 
     private void ExpandWeekly(Event evt, DateTime rangeStart, DateTime rangeEnd,
-        int interval, IList<WeekDay> byDay, TimeSpan duration, HashSet<DateTime> exceptions,
+        int interval, List<DayOfWeek> byDay, TimeSpan duration, HashSet<DateTime> exceptions,
         List<EventOccurrence> result)
     {
         var dtStart = evt.StartDateTime;
@@ -157,7 +204,7 @@ public class RecurrenceService : IRecurrenceService
         if (byDay.Any())
         {
             // BYDAY weekly — e.g. FREQ=WEEKLY;BYDAY=MO,WE
-            var targetDays = byDay.Select(wd => wd.DayOfWeek).OrderBy(d => d).ToList();
+            var targetDays = byDay.OrderBy(d => d).ToList();
 
             // Anchor to the start of the week that contains dtStart
             var anchor = dtStart;
@@ -222,10 +269,12 @@ public class RecurrenceService : IRecurrenceService
                 result.Add(MakeOccurrence(evt, cur, duration));
     }
 
-    // Ical.Net fallback for complex patterns — reuses already-parsed RecurrencePattern
+    // Ical.Net fallback for complex patterns (COUNT-based, BYSETPOS, ordinal BYDAY, etc.)
     private List<EventOccurrence> GetIcalNetOccurrences(Event evt, DateTime rangeStart, DateTime rangeEnd,
-        RecurrencePattern pattern, TimeSpan duration, HashSet<DateTime> exceptions)
+        TimeSpan duration, HashSet<DateTime> exceptions)
     {
+        var pattern = new RecurrencePattern(evt.RecurrenceRule!);
+
         var effectiveStart = evt.StartDateTime;
         if (effectiveStart < rangeStart && pattern.Count <= 0)
         {
