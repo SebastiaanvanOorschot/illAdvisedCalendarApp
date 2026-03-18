@@ -135,6 +135,7 @@ const isSidebarOpen = ref(false);
 const isUploadModalOpen = ref(false);
 const isDatePickerOpen = ref(false);
 const monthImageUrl = ref<string | null>(null);
+const monthImageCache = new Map<number, string>(); // month (1-12) → blob URL
 
 // Handle back button for modals
 useBackButton(isUploadModalOpen, () => { isUploadModalOpen.value = false; });
@@ -308,61 +309,47 @@ const backgroundImageStyle = computed(() => {
 });
 
 async function loadMonthImage() {
-    // Store the old URL for cleanup
-    const oldUrl = monthImageUrl.value;
+    const m = month.value + 1; // 1-12
+
+    // Serve from cache — no network round-trip needed
+    if (monthImageCache.has(m)) {
+        monthImageUrl.value = monthImageCache.get(m)!;
+        return;
+    }
 
     try {
-        const response = await authenticatedAxios.get(`/api/MonthImages/${month.value + 1}`, {
+        const response = await authenticatedAxios.get(`/api/MonthImages/${m}`, {
             responseType: 'blob'
         });
-        const blob = new Blob([response.data]);
-        const newUrl = URL.createObjectURL(blob);
-
-        // Set new URL first
-        monthImageUrl.value = newUrl;
-
-        // Then revoke the old blob URL to free memory
-        if (oldUrl && oldUrl.startsWith('blob:')) {
-            URL.revokeObjectURL(oldUrl);
-        }
-    } catch (error) {
-        // No custom image for this month, use default
+        const url = URL.createObjectURL(new Blob([response.data]));
+        monthImageCache.set(m, url);
+        monthImageUrl.value = url;
+    } catch {
+        // No custom image for this month
         monthImageUrl.value = null;
-
-        // Clean up the old blob URL
-        if (oldUrl && oldUrl.startsWith('blob:')) {
-            URL.revokeObjectURL(oldUrl);
-        }
     }
 }
 
 function handleImageUploaded() {
+    const m = month.value + 1;
+    const old = monthImageCache.get(m);
+    if (old) { URL.revokeObjectURL(old); monthImageCache.delete(m); }
     loadMonthImage();
 }
 
 async function resetToDefault() {
+    const m = month.value + 1;
     try {
-        // Revoke the existing blob URL to free memory
-        if (monthImageUrl.value && monthImageUrl.value.startsWith('blob:')) {
-            URL.revokeObjectURL(monthImageUrl.value);
-        }
-
-        // Delete the custom image from the server
-        await authenticatedAxios.delete(`/api/MonthImages/${month.value + 1}`);
-
-        // Immediately set to null to trigger default image
-        monthImageUrl.value = null;
+        await authenticatedAxios.delete(`/api/MonthImages/${m}`);
     } catch (error: any) {
-        // If 404, the image was already deleted or never existed - still reset to default
-        if (error.response?.status === 404) {
-            if (monthImageUrl.value && monthImageUrl.value.startsWith('blob:')) {
-                URL.revokeObjectURL(monthImageUrl.value);
-            }
-            monthImageUrl.value = null;
-        } else {
+        if (error.response?.status !== 404) {
             console.error('Failed to reset image:', error);
+            return;
         }
     }
+    const old = monthImageCache.get(m);
+    if (old) { URL.revokeObjectURL(old); monthImageCache.delete(m); }
+    monthImageUrl.value = null;
 }
 
 // Watch for month changes to load appropriate image

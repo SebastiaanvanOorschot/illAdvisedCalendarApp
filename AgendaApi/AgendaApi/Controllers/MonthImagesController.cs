@@ -3,6 +3,7 @@ using AgendaApi.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 using System.Security.Claims;
 
 namespace AgendaApi.Controllers;
@@ -13,15 +14,18 @@ namespace AgendaApi.Controllers;
 public class MonthImagesController : ControllerBase
 {
     private readonly AgendaDbContext _context;
+    private readonly IMemoryCache _cache;
     private readonly ILogger<MonthImagesController> _logger;
     private const long MaxFileSize = 10 * 1024 * 1024; // 10MB
     private static readonly string[] AllowedExtensions = { ".jpg", ".jpeg", ".png", ".gif", ".webp" };
 
     public MonthImagesController(
         AgendaDbContext context,
+        IMemoryCache cache,
         ILogger<MonthImagesController> logger)
     {
         _context = context;
+        _cache = cache;
         _logger = logger;
     }
 
@@ -29,26 +33,31 @@ public class MonthImagesController : ControllerBase
     {
         var userIdClaim = User.FindFirst("sub")?.Value ?? User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         if (userIdClaim == null || !int.TryParse(userIdClaim, out int userId))
-        {
             throw new UnauthorizedAccessException("User ID not found in token");
-        }
         return userId;
     }
+
+    private static string CacheKey(int userId, int month) => $"img:{userId}:{month}";
 
     [HttpGet("{month}")]
     public async Task<IActionResult> GetMonthImage(int month)
     {
         var userId = GetCurrentUserId();
+        var key = CacheKey(userId, month);
 
-        var monthImage = await _context.MonthImages
-            .FirstOrDefaultAsync(mi => mi.UserId == userId && mi.Month == month);
-
-        if (monthImage?.ImageData == null)
+        if (!_cache.TryGetValue(key, out (byte[] Data, string ContentType) cached))
         {
-            return NotFound();
+            var monthImage = await _context.MonthImages
+                .FirstOrDefaultAsync(mi => mi.UserId == userId && mi.Month == month);
+
+            if (monthImage?.ImageData == null)
+                return NotFound();
+
+            cached = (monthImage.ImageData, monthImage.ContentType);
+            _cache.Set(key, cached, TimeSpan.FromHours(24));
         }
 
-        return File(monthImage.ImageData, monthImage.ContentType);
+        return File(cached.Data, cached.ContentType);
     }
 
     [HttpPost]
@@ -99,6 +108,7 @@ public class MonthImagesController : ControllerBase
         }
 
         await _context.SaveChangesAsync();
+        _cache.Set(CacheKey(userId, month), (imageData, file.ContentType), TimeSpan.FromHours(24));
 
         return Ok(new { message = "Image uploaded successfully" });
     }
@@ -116,6 +126,7 @@ public class MonthImagesController : ControllerBase
 
         _context.MonthImages.Remove(monthImage);
         await _context.SaveChangesAsync();
+        _cache.Remove(CacheKey(userId, month));
 
         return Ok(new { message = "Image deleted successfully" });
     }
