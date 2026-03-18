@@ -309,15 +309,9 @@ public class EventsController : ControllerBase
     {
         var userId = GetCurrentUserId();
 
-        // Convert UTC times from client to local time for storage
-        if (eventItem.StartDateTime.Kind == DateTimeKind.Utc)
-        {
-            eventItem.StartDateTime = eventItem.StartDateTime.ToLocalTime();
-        }
-        if (eventItem.EndDateTime.Kind == DateTimeKind.Utc)
-        {
-            eventItem.EndDateTime = eventItem.EndDateTime.ToLocalTime();
-        }
+        // Ensure datetimes are treated as UTC (Npgsql 6+ requires DateTimeKind.Utc for timestamptz columns)
+        eventItem.StartDateTime = DateTime.SpecifyKind(eventItem.StartDateTime, DateTimeKind.Utc);
+        eventItem.EndDateTime = DateTime.SpecifyKind(eventItem.EndDateTime, DateTimeKind.Utc);
 
         eventItem.UserId = userId;
         eventItem.CreatedAt = DateTime.UtcNow;
@@ -362,15 +356,9 @@ public class EventsController : ControllerBase
             return Forbid("You don't have permission to edit this event");
         }
 
-        // Convert UTC times from client to local time for storage
-        if (eventItem.StartDateTime.Kind == DateTimeKind.Utc)
-        {
-            eventItem.StartDateTime = eventItem.StartDateTime.ToLocalTime();
-        }
-        if (eventItem.EndDateTime.Kind == DateTimeKind.Utc)
-        {
-            eventItem.EndDateTime = eventItem.EndDateTime.ToLocalTime();
-        }
+        // Ensure datetimes are treated as UTC (Npgsql 6+ requires DateTimeKind.Utc for timestamptz columns)
+        eventItem.StartDateTime = DateTime.SpecifyKind(eventItem.StartDateTime, DateTimeKind.Utc);
+        eventItem.EndDateTime = DateTime.SpecifyKind(eventItem.EndDateTime, DateTimeKind.Utc);
 
         // Update the existing tracked entity's properties
         existingEvent.Title = eventItem.Title;
