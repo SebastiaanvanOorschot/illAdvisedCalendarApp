@@ -50,12 +50,11 @@
                     </div>
 
                     <div class="form-group">
-                        <label for="endTime">End Time</label>
+                        <label for="endTime">End Time <span class="optional-label">(optional)</span></label>
                         <input
                             id="endTime"
                             v-model="form.endTime"
                             type="time"
-                            required
                         />
                     </div>
                 </div>
@@ -241,7 +240,7 @@ const form = reactive<EventFormData>({
     description: '',
     isAllDay: false,
     startTime: '09:00',
-    endTime: '10:00',
+    endTime: '',
     isRecurring: false,
     recurrencePattern: 'weekly',
     recurrenceInterval: 1,
@@ -296,7 +295,7 @@ function resetForm() {
     form.description = '';
     form.isAllDay = false;
     form.startTime = '09:00';
-    form.endTime = '10:00';
+    form.endTime = '';
     form.isRecurring = false;
     form.recurrencePattern = 'weekly';
     form.recurrenceInterval = 1;
@@ -316,12 +315,8 @@ function populateForm(event: Event) {
     form.isAllDay = event.isAllDay || false;
 
     if (!form.isAllDay) {
-        if (event.startDateTime) {
-            form.startTime = dayjs(event.startDateTime).format('HH:mm');
-        }
-        if (event.endDateTime) {
-            form.endTime = dayjs(event.endDateTime).format('HH:mm');
-        }
+        form.startTime = event.startDateTime ? dayjs(event.startDateTime).format('HH:mm') : '09:00';
+        form.endTime = event.endDateTime ? dayjs(event.endDateTime).format('HH:mm') : '';
     }
 
     // Populate recurrence fields if editing a recurring event
@@ -672,5 +667,11 @@ watch(() => props.show, (newValue) => {
 
 .help-text a:hover {
     text-decoration: underline;
+}
+
+.optional-label {
+    font-weight: 400;
+    color: #999;
+    font-size: 12px;
 }
 </style>

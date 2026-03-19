@@ -48,7 +48,9 @@
                                 <span class="event-color-dot" :style="{ backgroundColor: event.color || '#4a90e2' }"></span>
                                 <div class="event-content">
                                     <div class="event-time">
-                                        {{ event.isAllDay ? 'All day' : `${formatTime(event.startDateTime)} - ${formatTime(event.endDateTime)}` }}
+                                        <template v-if="event.isAllDay">All day</template>
+                                        <template v-else-if="event.endDateTime">{{ formatTime(event.startDateTime) }} - {{ formatTime(event.endDateTime) }}</template>
+                                        <template v-else>{{ formatTime(event.startDateTime) }}</template>
                                     </div>
                                     <div class="event-details">
                                         <h4>{{ event.title }}</h4>

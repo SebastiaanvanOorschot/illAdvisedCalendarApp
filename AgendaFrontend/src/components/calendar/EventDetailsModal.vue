@@ -57,7 +57,7 @@
                         <p>{{ formatTime(event.startDateTime) }}</p>
                     </div>
 
-                    <div class="detail-group">
+                    <div v-if="event.endDateTime" class="detail-group">
                         <label>End Time</label>
                         <p>{{ formatTime(event.endDateTime) }}</p>
                     </div>

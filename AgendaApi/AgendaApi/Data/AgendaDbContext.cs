@@ -27,7 +27,7 @@ public class AgendaDbContext : DbContext
             entity.Property(e => e.Title).IsRequired().HasMaxLength(200);
             entity.Property(e => e.Description).HasMaxLength(1000);
             entity.Property(e => e.StartDateTime).IsRequired();
-            entity.Property(e => e.EndDateTime).IsRequired();
+            entity.Property(e => e.EndDateTime).IsRequired(false);
             entity.Property(e => e.CreatedAt).IsRequired();
             entity.Property(e => e.UpdatedAt).IsRequired();
             entity.Property(e => e.UserId).IsRequired();

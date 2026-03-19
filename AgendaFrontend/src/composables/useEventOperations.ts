@@ -32,8 +32,8 @@ export function useEventOperations() {
                 .millisecond(0)
                 .toDate();
 
-        const endDateTime = formData.isAllDay
-            ? selectedDate.startOf('day').toDate()
+        const endDateTime = formData.isAllDay || !formData.endTime
+            ? undefined
             : selectedDate
                 .hour(parseInt(formData.endTime.split(':')[0]))
                 .minute(parseInt(formData.endTime.split(':')[1]))
@@ -82,8 +82,8 @@ export function useEventOperations() {
                 .millisecond(0)
                 .toDate();
 
-        const endDateTime = formData.isAllDay
-            ? selectedDate.startOf('day').toDate()
+        const endDateTime = formData.isAllDay || !formData.endTime
+            ? undefined
             : selectedDate
                 .hour(parseInt(formData.endTime.split(':')[0]))
                 .minute(parseInt(formData.endTime.split(':')[1]))
@@ -173,12 +173,14 @@ export function useEventOperations() {
             .millisecond(0)
             .toDate();
 
-        const endDateTime = selectedDate
-            .hour(parseInt(formData.endTime.split(':')[0]))
-            .minute(parseInt(formData.endTime.split(':')[1]))
-            .second(0)
-            .millisecond(0)
-            .toDate();
+        const endDateTime = formData.endTime
+            ? selectedDate
+                .hour(parseInt(formData.endTime.split(':')[0]))
+                .minute(parseInt(formData.endTime.split(':')[1]))
+                .second(0)
+                .millisecond(0)
+                .toDate()
+            : undefined;
 
         const request = {
             originalOccurrenceDate: event.startDateTime,

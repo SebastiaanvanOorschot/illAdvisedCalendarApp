@@ -112,6 +112,9 @@ using (var scope = app.Services.CreateScope())
 
     // IsAllDay flag added to support all-day events (no specific start/end time)
     db.Database.ExecuteSqlRaw(@"ALTER TABLE ""Events"" ADD COLUMN IF NOT EXISTS ""IsAllDay"" BOOLEAN NOT NULL DEFAULT FALSE");
+
+    // EndDateTime made nullable to support events with a start time but no end time
+    db.Database.ExecuteSqlRaw(@"ALTER TABLE ""Events"" ALTER COLUMN ""EndDateTime"" DROP NOT NULL");
 }
 
 // Pre-warm Ical.Net: force JIT compilation and static timezone/rule initialisation
