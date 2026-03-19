@@ -182,7 +182,7 @@ public class RecurrenceService : IRecurrenceService
         try
         {
             var r        = ParseRRule(evt.RecurrenceRule!, evt.StartDateTime);
-            var duration = evt.EndDateTime - evt.StartDateTime;
+            var duration = (evt.EndDateTime.HasValue ? evt.EndDateTime.Value - evt.StartDateTime : TimeSpan.Zero);
             var except   = new HashSet<DateTime>(ParseExceptionDates(evt.ExceptionDates).Select(d => d.Date));
 
             var recEnd = rangeEnd;
@@ -394,7 +394,7 @@ public class RecurrenceService : IRecurrenceService
         var current = evt.StartDateTime;
         var endDate = evt.RecurrenceEndDate ?? rangeEnd.AddYears(1); // Limit to 1 year if no end date
         var interval = evt.RecurrenceInterval ?? 1;
-        var eventDuration = evt.EndDateTime - evt.StartDateTime;
+        var eventDuration = evt.EndDateTime.HasValue ? evt.EndDateTime.Value - evt.StartDateTime : TimeSpan.Zero;
 
         // Parse exception dates
         var exceptionDates = ParseExceptionDates(evt.ExceptionDates);
@@ -441,7 +441,7 @@ public class RecurrenceService : IRecurrenceService
                     {
                         EventId = evt.Id,
                         OccurrenceStart = current,
-                        OccurrenceEnd = current + eventDuration,
+                        OccurrenceEnd = evt.EndDateTime.HasValue ? current + eventDuration : (DateTime?)null,
                         Title = evt.Title,
                         Description = evt.Description,
                         Color = evt.Color,
@@ -544,7 +544,7 @@ public class EventOccurrence
 {
     public int EventId { get; set; }
     public DateTime OccurrenceStart { get; set; }
-    public DateTime OccurrenceEnd { get; set; }
+    public DateTime? OccurrenceEnd { get; set; }
     public string Title { get; set; } = string.Empty;
     public string? Description { get; set; }
     public string? Color { get; set; }

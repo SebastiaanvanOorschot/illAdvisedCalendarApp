@@ -311,7 +311,8 @@ public class EventsController : ControllerBase
 
         // Ensure datetimes are treated as UTC (Npgsql 6+ requires DateTimeKind.Utc for timestamptz columns)
         eventItem.StartDateTime = DateTime.SpecifyKind(eventItem.StartDateTime, DateTimeKind.Utc);
-        eventItem.EndDateTime = DateTime.SpecifyKind(eventItem.EndDateTime, DateTimeKind.Utc);
+        if (eventItem.EndDateTime.HasValue)
+            eventItem.EndDateTime = DateTime.SpecifyKind(eventItem.EndDateTime.Value, DateTimeKind.Utc);
 
         eventItem.UserId = userId;
         eventItem.CreatedAt = DateTime.UtcNow;
@@ -358,7 +359,8 @@ public class EventsController : ControllerBase
 
         // Ensure datetimes are treated as UTC (Npgsql 6+ requires DateTimeKind.Utc for timestamptz columns)
         eventItem.StartDateTime = DateTime.SpecifyKind(eventItem.StartDateTime, DateTimeKind.Utc);
-        eventItem.EndDateTime = DateTime.SpecifyKind(eventItem.EndDateTime, DateTimeKind.Utc);
+        if (eventItem.EndDateTime.HasValue)
+            eventItem.EndDateTime = DateTime.SpecifyKind(eventItem.EndDateTime.Value, DateTimeKind.Utc);
 
         // Update the existing tracked entity's properties
         existingEvent.Title = eventItem.Title;
@@ -557,7 +559,7 @@ public class EventWithOwner
     public required string Title { get; set; }
     public string? Description { get; set; }
     public DateTime StartDateTime { get; set; }
-    public DateTime EndDateTime { get; set; }
+    public DateTime? EndDateTime { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
     public bool IsRecurring { get; set; }
