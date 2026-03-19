@@ -7,6 +7,7 @@ const api = new AgendaAPI(getApiBaseUrl(), authenticatedAxios);
 export interface EventFormData {
     title: string;
     description: string;
+    isAllDay: boolean;
     startTime: string;
     endTime: string;
     isRecurring: boolean;
@@ -22,23 +23,28 @@ export function useEventOperations() {
      * Create a new event
      */
     async function createEvent(formData: EventFormData, selectedDate: dayjs.Dayjs): Promise<Event> {
-        const startDateTime = selectedDate
-            .hour(parseInt(formData.startTime.split(':')[0]))
-            .minute(parseInt(formData.startTime.split(':')[1]))
-            .second(0)
-            .millisecond(0)
-            .toDate();
+        const startDateTime = formData.isAllDay
+            ? selectedDate.startOf('day').toDate()
+            : selectedDate
+                .hour(parseInt(formData.startTime.split(':')[0]))
+                .minute(parseInt(formData.startTime.split(':')[1]))
+                .second(0)
+                .millisecond(0)
+                .toDate();
 
-        const endDateTime = selectedDate
-            .hour(parseInt(formData.endTime.split(':')[0]))
-            .minute(parseInt(formData.endTime.split(':')[1]))
-            .second(0)
-            .millisecond(0)
-            .toDate();
+        const endDateTime = formData.isAllDay
+            ? selectedDate.startOf('day').toDate()
+            : selectedDate
+                .hour(parseInt(formData.endTime.split(':')[0]))
+                .minute(parseInt(formData.endTime.split(':')[1]))
+                .second(0)
+                .millisecond(0)
+                .toDate();
 
         const newEvent = new Event({
             title: formData.title,
             description: formData.description || undefined,
+            isAllDay: formData.isAllDay || false,
             startDateTime: startDateTime,
             endDateTime: endDateTime,
             color: formData.color,
@@ -67,24 +73,29 @@ export function useEventOperations() {
         }
 
         // Update times from form
-        const startDateTime = selectedDate
-            .hour(parseInt(formData.startTime.split(':')[0]))
-            .minute(parseInt(formData.startTime.split(':')[1]))
-            .second(0)
-            .millisecond(0)
-            .toDate();
+        const startDateTime = formData.isAllDay
+            ? selectedDate.startOf('day').toDate()
+            : selectedDate
+                .hour(parseInt(formData.startTime.split(':')[0]))
+                .minute(parseInt(formData.startTime.split(':')[1]))
+                .second(0)
+                .millisecond(0)
+                .toDate();
 
-        const endDateTime = selectedDate
-            .hour(parseInt(formData.endTime.split(':')[0]))
-            .minute(parseInt(formData.endTime.split(':')[1]))
-            .second(0)
-            .millisecond(0)
-            .toDate();
+        const endDateTime = formData.isAllDay
+            ? selectedDate.startOf('day').toDate()
+            : selectedDate
+                .hour(parseInt(formData.endTime.split(':')[0]))
+                .minute(parseInt(formData.endTime.split(':')[1]))
+                .second(0)
+                .millisecond(0)
+                .toDate();
 
         const updatedEvent = new Event({
             id: eventToUpdate.id,
             title: formData.title,
             description: formData.description || undefined,
+            isAllDay: formData.isAllDay || false,
             startDateTime: startDateTime,
             endDateTime: endDateTime,
             color: formData.color,

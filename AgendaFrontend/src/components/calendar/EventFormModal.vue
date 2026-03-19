@@ -28,7 +28,17 @@
                     ></textarea>
                 </div>
 
-                <div class="form-row">
+                <div class="form-group">
+                    <label class="checkbox-label">
+                        <input
+                            type="checkbox"
+                            v-model="form.isAllDay"
+                        />
+                        All day
+                    </label>
+                </div>
+
+                <div v-if="!form.isAllDay" class="form-row">
                     <div class="form-group">
                         <label for="startTime">Start Time</label>
                         <input
@@ -204,6 +214,7 @@ interface Props {
 interface EventFormData {
     title: string;
     description: string;
+    isAllDay: boolean;
     startTime: string;
     endTime: string;
     isRecurring: boolean;
@@ -228,6 +239,7 @@ useBackButton(showRef, () => emit('close'));
 const form = reactive<EventFormData>({
     title: '',
     description: '',
+    isAllDay: false,
     startTime: '09:00',
     endTime: '10:00',
     isRecurring: false,
@@ -282,6 +294,7 @@ function updateRRuleFromPattern() {
 function resetForm() {
     form.title = '';
     form.description = '';
+    form.isAllDay = false;
     form.startTime = '09:00';
     form.endTime = '10:00';
     form.isRecurring = false;
@@ -300,12 +313,15 @@ function populateForm(event: Event) {
     form.title = event.title || '';
     form.description = event.description || '';
     form.color = event.color || '#000000';
+    form.isAllDay = event.isAllDay || false;
 
-    if (event.startDateTime) {
-        form.startTime = dayjs(event.startDateTime).format('HH:mm');
-    }
-    if (event.endDateTime) {
-        form.endTime = dayjs(event.endDateTime).format('HH:mm');
+    if (!form.isAllDay) {
+        if (event.startDateTime) {
+            form.startTime = dayjs(event.startDateTime).format('HH:mm');
+        }
+        if (event.endDateTime) {
+            form.endTime = dayjs(event.endDateTime).format('HH:mm');
+        }
     }
 
     // Populate recurrence fields if editing a recurring event

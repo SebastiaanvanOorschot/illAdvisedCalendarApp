@@ -48,7 +48,7 @@
                                 <span class="event-color-dot" :style="{ backgroundColor: event.color || '#4a90e2' }"></span>
                                 <div class="event-content">
                                     <div class="event-time">
-                                        {{ formatTime(event.startDateTime) }} - {{ formatTime(event.endDateTime) }}
+                                        {{ event.isAllDay ? 'All day' : `${formatTime(event.startDateTime)} - ${formatTime(event.endDateTime)}` }}
                                     </div>
                                     <div class="event-details">
                                         <h4>{{ event.title }}</h4>

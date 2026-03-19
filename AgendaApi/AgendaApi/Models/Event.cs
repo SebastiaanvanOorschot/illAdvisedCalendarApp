@@ -26,6 +26,9 @@ public class Event
     public string? ExceptionDates { get; set; } // Comma-separated ISO 8601 datetime strings for EXDATE
     public DateTime? RecurrenceId { get; set; } // For modified occurrences - references the original occurrence date
 
+    // All-day event flag (no specific start/end time)
+    public bool IsAllDay { get; set; }
+
     // Color for visual organization
     public string? Color { get; set; } // Hex color code (e.g., "#FF0000")
 

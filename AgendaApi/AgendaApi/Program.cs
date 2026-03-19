@@ -109,6 +109,9 @@ using (var scope = app.Services.CreateScope())
 
     // Store image bytes in DB so images survive redeployments (ephemeral Railway filesystem)
     db.Database.ExecuteSqlRaw(@"ALTER TABLE ""MonthImages"" ADD COLUMN IF NOT EXISTS ""ImageData"" BYTEA");
+
+    // IsAllDay flag added to support all-day events (no specific start/end time)
+    db.Database.ExecuteSqlRaw(@"ALTER TABLE ""Events"" ADD COLUMN IF NOT EXISTS ""IsAllDay"" BOOLEAN NOT NULL DEFAULT FALSE");
 }
 
 // Pre-warm Ical.Net: force JIT compilation and static timezone/rule initialisation

@@ -46,7 +46,12 @@
                     <p>{{ event.description }}</p>
                 </div>
 
-                <div class="detail-row">
+                <div v-if="event.isAllDay" class="detail-group">
+                    <label>Time</label>
+                    <p>All day</p>
+                </div>
+
+                <div v-else class="detail-row">
                     <div class="detail-group">
                         <label>Start Time</label>
                         <p>{{ formatTime(event.startDateTime) }}</p>

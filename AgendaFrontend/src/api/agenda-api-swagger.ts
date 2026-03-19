@@ -2997,6 +2997,7 @@ export class Event implements IEvent {
     endDateTime?: Date;
     createdAt?: Date;
     updatedAt?: Date;
+    isAllDay?: boolean;
     isRecurring?: boolean;
     recurrencePattern?: string | undefined;
     recurrenceInterval?: number | undefined;
@@ -3034,6 +3035,7 @@ export class Event implements IEvent {
             this.endDateTime = _data["endDateTime"] ? new Date(_data["endDateTime"].toString()) : <any>undefined;
             this.createdAt = _data["createdAt"] ? new Date(_data["createdAt"].toString()) : <any>undefined;
             this.updatedAt = _data["updatedAt"] ? new Date(_data["updatedAt"].toString()) : <any>undefined;
+            this.isAllDay = _data["isAllDay"];
             this.isRecurring = _data["isRecurring"];
             this.recurrencePattern = _data["recurrencePattern"];
             this.recurrenceInterval = _data["recurrenceInterval"];
@@ -3071,6 +3073,7 @@ export class Event implements IEvent {
         data["endDateTime"] = this.endDateTime ? this.endDateTime.toISOString() : <any>undefined;
         data["createdAt"] = this.createdAt ? this.createdAt.toISOString() : <any>undefined;
         data["updatedAt"] = this.updatedAt ? this.updatedAt.toISOString() : <any>undefined;
+        data["isAllDay"] = this.isAllDay;
         data["isRecurring"] = this.isRecurring;
         data["recurrencePattern"] = this.recurrencePattern;
         data["recurrenceInterval"] = this.recurrenceInterval;
@@ -3101,6 +3104,7 @@ export interface IEvent {
     endDateTime?: Date;
     createdAt?: Date;
     updatedAt?: Date;
+    isAllDay?: boolean;
     isRecurring?: boolean;
     recurrencePattern?: string | undefined;
     recurrenceInterval?: number | undefined;
