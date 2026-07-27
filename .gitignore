@@ -26,6 +26,8 @@ publish/
 .env
 .env.local
 .env.*.local
+.env.production
+.env.development
 appsettings.Local.json
 appsettings.Production.json
 appsettings.Development.json
@@ -45,6 +47,10 @@ Thumbs.db
 # Temporary files
 temp_fix.txt
 nul
+*.bak
 
 # Test coverage
 coverage/
+
+# Local instructions
+CLAUDE.md
