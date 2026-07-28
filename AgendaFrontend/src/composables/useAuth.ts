@@ -41,6 +41,27 @@ if (accessToken.value) {
   }
 }
 
+function applyAuthResponse(response: AuthResponse): void {
+  if (!response.accessToken || !response.refreshToken) {
+    throw new Error('Auth response is missing tokens');
+  }
+  if (!response.user || response.user.id == null || !response.user.email || !response.user.name) {
+    throw new Error('Auth response is missing user data');
+  }
+
+  accessToken.value = response.accessToken;
+  refreshToken.value = response.refreshToken;
+  localStorage.setItem('accessToken', response.accessToken);
+  localStorage.setItem('refreshToken', response.refreshToken);
+
+  user.value = {
+    id: response.user.id,
+    email: response.user.email,
+    name: response.user.name,
+    profilePictureUrl: response.user.profilePictureUrl
+  };
+}
+
 export function useAuth() {
   const api = new AgendaAPI(getApiBaseUrl(), authenticatedAxios);
 
@@ -57,19 +78,7 @@ export function useAuth() {
 
       const response: AuthResponse = await api.googleLogin(request);
 
-      // Store tokens
-      accessToken.value = response.accessToken;
-      refreshToken.value = response.refreshToken;
-      localStorage.setItem('accessToken', response.accessToken);
-      localStorage.setItem('refreshToken', response.refreshToken);
-
-      // Set user
-      user.value = {
-        id: response.user.id,
-        email: response.user.email,
-        name: response.user.name,
-        profilePictureUrl: response.user.profilePictureUrl
-      };
+      applyAuthResponse(response);
     } catch (err: any) {
       error.value = err.message || 'Login failed';
       throw err;
@@ -86,19 +95,7 @@ export function useAuth() {
     try {
       const response: AuthResponse = await api.refresh(new RefreshRequest({ refreshToken: refreshToken.value }));
 
-      // Update tokens
-      accessToken.value = response.accessToken;
-      refreshToken.value = response.refreshToken;
-      localStorage.setItem('accessToken', response.accessToken);
-      localStorage.setItem('refreshToken', response.refreshToken);
-
-      // Update user
-      user.value = {
-        id: response.user.id,
-        email: response.user.email,
-        name: response.user.name,
-        profilePictureUrl: response.user.profilePictureUrl
-      };
+      applyAuthResponse(response);
 
       return true;
     } catch (err) {
