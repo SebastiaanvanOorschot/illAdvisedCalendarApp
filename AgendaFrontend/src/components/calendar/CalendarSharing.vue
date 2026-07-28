@@ -165,7 +165,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue';
-import { AgendaAPI } from '@/api/agenda-api-swagger';
+import { AgendaAPI, SendInviteRequest, UpdatePermissionRequest } from '@/api/agenda-api-swagger';
 import { authenticatedAxios, getApiBaseUrl } from '@/api/axios-config';
 
 const api = new AgendaAPI(getApiBaseUrl(), authenticatedAxios);
@@ -220,10 +220,10 @@ const sendInvite = async () => {
   sending.value = true;
 
   try {
-    await api.invitesPOST({
+    await api.invitesPOST(new SendInviteRequest({
       recipientEmail: inviteEmail.value,
       permission: invitePermission.value
-    });
+    }));
 
     success.value = `Invite sent to ${inviteEmail.value}`;
     inviteEmail.value = '';
@@ -311,9 +311,9 @@ const updatePermission = async (share: any) => {
   error.value = '';
 
   try {
-    await api.permission(share.id, {
+    await api.permission(share.id, new UpdatePermissionRequest({
       permission: share.permission
-    });
+    }));
     success.value = 'Permission updated successfully';
 
     setTimeout(() => {

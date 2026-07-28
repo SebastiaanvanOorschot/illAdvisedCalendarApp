@@ -1,6 +1,6 @@
 import { ref, computed } from 'vue';
 import { jwtDecode } from 'jwt-decode';
-import { AgendaAPI, AuthResponse, GoogleLoginRequest } from '@/api/agenda-api-swagger';
+import { AgendaAPI, AuthResponse, GoogleLoginRequest, RefreshRequest, LogoutRequest } from '@/api/agenda-api-swagger';
 import { authenticatedAxios, getApiBaseUrl } from '@/api/axios-config';
 
 interface User {
@@ -84,7 +84,7 @@ export function useAuth() {
     }
 
     try {
-      const response: AuthResponse = await api.refresh({ refreshToken: refreshToken.value });
+      const response: AuthResponse = await api.refresh(new RefreshRequest({ refreshToken: refreshToken.value }));
 
       // Update tokens
       accessToken.value = response.accessToken;
@@ -111,7 +111,7 @@ export function useAuth() {
   const logout = async (): Promise<void> => {
     try {
       if (refreshToken.value) {
-        await api.logout({ refreshToken: refreshToken.value });
+        await api.logout(new LogoutRequest({ refreshToken: refreshToken.value }));
       }
     } catch (err) {
       // Ignore errors on logout

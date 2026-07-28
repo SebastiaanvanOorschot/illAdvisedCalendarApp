@@ -26,6 +26,7 @@
   "devDependencies": {
     "@rushstack/eslint-patch": "^1.2.0",
     "@tsconfig/node18": "^2.0.1",
+    "@types/google.accounts": "^0.0.18",
     "@types/node": "^18.16.17",
     "@types/vuelidate": "^0.7.18",
     "@vitejs/plugin-vue": "^4.2.3",

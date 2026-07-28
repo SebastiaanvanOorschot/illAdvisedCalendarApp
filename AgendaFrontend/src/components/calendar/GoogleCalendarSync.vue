@@ -109,7 +109,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
 import { useAuth } from '@/composables/useAuth';
-import { AgendaAPI, GoogleCalendarInfo, ImportRequest, CalendarImportItem } from '@/api/agenda-api-swagger';
+import { AgendaAPI, GoogleCalendarInfo, ImportRequest, CalendarImportItem, ConnectRequest } from '@/api/agenda-api-swagger';
 import { authenticatedAxios, getApiBaseUrl } from '@/api/axios-config';
 
 const api = new AgendaAPI(getApiBaseUrl(), authenticatedAxios);
@@ -224,7 +224,7 @@ const handleOAuthRedirect = async () => {
 
     if (accessToken && state === 'calendar_connect') {
       // Send access token to backend to store in database
-      await api.connect({ accessToken });
+      await api.connect(new ConnectRequest({ accessToken }));
 
       // Store the calendar access token in sessionStorage as a marker
       sessionStorage.setItem('google_calendar_token', accessToken);

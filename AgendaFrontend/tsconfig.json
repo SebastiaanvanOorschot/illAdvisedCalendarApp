@@ -25,7 +25,8 @@
         ]
       },
       "types": [
-        "@types/node"
+        "@types/node",
+        "google.accounts"
       ]
     },
     "include": ["src/**/*.ts", "src/**/*.d.ts", "src/**/*.vue", "components.d.ts"],

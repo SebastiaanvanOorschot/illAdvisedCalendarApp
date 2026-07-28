@@ -1,5 +1,5 @@
 import dayjs from 'dayjs';
-import { AgendaAPI, Event } from '@/api/agenda-api-swagger';
+import { AgendaAPI, Event, EditOccurrenceRequest } from '@/api/agenda-api-swagger';
 import { authenticatedAxios, getApiBaseUrl } from '@/api/axios-config';
 
 const api = new AgendaAPI(getApiBaseUrl(), authenticatedAxios);
@@ -182,14 +182,14 @@ export function useEventOperations() {
                 .toDate()
             : undefined;
 
-        const request = {
+        const request = new EditOccurrenceRequest({
             originalOccurrenceDate: event.startDateTime,
             title: formData.title,
             description: formData.description || undefined,
             newStartDateTime: startDateTime,
             newEndDateTime: endDateTime,
             color: formData.color
-        };
+        });
 
         await api.editOccurrence(event.id, request);
     }
