@@ -28,7 +28,7 @@
         "@types/node"
       ]
     },
-    "include": ["components.d.ts"],
+    "include": ["src/**/*.ts", "src/**/*.d.ts", "src/**/*.vue", "components.d.ts"],
     "exclude": [
       "node_modules"
     ]
