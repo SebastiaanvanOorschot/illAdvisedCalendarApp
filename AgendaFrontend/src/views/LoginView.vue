@@ -38,6 +38,7 @@ onMounted(() => {
       google.accounts.id.renderButton(
         document.getElementById('google-signin-button')!,
         {
+          type: 'standard',
           theme: 'outline',
           size: 'large',
           text: 'signin_with',
