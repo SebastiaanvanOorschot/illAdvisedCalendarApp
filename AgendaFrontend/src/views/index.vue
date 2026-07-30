@@ -109,17 +109,12 @@ import DatePickerPopover from '../components/calendar/DatePickerPopover.vue';
 import { AgendaAPI } from '@/api/agenda-api-swagger';
 import { authenticatedAxios, getApiBaseUrl } from '@/api/axios-config';
 import { useBackButton } from '@/composables/useBackButton';
+import type { CalendarDate } from '@/types/calendar';
 
 const defaultImage = new URL('../images/Default image.jpg', import.meta.url).href;
 
 dayjs.extend(weekOfYear);
 dayjs.extend(isoWeek);
-
-type CalendarDate = {
-    day: number,
-    date: number,
-    thisMonth: boolean
-};
 
 type ViewType = 'list' | 'month' | 'week' | 'day';
 
@@ -251,7 +246,7 @@ function navigateNext() {
 
 function handleDateSelect(d: CalendarDate) {
     dayOfMonth.value = d.date;
-    day.value = d.day;
+    day.value = d.day ?? dayjs().year(d.year ?? year.value).month(d.month ?? month.value).date(d.date).isoWeekday();
 
     if (!d.thisMonth && d.date >= 24) {
         month.value = currentMonth - 1;

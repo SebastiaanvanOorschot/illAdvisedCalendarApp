@@ -1,8 +1,8 @@
 <template>
   <div class="calendar-subscriptions">
-    <div class="subscriptions-list" v-if="subscriptions.length > 0">
+    <div class="subscriptions-list" v-if="validSubscriptions.length > 0">
       <div
-        v-for="subscription in subscriptions"
+        v-for="subscription in validSubscriptions"
         :key="subscription.id"
         class="subscription-item"
         :class="{ inactive: !subscription.isActive }"
@@ -16,7 +16,7 @@
               ></span>
               <h4>{{ subscription.name }}</h4>
             </div>
-            <p class="subscription-url">{{ getTruncatedUrl(subscription.iCalUrl) }}</p>
+            <p class="subscription-url">{{ getTruncatedUrl(subscription.iCalUrl ?? '') }}</p>
             <p class="subscription-meta">
               <span v-if="subscription.lastSyncedAt">
                 Last synced: {{ formatLastSync(subscription.lastSyncedAt) }}
@@ -185,6 +185,10 @@ const isFormValid = computed(() => {
   return formData.value.name.trim() !== '' && formData.value.iCalUrl.trim() !== '';
 });
 
+const validSubscriptions = computed(() =>
+  subscriptions.value.filter((s): s is CalendarSubscription & { id: number } => s.id != null)
+);
+
 async function loadSubscriptions() {
   try {
     subscriptions.value = await api.calendarSubscriptionAll();
@@ -216,7 +220,7 @@ function formatLastSync(date: Date): string {
 }
 
 async function syncSubscription(subscription: CalendarSubscription) {
-  syncing.value = subscription.id;
+  syncing.value = subscription.id ?? null;
   error.value = '';
 
   try {
@@ -243,8 +247,8 @@ async function toggleSubscription(subscription: CalendarSubscription) {
 function editSubscription(subscription: CalendarSubscription) {
   editingSubscription.value = subscription;
   formData.value = {
-    name: subscription.name,
-    iCalUrl: subscription.iCalUrl,
+    name: subscription.name ?? '',
+    iCalUrl: subscription.iCalUrl ?? '',
     color: subscription.color || '#0000FF',
     syncIntervalMinutes: subscription.syncIntervalMinutes || 60
   };

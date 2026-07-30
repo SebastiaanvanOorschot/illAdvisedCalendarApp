@@ -116,6 +116,7 @@ import RecurringEventPromptModal from './RecurringEventPromptModal.vue';
 import RecurringEventEditPromptModal from './RecurringEventEditPromptModal.vue';
 import { useWeather } from '@/composables/useWeather';
 import { useEventOperations, EventFormData } from '@/composables/useEventOperations';
+import type { CalendarDate } from '@/types/calendar';
 
 dayjs.extend(weekOfYear);
 dayjs.extend(isoWeek);
@@ -148,7 +149,7 @@ interface DayData {
 const props = defineProps<Props>();
 
 const emit = defineEmits<{
-    (e: 'dateSelect', date: { date: number; month: number; year: number; thisMonth: boolean }): void;
+    (e: 'dateSelect', date: CalendarDate): void;
     (e: 'visibleDateChange', date: { date: number; month: number; year: number }): void;
 }>();
 

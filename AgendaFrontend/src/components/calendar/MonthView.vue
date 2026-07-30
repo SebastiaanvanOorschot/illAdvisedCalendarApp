@@ -62,15 +62,10 @@ import { authenticatedAxios, getApiBaseUrl } from '@/api/axios-config';
 import DayModal from './DayModal.vue';
 import WeatherIcon from '../weather/WeatherIcon.vue';
 import { useWeather } from '@/composables/useWeather';
+import type { CalendarDate } from '@/types/calendar';
 
 dayjs.extend(weekOfYear);
 dayjs.extend(isoWeek);
-
-type CalendarDate = {
-    day: number,
-    date: number,
-    thisMonth: boolean
-};
 
 interface Props {
     currentMonth: number;
