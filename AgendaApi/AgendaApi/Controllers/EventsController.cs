@@ -103,10 +103,13 @@ public class EventsController : ControllerBase
             RecurrenceRule = e.RecurrenceRule,
             ExceptionDates = e.ExceptionDates,
             RecurrenceId = e.RecurrenceId,
+            IsAllDay = e.IsAllDay,
             Color = e.Color,
+            GoogleCalendarId = e.GoogleCalendarId,
             GoogleEventId = e.GoogleEventId,
             IsImportedFromGoogle = e.IsImportedFromGoogle,
             IsLocallyModified = e.IsLocallyModified,
+            ExternalEventId = e.ExternalEventId,
             UserId = e.UserId,
             OwnerName = e.User?.Name,
             OwnerEmail = e.User?.Email,
@@ -553,29 +556,8 @@ public class EditOccurrenceRequest
 /// <summary>
 /// Event model with owner information for shared calendars
 /// </summary>
-public class EventWithOwner
+public class EventWithOwner : Event
 {
-    public int Id { get; set; }
-    public required string Title { get; set; }
-    public string? Description { get; set; }
-    public DateTime StartDateTime { get; set; }
-    public DateTime? EndDateTime { get; set; }
-    public DateTime CreatedAt { get; set; }
-    public DateTime UpdatedAt { get; set; }
-    public bool IsRecurring { get; set; }
-    public string? RecurrencePattern { get; set; }
-    public int? RecurrenceInterval { get; set; }
-    public DateTime? RecurrenceEndDate { get; set; }
-    public int? ParentEventId { get; set; }
-    public string? RecurrenceRule { get; set; }
-    public string? ExceptionDates { get; set; }
-    public DateTime? RecurrenceId { get; set; }
-    public string? Color { get; set; }
-    public string? GoogleEventId { get; set; }
-    public bool IsImportedFromGoogle { get; set; }
-    public bool IsLocallyModified { get; set; }
-    public int UserId { get; set; }
-
     // Owner information
     public string? OwnerName { get; set; }
     public string? OwnerEmail { get; set; }
@@ -583,8 +565,5 @@ public class EventWithOwner
     public SharePermission? Permission { get; set; }
 
     // Subscription information
-    public bool IsFromSubscription { get; set; }
-    public bool IsReadOnly { get; set; }
     public string? SubscriptionName { get; set; }
-    public int? CalendarSubscriptionId { get; set; }
 }

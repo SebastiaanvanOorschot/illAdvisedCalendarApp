@@ -86,7 +86,7 @@ import { useBackButton } from '@/composables/useBackButton';
 
 interface Props {
     show: boolean;
-    event: Event | EventWithOwner | null;
+    event: EventWithOwner | null;
 }
 
 interface Emits {
@@ -111,32 +111,28 @@ const isExternalEvent = computed(() => {
 });
 
 const isOwnEvent = computed(() => {
-    const eventWithOwner = props.event as EventWithOwner;
-    return eventWithOwner?.isOwnEvent === undefined || eventWithOwner?.isOwnEvent === true;
+    return props.event?.isOwnEvent === undefined || props.event?.isOwnEvent === true;
 });
 
 const canEdit = computed(() => {
     // External events are always read-only
     if (isExternalEvent.value) return false;
 
-    const eventWithOwner = props.event as EventWithOwner;
-
     // Owner always has edit access
     if (isOwnEvent.value) return true;
 
     // Check if user has ReadWrite permission on shared event
     // SharePermission: 0 = Read, 1 = ReadWrite
-    return eventWithOwner?.permission === 1;
+    return props.event?.permission === 1;
 });
 
 const ownerInitials = computed(() => {
-    const eventWithOwner = props.event as EventWithOwner;
-    if (!eventWithOwner?.ownerName) return '?';
-    const parts = eventWithOwner.ownerName.split(' ');
+    if (!props.event?.ownerName) return '?';
+    const parts = props.event.ownerName.split(' ');
     if (parts.length >= 2) {
         return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
     }
-    return eventWithOwner.ownerName.substring(0, 2).toUpperCase();
+    return props.event.ownerName.substring(0, 2).toUpperCase();
 });
 
 function formatTime(date?: Date): string {
