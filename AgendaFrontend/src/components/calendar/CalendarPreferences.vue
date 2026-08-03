@@ -120,7 +120,7 @@ onMounted(() => {
 .loading {
   padding: 20px;
   text-align: center;
-  color: #666;
+  color: var(--color-text-muted);
 }
 
 .error-message {
@@ -152,12 +152,12 @@ onMounted(() => {
 .preference-label {
   font-size: 16px;
   font-weight: 600;
-  color: #333;
+  color: var(--color-text);
 }
 
 .preference-description {
   font-size: 14px;
-  color: #666;
+  color: var(--color-text-muted);
   margin: 0;
 }
 
@@ -172,7 +172,7 @@ onMounted(() => {
   align-items: flex-start;
   gap: 12px;
   padding: 16px;
-  border: 2px solid #e0e0e0;
+  border: 2px solid var(--color-border);
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.2s;
@@ -180,12 +180,12 @@ onMounted(() => {
 }
 
 .radio-option:hover {
-  border-color: #667eea;
+  border-color: var(--color-accent);
   background-color: #f8f9ff;
 }
 
 .radio-option.active {
-  border-color: #667eea;
+  border-color: var(--color-accent);
   background-color: #f0f2ff;
 }
 
@@ -207,12 +207,12 @@ onMounted(() => {
 .radio-title {
   font-size: 15px;
   font-weight: 600;
-  color: #333;
+  color: var(--color-text);
 }
 
 .radio-subtitle {
   font-size: 13px;
-  color: #666;
+  color: var(--color-text-muted);
 }
 
 .save-message {
@@ -224,15 +224,15 @@ onMounted(() => {
 }
 
 .save-message.success {
-  background-color: #d4edda;
-  color: #155724;
-  border: 1px solid #c3e6cb;
+  background-color: var(--color-success-bg);
+  color: var(--color-success-text);
+  border: 1px solid var(--color-success-border);
 }
 
 .save-message.error {
-  background-color: #f8d7da;
-  color: #721c24;
-  border: 1px solid #f5c6cb;
+  background-color: var(--color-danger-bg);
+  color: var(--color-danger-text);
+  border: 1px solid var(--color-danger-border);
 }
 
 @keyframes slideIn {

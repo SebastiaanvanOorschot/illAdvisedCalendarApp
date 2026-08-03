@@ -12,7 +12,7 @@
             <div class="subscription-name-row">
               <span
                 class="subscription-color"
-                :style="{ backgroundColor: subscription.color || '#667eea' }"
+                :style="{ backgroundColor: subscription.color || 'var(--color-accent)' }"
               ></span>
               <h4>{{ subscription.name }}</h4>
             </div>
@@ -152,6 +152,7 @@
 import { ref, onMounted, computed } from 'vue';
 import { AgendaAPI, CalendarSubscriptionRequest, CalendarSubscription } from '@/api/agenda-api-swagger';
 import { authenticatedAxios, getApiBaseUrl } from '@/api/axios-config';
+import { EVENT_COLOR_OPTIONS } from '@/constants/eventColors';
 
 const subscriptions = ref<CalendarSubscription[]>([]);
 const showAddForm = ref(false);
@@ -168,18 +169,7 @@ const formData = ref({
 
 const api = new AgendaAPI(getApiBaseUrl(), authenticatedAxios);
 
-// Color options matching Google Calendar style
-const colorOptions = [
-  '#000000', // Black
-  '#FF0000', // Red
-  '#00FF00', // Green
-  '#0000FF', // Blue
-  '#FFFF00', // Yellow
-  '#FF00FF', // Magenta
-  '#00FFFF', // Cyan
-  '#FF8800', // Orange
-  '#8800FF', // Purple
-];
+const colorOptions = EVENT_COLOR_OPTIONS;
 
 const isFormValid = computed(() => {
   return formData.value.name.trim() !== '' && formData.value.iCalUrl.trim() !== '';
@@ -380,20 +370,20 @@ onMounted(() => {
   margin: 0;
   font-size: 16px;
   font-weight: 600;
-  color: #333;
+  color: var(--color-text);
 }
 
 .subscription-url {
   margin: 4px 0;
   font-size: 13px;
-  color: #666;
+  color: var(--color-text-muted);
   font-family: monospace;
 }
 
 .subscription-meta {
   margin: 4px 0 0 0;
   font-size: 12px;
-  color: #999;
+  color: var(--color-text-subtle);
 }
 
 .not-synced {
@@ -411,7 +401,7 @@ onMounted(() => {
 
 .btn-icon {
   background: white;
-  border: 1px solid #ddd;
+  border: 1px solid var(--color-border-light);
   border-radius: 6px;
   width: 36px;
   height: 36px;
@@ -424,8 +414,8 @@ onMounted(() => {
 }
 
 .btn-icon:hover:not(:disabled) {
-  background: #f5f5f5;
-  border-color: #667eea;
+  background: var(--color-bg-subtle-2);
+  border-color: var(--color-accent);
 }
 
 .btn-icon:disabled {
@@ -455,7 +445,7 @@ onMounted(() => {
 .no-subscriptions {
   text-align: center;
   padding: 40px 20px;
-  color: #999;
+  color: var(--color-text-subtle);
 }
 
 .btn-add-subscription {
@@ -465,7 +455,7 @@ onMounted(() => {
   gap: 8px;
   width: 100%;
   padding: 12px;
-  background: #667eea;
+  background: var(--color-accent);
   color: white;
   border: none;
   border-radius: 8px;
@@ -476,7 +466,7 @@ onMounted(() => {
 }
 
 .btn-add-subscription:hover {
-  background: #5568d3;
+  background: var(--color-accent-hover);
 }
 
 .subscription-form {
@@ -490,7 +480,7 @@ onMounted(() => {
   margin: 0 0 20px 0;
   font-size: 16px;
   font-weight: 600;
-  color: #333;
+  color: var(--color-text);
 }
 
 .form-group {
@@ -510,7 +500,7 @@ onMounted(() => {
 .form-group input[type="number"] {
   width: 100%;
   padding: 10px 12px;
-  border: 1px solid #ddd;
+  border: 1px solid var(--color-border-light);
   border-radius: 6px;
   font-size: 14px;
   box-sizing: border-box;
@@ -518,7 +508,7 @@ onMounted(() => {
 
 .form-group input:focus {
   outline: none;
-  border-color: #667eea;
+  border-color: var(--color-accent);
 }
 
 .color-options {
@@ -531,7 +521,7 @@ onMounted(() => {
   width: 32px;
   height: 32px;
   border-radius: 6px;
-  border: 2px solid #e0e0e0;
+  border: 2px solid var(--color-border);
   cursor: pointer;
   transition: all 0.2s;
   padding: 0;
@@ -541,11 +531,11 @@ onMounted(() => {
 
 .color-option:hover {
   transform: scale(1.1);
-  border-color: #999;
+  border-color: var(--color-text-subtle);
 }
 
 .color-option.selected {
-  border-color: #4285f4;
+  border-color: var(--color-google);
   border-width: 3px;
   box-shadow: 0 0 0 2px rgba(66, 133, 244, 0.2);
 }
@@ -553,7 +543,7 @@ onMounted(() => {
 .form-hint {
   margin: 6px 0 0 0;
   font-size: 12px;
-  color: #999;
+  color: var(--color-text-subtle);
 }
 
 .form-actions {
@@ -575,22 +565,22 @@ onMounted(() => {
 
 .btn-cancel {
   background: white;
-  border: 1px solid #ddd;
-  color: #666;
+  border: 1px solid var(--color-border-light);
+  color: var(--color-text-muted);
 }
 
 .btn-cancel:hover {
-  background: #f5f5f5;
+  background: var(--color-bg-subtle-2);
 }
 
 .btn-save {
-  background: #667eea;
+  background: var(--color-accent);
   border: none;
   color: white;
 }
 
 .btn-save:hover:not(:disabled) {
-  background: #5568d3;
+  background: var(--color-accent-hover);
 }
 
 .btn-save:disabled {

@@ -225,20 +225,20 @@ async function uploadImage() {
   justify-content: space-between;
   align-items: center;
   padding: 20px;
-  border-bottom: 1px solid #e0e0e0;
+  border-bottom: 1px solid var(--color-border);
 }
 
 .modal-header h3 {
   margin: 0;
   font-size: 20px;
-  color: #333;
+  color: var(--color-text);
 }
 
 .close-btn {
   background: none;
   border: none;
   cursor: pointer;
-  color: #666;
+  color: var(--color-text-muted);
   padding: 4px;
   display: flex;
   align-items: center;
@@ -248,7 +248,7 @@ async function uploadImage() {
 }
 
 .close-btn:hover {
-  background-color: #f0f0f0;
+  background-color: var(--color-bg-muted);
 }
 
 .modal-body {
@@ -257,44 +257,44 @@ async function uploadImage() {
 
 .month-info {
   margin: 0 0 20px 0;
-  color: #666;
+  color: var(--color-text-muted);
   font-size: 14px;
 }
 
 .drop-zone {
-  border: 2px dashed #ccc;
+  border: 2px dashed var(--color-border-strong);
   border-radius: 8px;
   padding: 40px 20px;
   text-align: center;
   cursor: pointer;
   transition: all 0.2s;
-  background-color: #f9f9f9;
+  background-color: var(--color-bg-subtle);
 }
 
 .drop-zone:hover {
-  border-color: #667eea;
+  border-color: var(--color-accent);
   background-color: #f5f7ff;
 }
 
 .drop-zone.drag-over {
-  border-color: #667eea;
+  border-color: var(--color-accent);
   background-color: #e8ecff;
 }
 
 .drop-zone-content svg {
-  color: #999;
+  color: var(--color-text-subtle);
   margin-bottom: 16px;
 }
 
 .drop-zone-content p {
   margin: 0 0 8px 0;
   font-size: 16px;
-  color: #333;
+  color: var(--color-text);
 }
 
 .file-hint {
   font-size: 12px;
-  color: #999;
+  color: var(--color-text-subtle);
 }
 
 .selected-file-info {
@@ -314,7 +314,7 @@ async function uploadImage() {
 .file-name {
   margin: 0;
   font-size: 14px;
-  color: #333;
+  color: var(--color-text);
   word-break: break-all;
 }
 
@@ -357,7 +357,7 @@ async function uploadImage() {
   justify-content: flex-end;
   gap: 12px;
   padding: 20px;
-  border-top: 1px solid #e0e0e0;
+  border-top: 1px solid var(--color-border);
 }
 
 .btn-secondary,
@@ -372,21 +372,21 @@ async function uploadImage() {
 }
 
 .btn-secondary {
-  background: #f0f0f0;
-  color: #333;
+  background: var(--color-bg-muted);
+  color: var(--color-text);
 }
 
 .btn-secondary:hover:not(:disabled) {
-  background: #e0e0e0;
+  background: var(--color-border);
 }
 
 .btn-primary {
-  background: #667eea;
+  background: var(--color-accent);
   color: white;
 }
 
 .btn-primary:hover:not(:disabled) {
-  background: #5568d3;
+  background: var(--color-accent-hover);
 }
 
 .btn-secondary:disabled,

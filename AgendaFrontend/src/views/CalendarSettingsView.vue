@@ -59,7 +59,7 @@ import CalendarSubscriptions from '@/components/calendar/CalendarSubscriptions.v
 .calendar-settings-page {
   /* Inherits width from .calendar class (55vw desktop, 90vw tablet, 100vw mobile) */
   min-height: 100vh;
-  background-color: #f5f5f5;
+  background-color: var(--color-bg-subtle-2);
   /* Override calendar's box-shadow */
   box-shadow: none !important;
   /* Allow scrolling when content is long */
@@ -81,7 +81,7 @@ import CalendarSubscriptions from '@/components/calendar/CalendarSubscriptions.v
   background: none;
   border: none;
   cursor: pointer;
-  color: #667eea;
+  color: var(--color-accent);
   font-size: 14px;
   font-weight: 500;
   padding: 8px 12px;
@@ -91,13 +91,13 @@ import CalendarSubscriptions from '@/components/calendar/CalendarSubscriptions.v
 }
 
 .back-button:hover {
-  background-color: #f0f0f0;
+  background-color: var(--color-bg-muted);
 }
 
 .calendar-settings-header h1 {
   margin: 0;
   font-size: 28px;
-  color: #333;
+  color: var(--color-text);
 }
 
 .calendar-settings-content {
@@ -122,32 +122,32 @@ import CalendarSubscriptions from '@/components/calendar/CalendarSubscriptions.v
 .calendar-settings-section h3 {
   margin: 0 0 8px 0;
   font-size: 20px;
-  color: #333;
+  color: var(--color-text);
   font-weight: 600;
 }
 
 .section-description {
   margin: 0 0 24px 0;
-  color: #666;
+  color: var(--color-text-muted);
   font-size: 14px;
 }
 
 .subsection-divider {
   height: 1px;
-  background: #e0e0e0;
+  background: var(--color-border);
   margin: 32px 0 24px 0;
 }
 
 .subsection-title {
   margin: 0 0 6px 0;
   font-size: 16px;
-  color: #333;
+  color: var(--color-text);
   font-weight: 600;
 }
 
 .subsection-description {
   margin: 0 0 16px 0;
-  color: #666;
+  color: var(--color-text-muted);
   font-size: 13px;
 }
 

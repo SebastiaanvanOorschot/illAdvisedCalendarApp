@@ -18,7 +18,7 @@
                             class="event-tag"
                             :class="{ 'show-title-mode': showEventTitleInMonthView }"
                         >
-                            <span class="event-dot" :style="{ backgroundColor: occurrence.color || '#4a90e2' }"></span>
+                            <span class="event-dot" :style="{ backgroundColor: occurrence.color || 'var(--color-primary)' }"></span>
                             <span class="event-title-text" v-if="!showEventTitleInMonthView">{{ occurrence.title }}</span>
                             <span class="event-title-text event-title-full" v-if="showEventTitleInMonthView">{{ occurrence.title }}</span>
                             <span class="event-time" v-if="!showEventTitleInMonthView">{{ formatEventTime(occurrence.occurrenceStart) }}</span>
@@ -393,16 +393,16 @@ onUnmounted(() => {
 <style scoped>
 
 .days div.day {
-    border-bottom: 1px solid #e0e0e0;
+    border-bottom: 1px solid var(--color-border);
     display: flex;
     justify-content: center;
     align-items: center;
-    color: #262626;
+    color: var(--color-text-dark);
     font-weight: 700;
 }
 
 .days div.day:not(:nth-child(7n)) {
-    border-right: 1px solid #e0e0e0; 
+    border-right: 1px solid var(--color-border); 
 }
 
 .days div.day:nth-child(7) {
@@ -411,7 +411,7 @@ onUnmounted(() => {
 
 /* Day Cell */
 .day-cell {
-    border-bottom: 1px solid #e0e0e0;
+    border-bottom: 1px solid var(--color-border);
     cursor: pointer;
     display: flex !important;
     flex-direction: column !important;
@@ -428,11 +428,11 @@ onUnmounted(() => {
 }
 
 .day-cell:not(:nth-child(7n +7)) {
-   border-right: 1px solid #e0e0e0; 
+   border-right: 1px solid var(--color-border); 
 }
 
 .day-cell:hover {
-    background-color: #f9f9f9;
+    background-color: var(--color-bg-subtle);
 }
 
 .day-cell.other-month {
@@ -440,7 +440,7 @@ onUnmounted(() => {
 }
 
 .day-cell.other-month .day-number {
-    color: #999;
+    color: var(--color-text-subtle);
 }
 
 /* Sunday styling */
@@ -455,7 +455,7 @@ onUnmounted(() => {
 }
 
 .btn-add-event {
-    background: #4a90e2;
+    background: var(--color-primary);
     border: none;
     border-radius: 3px;
     color: white;
@@ -478,14 +478,14 @@ onUnmounted(() => {
 }
 
 .btn-add-event:hover {
-    background: #357abd;
+    background: var(--color-primary-hover);
     transform: scale(1.1);
 }
 
 .day-number {
     font-weight: 600;
     font-size: 0.9rem;
-    color: #262626;
+    color: var(--color-text-dark);
     text-align: left;
 }
 
@@ -502,7 +502,7 @@ onUnmounted(() => {
 
 .loading-small {
     font-size: 0.7rem;
-    color: #999;
+    color: var(--color-text-subtle);
     text-align: left;
 }
 
@@ -512,7 +512,7 @@ onUnmounted(() => {
     align-items: center;
     font-size: 0.7rem;
     padding: 1px 5px 1px 3px;
-    color: #262626;
+    color: var(--color-text-dark);
     position: relative;
     width: 100%;
     line-height: 1.3;
@@ -546,13 +546,13 @@ onUnmounted(() => {
 .event-time {
     flex-shrink: 0;
     font-size: 0.65rem;
-    color: #000 !important;
+    color: var(--color-black) !important;
     font-weight: 700;
 }
 
 .more-events {
     font-size: 0.65rem;
-    color: #666;
+    color: var(--color-text-muted);
     font-style: italic;
     padding: 1px 0 1px 13px;
     text-align: left;
@@ -568,14 +568,14 @@ onUnmounted(() => {
     display: block;
     margin-bottom: 5px;
     font-weight: 600;
-    color: #262626;
+    color: var(--color-text-dark);
 }
 
 .form-group input,
 .form-group textarea {
     width: 100%;
     padding: 8px 12px;
-    border: 1px solid #e0e0e0;
+    border: 1px solid var(--color-border);
     border-radius: 4px;
     font-size: 14px;
     font-family: inherit;
@@ -585,7 +585,7 @@ onUnmounted(() => {
 .form-group input:focus,
 .form-group textarea:focus {
     outline: none;
-    border-color: #4a90e2;
+    border-color: var(--color-primary);
 }
 
 .form-row {
@@ -605,15 +605,15 @@ onUnmounted(() => {
 }
 
 .message.success {
-    background: #d4edda;
-    color: #155724;
-    border: 1px solid #c3e6cb;
+    background: var(--color-success-bg);
+    color: var(--color-success-text);
+    border: 1px solid var(--color-success-border);
 }
 
 .message.error {
-    background: #f8d7da;
-    color: #721c24;
-    border: 1px solid #f5c6cb;
+    background: var(--color-danger-bg);
+    color: var(--color-danger-text);
+    border: 1px solid var(--color-danger-border);
 }
 
 .modal-actions {
@@ -625,9 +625,9 @@ onUnmounted(() => {
 
 .btn-cancel {
     padding: 10px 20px;
-    background: #f5f5f5;
-    color: #262626;
-    border: 1px solid #e0e0e0;
+    background: var(--color-bg-subtle-2);
+    color: var(--color-text-dark);
+    border: 1px solid var(--color-border);
     border-radius: 4px;
     font-size: 14px;
     font-weight: 600;
@@ -636,12 +636,12 @@ onUnmounted(() => {
 }
 
 .btn-cancel:hover {
-    background: #e0e0e0;
+    background: var(--color-border);
 }
 
 .btn-create {
     padding: 10px 20px;
-    background: #4a90e2;
+    background: var(--color-primary);
     color: white;
     border: none;
     border-radius: 4px;
@@ -652,11 +652,11 @@ onUnmounted(() => {
 }
 
 .btn-create:hover:not(:disabled) {
-    background: #357abd;
+    background: var(--color-primary-hover);
 }
 
 .btn-create:disabled {
-    background: #ccc;
+    background: var(--color-border-strong);
     cursor: not-allowed;
 }
 
@@ -702,7 +702,7 @@ onUnmounted(() => {
     .event-tag:not(.show-title-mode) .event-time-mobile {
         display: inline;
         font-size: 0.65rem;
-        color: #000;
+        color: var(--color-black);
         font-weight: 700;
     }
 

@@ -57,7 +57,7 @@ const userInitials = computed(() => {
 <style scoped>
 .profile-page {
   min-height: 100vh;
-  background-color: #f5f5f5;
+  background-color: var(--color-bg-subtle-2);
 }
 
 .profile-header {
@@ -74,7 +74,7 @@ const userInitials = computed(() => {
   background: none;
   border: none;
   cursor: pointer;
-  color: #667eea;
+  color: var(--color-accent);
   font-size: 14px;
   font-weight: 500;
   padding: 8px 12px;
@@ -84,13 +84,13 @@ const userInitials = computed(() => {
 }
 
 .back-button:hover {
-  background-color: #f0f0f0;
+  background-color: var(--color-bg-muted);
 }
 
 .profile-header h1 {
   margin: 0;
   font-size: 28px;
-  color: #333;
+  color: var(--color-text);
 }
 
 .profile-content {
@@ -123,7 +123,7 @@ const userInitials = computed(() => {
   width: 120px;
   height: 120px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, var(--color-accent) 0%, var(--color-accent-2) 100%);
   color: white;
   display: flex;
   align-items: center;
@@ -136,18 +136,18 @@ const userInitials = computed(() => {
   text-align: center;
   margin-bottom: 32px;
   padding-bottom: 32px;
-  border-bottom: 1px solid #e0e0e0;
+  border-bottom: 1px solid var(--color-border);
 }
 
 .profile-info h2 {
   margin: 0 0 8px 0;
   font-size: 24px;
-  color: #333;
+  color: var(--color-text);
 }
 
 .profile-email {
   margin: 0;
-  color: #666;
+  color: var(--color-text-muted);
   font-size: 16px;
 }
 
@@ -158,11 +158,11 @@ const userInitials = computed(() => {
 .profile-section h3 {
   margin: 0 0 16px 0;
   font-size: 18px;
-  color: #333;
+  color: var(--color-text);
 }
 
 .coming-soon {
-  color: #999;
+  color: var(--color-text-subtle);
   font-style: italic;
   text-align: center;
   padding: 40px 0;

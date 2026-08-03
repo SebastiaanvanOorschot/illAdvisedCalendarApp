@@ -1,4 +1,52 @@
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap');
+
+:root {
+  /* neutrals / borders */
+  --color-border: #e0e0e0;
+  --color-border-light: #ddd;
+  --color-border-strong: #ccc;
+  --color-bg-subtle: #f9f9f9;
+  --color-bg-subtle-2: #f5f5f5;
+  --color-bg-muted: #f0f0f0;
+
+  /* text */
+  --color-text: #333;
+  --color-text-dark: #262626;
+  --color-text-muted: #666;
+  --color-text-subtle: #999;
+
+  /* base */
+  --color-white: #fff;
+  --color-black: #000000;
+
+  /* brand */
+  --color-primary: #4a90e2;
+  --color-primary-hover: #357abd;
+
+  /* accent gradient */
+  --color-accent: #667eea;
+  --color-accent-2: #764ba2;
+  --color-accent-hover: #5568d3;
+
+  /* status: success */
+  --color-success-bg: #d4edda;
+  --color-success-text: #155724;
+  --color-success-border: #c3e6cb;
+
+  /* status: danger */
+  --color-danger-bg: #f8d7da;
+  --color-danger-text: #721c24;
+  --color-danger-border: #f5c6cb;
+  --color-danger: #dc3545;
+  --color-danger-hover: #c82333;
+
+  /* third-party brand */
+  --color-google: #4285f4;
+
+  /* overlays */
+  --overlay-backdrop: rgba(0, 0, 0, 0.5);
+}
+
 * {
   margin: 0;
   padding: 0;
@@ -11,7 +59,7 @@ body {
   justify-content: center;
   align-items: center;
   height: 100dvh;
-  background: #f0f0f0;
+  background: var(--color-bg-muted);
 }
 
 
@@ -37,7 +85,7 @@ body {
 }
 .navMenu button {
   font-weight: 500;
-  color: #fff;
+  color: var(--color-white);
   min-width: 80px;
   width: auto;
   padding: 0 20px;
@@ -47,8 +95,8 @@ body {
   flex-shrink: 0;
 }
 .navMenu button:hover {
-  color: #262626;
-  background: #fff;
+  color: var(--color-text-dark);
+  background: var(--color-white);
 }
 
 
@@ -56,7 +104,7 @@ body {
 .calendar {
   width: 55vw;
   height: 100vh;
-  background: #fff;
+  background: var(--color-white);
   box-sizing: border-box;
   box-shadow: 0 5px 50px rgba(0, 0, 0, 5);
   display: flex;
@@ -79,7 +127,7 @@ body {
 .calendar .image h3 {
   margin: 0;
   padding: 0;
-  color: #fff;
+  color: var(--color-white);
   text-shadow:
     0 0 3px rgba(0, 0, 0, 0.8),
     0 0 5px rgba(0, 0, 0, 0.6),
@@ -106,7 +154,7 @@ body {
   width: 25px;
   background: none;
   border: none;
-  color: #FFF;
+  color: var(--color-white);
   text-shadow:
     0 0 3px rgba(0, 0, 0, 0.8),
     0 0 5px rgba(0, 0, 0, 0.6),
@@ -119,8 +167,8 @@ body {
   font-weight: 800;
 }
 .calendar .image .dateGroupYear .dateNav:hover {
-  color: #262626;
-  background: #fff;
+  color: var(--color-text-dark);
+  background: var(--color-white);
 }
 .calendar .days {
   height: 60vh;
@@ -133,13 +181,13 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
-  color: #262626;
+  color: var(--color-text-dark);
 }
 .calendar .days button {  
   display: flex;
   justify-content: center;
   align-items: center;
-  color: #262626;
+  color: var(--color-text-dark);
   border: none;
   background: none;
 }
@@ -157,7 +205,7 @@ body {
 .calendar .days button.numberInThisMonth:focus,
 .calendar .days button.numberInThisMonth:hover {
   background: #009688;
-  color: #fff;
+  color: var(--color-white);
   font-weight: 700;
   cursor: pointer;
 }
@@ -200,7 +248,7 @@ body {
   .calendar {
     width: 100vw;
     height: 100vh;
-    background: #fff;
+    background: var(--color-white);
     box-sizing: border-box;
     box-shadow: 0 5px 50px rgba(0, 0, 0, 5);
     display: flex;

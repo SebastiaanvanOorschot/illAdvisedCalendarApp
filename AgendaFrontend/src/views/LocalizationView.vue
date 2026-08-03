@@ -28,7 +28,7 @@
 <style scoped>
 .localization-page {
   min-height: 100vh;
-  background-color: #f5f5f5;
+  background-color: var(--color-bg-subtle-2);
 }
 
 .localization-header {
@@ -45,7 +45,7 @@
   background: none;
   border: none;
   cursor: pointer;
-  color: #667eea;
+  color: var(--color-accent);
   font-size: 14px;
   font-weight: 500;
   padding: 8px 12px;
@@ -55,13 +55,13 @@
 }
 
 .back-button:hover {
-  background-color: #f0f0f0;
+  background-color: var(--color-bg-muted);
 }
 
 .localization-header h1 {
   margin: 0;
   font-size: 28px;
-  color: #333;
+  color: var(--color-text);
 }
 
 .localization-content {
@@ -84,11 +84,11 @@
 .localization-section h3 {
   margin: 0 0 16px 0;
   font-size: 18px;
-  color: #333;
+  color: var(--color-text);
 }
 
 .coming-soon {
-  color: #999;
+  color: var(--color-text-subtle);
   font-style: italic;
   text-align: center;
   padding: 40px 0;

@@ -82,7 +82,7 @@ function handleCancel() {
 
 .modal-header h3 {
     margin: 0;
-    color: #262626;
+    color: var(--color-text-dark);
     font-size: 20px;
 }
 
@@ -92,7 +92,7 @@ function handleCancel() {
 
 .modal-body p {
     margin: 0;
-    color: #666;
+    color: var(--color-text-muted);
     font-size: 15px;
     line-height: 1.5;
 }
@@ -116,8 +116,8 @@ function handleCancel() {
 }
 
 .btn-cancel {
-    background: #e0e0e0;
-    color: #262626;
+    background: var(--color-border);
+    color: var(--color-text-dark);
 }
 
 .btn-cancel:hover {
@@ -125,20 +125,20 @@ function handleCancel() {
 }
 
 .btn-this-event {
-    background: #4a90e2;
+    background: var(--color-primary);
     color: white;
 }
 
 .btn-this-event:hover {
-    background: #357abd;
+    background: var(--color-primary-hover);
 }
 
 .btn-all-events {
-    background: #4a90e2;
+    background: var(--color-primary);
     color: white;
 }
 
 .btn-all-events:hover {
-    background: #357abd;
+    background: var(--color-primary-hover);
 }
 </style>

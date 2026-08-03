@@ -171,7 +171,7 @@ const handleLogout = async () => {
   background: none;
   border: none;
   cursor: pointer;
-  color: #666;
+  color: var(--color-text-muted);
   padding: 8px;
   border-radius: 50%;
   display: flex;
@@ -181,7 +181,7 @@ const handleLogout = async () => {
 }
 
 .sidebar-close-btn:hover {
-  background-color: #f0f0f0;
+  background-color: var(--color-bg-muted);
 }
 
 .sidebar-nav {
@@ -195,7 +195,7 @@ const handleLogout = async () => {
   align-items: center;
   gap: 16px;
   padding: 12px 16px;
-  color: #333;
+  color: var(--color-text);
   text-decoration: none;
   border-radius: 8px;
   transition: background-color 0.2s;
@@ -204,7 +204,7 @@ const handleLogout = async () => {
 }
 
 .nav-item:hover {
-  background-color: #f5f5f5;
+  background-color: var(--color-bg-subtle-2);
 }
 
 .nav-item svg {
@@ -212,7 +212,7 @@ const handleLogout = async () => {
 }
 
 .sidebar-user {
-  border-top: 1px solid #e0e0e0;
+  border-top: 1px solid var(--color-border);
   padding: 16px;
   position: relative;
 }
@@ -228,7 +228,7 @@ const handleLogout = async () => {
 }
 
 .user-profile:hover {
-  background-color: #f5f5f5;
+  background-color: var(--color-bg-subtle-2);
 }
 
 .user-avatar {
@@ -243,7 +243,7 @@ const handleLogout = async () => {
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, var(--color-accent) 0%, var(--color-accent-2) 100%);
   color: white;
   display: flex;
   align-items: center;
@@ -261,7 +261,7 @@ const handleLogout = async () => {
 .user-name {
   font-weight: 600;
   font-size: 14px;
-  color: #333;
+  color: var(--color-text);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -269,7 +269,7 @@ const handleLogout = async () => {
 
 .user-email {
   font-size: 12px;
-  color: #666;
+  color: var(--color-text-muted);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -278,7 +278,7 @@ const handleLogout = async () => {
 .chevron-icon {
   flex-shrink: 0;
   transition: transform 0.2s;
-  color: #666;
+  color: var(--color-text-muted);
 }
 
 .chevron-rotated {
@@ -314,14 +314,14 @@ const handleLogout = async () => {
   background: none;
   border: none;
   cursor: pointer;
-  color: #333;
+  color: var(--color-text);
   font-size: 14px;
   transition: background-color 0.2s;
   text-align: left;
 }
 
 .user-menu-item:hover {
-  background-color: #f5f5f5;
+  background-color: var(--color-bg-subtle-2);
 }
 
 .user-menu-item svg {

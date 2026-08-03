@@ -70,7 +70,7 @@ const handleGoogleResponse = async (response: any) => {
   justify-content: center;
   align-items: center;
   min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, var(--color-accent) 0%, var(--color-accent-2) 100%);
 }
 
 .login-card {
@@ -86,11 +86,11 @@ const handleGoogleResponse = async (response: any) => {
 h1 {
   font-size: 1.8rem;
   margin-bottom: 0.5rem;
-  color: #333;
+  color: var(--color-text);
 }
 
 .subtitle {
-  color: #666;
+  color: var(--color-text-muted);
   margin-bottom: 2rem;
 }
 
@@ -110,7 +110,7 @@ h1 {
 
 .privacy-note {
   font-size: 0.85rem;
-  color: #999;
+  color: var(--color-text-subtle);
   margin-top: 2rem;
 }
 </style>

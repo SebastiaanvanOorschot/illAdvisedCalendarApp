@@ -132,6 +132,7 @@
 
 <script setup lang="ts">
 import { reactive, ref, watch } from 'vue';
+import { EVENT_COLOR_OPTIONS } from '@/constants/eventColors';
 
 interface Props {
     show: boolean;
@@ -165,25 +166,14 @@ const form = reactive<EventFormData>({
     recurrencePattern: 'weekly',
     recurrenceInterval: 1,
     recurrenceEndDate: '',
-    color: '#000000'
+    color: 'var(--color-black)'
 });
 
 const loading = ref(false);
 const message = ref('');
 const messageType = ref<'success' | 'error'>('success');
 
-// Primary color options
-const colorOptions = [
-    '#000000', // Black (default)
-    '#FF0000', // Red
-    '#00FF00', // Green
-    '#0000FF', // Blue
-    '#FFFF00', // Yellow
-    '#FF00FF', // Magenta
-    '#00FFFF', // Cyan
-    '#FF8800', // Orange
-    '#8800FF', // Purple
-];
+const colorOptions = EVENT_COLOR_OPTIONS;
 
 function resetForm() {
     form.title = '';
@@ -194,7 +184,7 @@ function resetForm() {
     form.recurrencePattern = 'weekly';
     form.recurrenceInterval = 1;
     form.recurrenceEndDate = '';
-    form.color = '#000000';
+    form.color = 'var(--color-black)';
     message.value = '';
 }
 
@@ -261,7 +251,7 @@ watch(() => props.show, (newValue) => {
 
 .modal-header h3 {
     margin: 0;
-    color: #262626;
+    color: var(--color-text-dark);
 }
 
 .btn-close {
@@ -270,7 +260,7 @@ watch(() => props.show, (newValue) => {
     font-size: 28px;
     line-height: 1;
     cursor: pointer;
-    color: #666;
+    color: var(--color-text-muted);
     padding: 0;
     width: 32px;
     height: 32px;
@@ -282,7 +272,7 @@ watch(() => props.show, (newValue) => {
 }
 
 .btn-close:hover {
-    background: #f0f0f0;
+    background: var(--color-bg-muted);
 }
 
 .form-group {
@@ -293,7 +283,7 @@ watch(() => props.show, (newValue) => {
     display: block;
     margin-bottom: 5px;
     font-weight: 600;
-    color: #262626;
+    color: var(--color-text-dark);
 }
 
 .form-group input,
@@ -301,7 +291,7 @@ watch(() => props.show, (newValue) => {
 .form-group select {
     width: 100%;
     padding: 8px 12px;
-    border: 1px solid #e0e0e0;
+    border: 1px solid var(--color-border);
     border-radius: 4px;
     font-size: 14px;
     font-family: inherit;
@@ -313,7 +303,7 @@ watch(() => props.show, (newValue) => {
 .form-group textarea:focus,
 .form-group select:focus {
     outline: none;
-    border-color: #4a90e2;
+    border-color: var(--color-primary);
 }
 
 .form-group select {
@@ -344,9 +334,9 @@ watch(() => props.show, (newValue) => {
 
 .recurring-options {
     padding: 15px;
-    background: #f9f9f9;
+    background: var(--color-bg-subtle);
     border-radius: 4px;
-    border: 1px solid #e0e0e0;
+    border: 1px solid var(--color-border);
     margin-bottom: 15px;
 }
 
@@ -358,15 +348,15 @@ watch(() => props.show, (newValue) => {
 }
 
 .message.success {
-    background: #d4edda;
-    color: #155724;
-    border: 1px solid #c3e6cb;
+    background: var(--color-success-bg);
+    color: var(--color-success-text);
+    border: 1px solid var(--color-success-border);
 }
 
 .message.error {
-    background: #f8d7da;
-    color: #721c24;
-    border: 1px solid #f5c6cb;
+    background: var(--color-danger-bg);
+    color: var(--color-danger-text);
+    border: 1px solid var(--color-danger-border);
 }
 
 .modal-actions {
@@ -378,9 +368,9 @@ watch(() => props.show, (newValue) => {
 
 .btn-cancel {
     padding: 10px 20px;
-    background: #f5f5f5;
-    color: #262626;
-    border: 1px solid #e0e0e0;
+    background: var(--color-bg-subtle-2);
+    color: var(--color-text-dark);
+    border: 1px solid var(--color-border);
     border-radius: 4px;
     font-size: 14px;
     font-weight: 600;
@@ -389,12 +379,12 @@ watch(() => props.show, (newValue) => {
 }
 
 .btn-cancel:hover {
-    background: #e0e0e0;
+    background: var(--color-border);
 }
 
 .btn-create {
     padding: 10px 20px;
-    background: #4a90e2;
+    background: var(--color-primary);
     color: white;
     border: none;
     border-radius: 4px;
@@ -405,11 +395,11 @@ watch(() => props.show, (newValue) => {
 }
 
 .btn-create:hover:not(:disabled) {
-    background: #357abd;
+    background: var(--color-primary-hover);
 }
 
 .btn-create:disabled {
-    background: #ccc;
+    background: var(--color-border-strong);
     cursor: not-allowed;
 }
 
@@ -427,7 +417,7 @@ watch(() => props.show, (newValue) => {
     width: 36px;
     height: 36px;
     border-radius: 6px;
-    border: 2px solid #e0e0e0;
+    border: 2px solid var(--color-border);
     cursor: pointer;
     transition: all 0.2s;
     padding: 0;
@@ -435,11 +425,11 @@ watch(() => props.show, (newValue) => {
 
 .color-swatch:hover {
     transform: scale(1.1);
-    border-color: #999;
+    border-color: var(--color-text-subtle);
 }
 
 .color-swatch.selected {
-    border-color: #4a90e2;
+    border-color: var(--color-primary);
     border-width: 3px;
     box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.2);
 }

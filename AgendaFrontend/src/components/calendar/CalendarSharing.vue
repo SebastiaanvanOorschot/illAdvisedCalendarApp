@@ -154,7 +154,7 @@
 
     <!-- Empty State -->
     <div v-if="isEmpty" class="empty-state">
-      <svg xmlns="http://www.w3.org/2000/svg" height="64" viewBox="0 -960 960 960" width="64" fill="#ccc">
+      <svg xmlns="http://www.w3.org/2000/svg" height="64" viewBox="0 -960 960 960" width="64" fill="var(--color-border-strong)">
         <path d="M40-160v-112q0-34 17.5-62.5T104-378q62-31 126-46.5T360-440q66 0 130 15.5T616-378q29 15 46.5 43.5T680-272v112H40Zm720 0v-120q0-44-24.5-84.5T666-434q51 6 96 20.5t84 35.5q36 20 55 44.5t19 53.5v120H760ZM360-480q-66 0-113-47t-47-113q0-66 47-113t113-47q66 0 113 47t47 113q0 66-47 113t-113 47Zm400-160q0 66-47 113t-113 47q-11 0-28-2.5t-28-5.5q27-32 41.5-71t14.5-81q0-42-14.5-81T544-792q14-5 28-6.5t28-1.5q66 0 113 47t47 113Z"/>
       </svg>
       <p>No shared calendars yet</p>
@@ -357,7 +357,7 @@ onMounted(() => {
 }
 
 .sharing-section {
-  border-bottom: 1px solid #e0e0e0;
+  border-bottom: 1px solid var(--color-border);
   padding-bottom: 24px;
 }
 
@@ -369,13 +369,13 @@ onMounted(() => {
 .sharing-section h4 {
   margin: 0 0 8px 0;
   font-size: 18px;
-  color: #333;
+  color: var(--color-text);
   font-weight: 600;
 }
 
 .section-description {
   margin: 0 0 16px 0;
-  color: #666;
+  color: var(--color-text-muted);
   font-size: 14px;
 }
 
@@ -411,7 +411,7 @@ onMounted(() => {
 .email-input {
   flex: 1;
   padding: 10px 14px;
-  border: 1px solid #ddd;
+  border: 1px solid var(--color-border-light);
   border-radius: 6px;
   font-size: 14px;
   transition: border-color 0.2s;
@@ -419,12 +419,12 @@ onMounted(() => {
 
 .email-input:focus {
   outline: none;
-  border-color: #667eea;
+  border-color: var(--color-accent);
 }
 
 .permission-select {
   padding: 10px 14px;
-  border: 1px solid #ddd;
+  border: 1px solid var(--color-border-light);
   border-radius: 6px;
   font-size: 14px;
   background: white;
@@ -434,7 +434,7 @@ onMounted(() => {
 
 .permission-select-inline {
   padding: 6px 10px;
-  border: 1px solid #ddd;
+  border: 1px solid var(--color-border-light);
   border-radius: 4px;
   font-size: 13px;
   background: white;
@@ -446,7 +446,7 @@ onMounted(() => {
   align-items: center;
   gap: 8px;
   padding: 10px 20px;
-  background: #667eea;
+  background: var(--color-accent);
   color: white;
   border: none;
   border-radius: 6px;
@@ -458,7 +458,7 @@ onMounted(() => {
 }
 
 .btn-send:hover:not(:disabled) {
-  background: #5568d3;
+  background: var(--color-accent-hover);
 }
 
 .btn-send:disabled {
@@ -480,9 +480,9 @@ onMounted(() => {
   justify-content: space-between;
   align-items: center;
   padding: 16px;
-  background: #f9f9f9;
+  background: var(--color-bg-subtle);
   border-radius: 8px;
-  border: 1px solid #e0e0e0;
+  border: 1px solid var(--color-border);
 }
 
 .invite-info,
@@ -511,7 +511,7 @@ onMounted(() => {
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, var(--color-accent) 0%, var(--color-accent-2) 100%);
   color: white;
   display: flex;
   align-items: center;
@@ -581,16 +581,16 @@ onMounted(() => {
 .btn-reject,
 .btn-cancel,
 .btn-remove {
-  background: #f5f5f5;
-  color: #666;
-  border: 1px solid #ddd;
+  background: var(--color-bg-subtle-2);
+  color: var(--color-text-muted);
+  border: 1px solid var(--color-border-light);
 }
 
 .btn-reject:hover:not(:disabled),
 .btn-cancel:hover:not(:disabled),
 .btn-remove:hover:not(:disabled) {
-  background: #e0e0e0;
-  color: #333;
+  background: var(--color-border);
+  color: var(--color-text);
 }
 
 .btn-accept:disabled,
@@ -605,7 +605,7 @@ onMounted(() => {
 .empty-state {
   text-align: center;
   padding: 48px 24px;
-  color: #999;
+  color: var(--color-text-subtle);
 }
 
 .empty-state svg {
@@ -615,12 +615,12 @@ onMounted(() => {
 .empty-state p {
   margin: 8px 0;
   font-size: 16px;
-  color: #666;
+  color: var(--color-text-muted);
 }
 
 .empty-subtext {
   font-size: 14px !important;
-  color: #999 !important;
+  color: var(--color-text-subtle) !important;
 }
 
 /* Spinner */

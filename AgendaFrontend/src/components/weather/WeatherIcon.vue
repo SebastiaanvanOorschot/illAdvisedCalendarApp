@@ -4,57 +4,57 @@
         <svg v-if="weatherType === 'sunny'" class="weather-icon" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
             <!-- Simple sun with rays -->
             <g class="sun-rays">
-                <line class="sun-ray ray-1" x1="50" y1="12" x2="50" y2="5" stroke="#FFF" stroke-width="2.5" stroke-linecap="round" />
-                <line class="sun-ray ray-2" x1="64" y1="16" x2="69" y2="11" stroke="#FFF" stroke-width="2.5" stroke-linecap="round" />
-                <line class="sun-ray ray-3" x1="68" y1="30" x2="75" y2="30" stroke="#FFF" stroke-width="2.5" stroke-linecap="round" />
-                <line class="sun-ray ray-4" x1="64" y1="44" x2="69" y2="49" stroke="#FFF" stroke-width="2.5" stroke-linecap="round" />
-                <line class="sun-ray ray-5" x1="50" y1="48" x2="50" y2="55" stroke="#FFF" stroke-width="2.5" stroke-linecap="round" />
-                <line class="sun-ray ray-6" x1="36" y1="44" x2="31" y2="49" stroke="#FFF" stroke-width="2.5" stroke-linecap="round" />
-                <line class="sun-ray ray-7" x1="32" y1="30" x2="25" y2="30" stroke="#FFF" stroke-width="2.5" stroke-linecap="round" />
-                <line class="sun-ray ray-8" x1="36" y1="16" x2="31" y2="11" stroke="#FFF" stroke-width="2.5" stroke-linecap="round" />
+                <line class="sun-ray ray-1" x1="50" y1="12" x2="50" y2="5" stroke="var(--color-white)" stroke-width="2.5" stroke-linecap="round" />
+                <line class="sun-ray ray-2" x1="64" y1="16" x2="69" y2="11" stroke="var(--color-white)" stroke-width="2.5" stroke-linecap="round" />
+                <line class="sun-ray ray-3" x1="68" y1="30" x2="75" y2="30" stroke="var(--color-white)" stroke-width="2.5" stroke-linecap="round" />
+                <line class="sun-ray ray-4" x1="64" y1="44" x2="69" y2="49" stroke="var(--color-white)" stroke-width="2.5" stroke-linecap="round" />
+                <line class="sun-ray ray-5" x1="50" y1="48" x2="50" y2="55" stroke="var(--color-white)" stroke-width="2.5" stroke-linecap="round" />
+                <line class="sun-ray ray-6" x1="36" y1="44" x2="31" y2="49" stroke="var(--color-white)" stroke-width="2.5" stroke-linecap="round" />
+                <line class="sun-ray ray-7" x1="32" y1="30" x2="25" y2="30" stroke="var(--color-white)" stroke-width="2.5" stroke-linecap="round" />
+                <line class="sun-ray ray-8" x1="36" y1="16" x2="31" y2="11" stroke="var(--color-white)" stroke-width="2.5" stroke-linecap="round" />
             </g>
-            <circle class="sun-center" cx="50" cy="30" r="12" fill="#FFF" />
+            <circle class="sun-center" cx="50" cy="30" r="12" fill="var(--color-white)" />
         </svg>
 
         <!-- Partly Cloudy -->
         <svg v-else-if="weatherType === 'partly-cloudy'" class="weather-icon" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
             <!-- Single cloud - simple and clear -->
-            <ellipse class="cloud-simple cloud-drift" cx="50" cy="30" rx="18" ry="11" fill="#FFF" opacity="0.95" />
-            <ellipse class="cloud-simple cloud-drift" cx="38" cy="34" rx="15" ry="9" fill="#FFF" opacity="0.9" />
-            <ellipse class="cloud-simple cloud-drift" cx="62" cy="35" rx="13" ry="8" fill="#FFF" opacity="0.85" />
+            <ellipse class="cloud-simple cloud-drift" cx="50" cy="30" rx="18" ry="11" fill="var(--color-white)" opacity="0.95" />
+            <ellipse class="cloud-simple cloud-drift" cx="38" cy="34" rx="15" ry="9" fill="var(--color-white)" opacity="0.9" />
+            <ellipse class="cloud-simple cloud-drift" cx="62" cy="35" rx="13" ry="8" fill="var(--color-white)" opacity="0.85" />
         </svg>
 
         <!-- Cloudy -->
         <svg v-else-if="weatherType === 'cloudy'" class="weather-icon" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
             <!-- Two overlapping cloud groups for distinction -->
             <!-- First cloud group (back) -->
-            <ellipse class="cloud-simple cloud-float" cx="45" cy="24" rx="16" ry="10" fill="#FFF" opacity="0.85" />
-            <ellipse class="cloud-simple cloud-float" cx="35" cy="28" rx="13" ry="8" fill="#FFF" opacity="0.8" />
-            <ellipse class="cloud-simple cloud-float" cx="55" cy="28" rx="11" ry="7" fill="#FFF" opacity="0.75" />
+            <ellipse class="cloud-simple cloud-float" cx="45" cy="24" rx="16" ry="10" fill="var(--color-white)" opacity="0.85" />
+            <ellipse class="cloud-simple cloud-float" cx="35" cy="28" rx="13" ry="8" fill="var(--color-white)" opacity="0.8" />
+            <ellipse class="cloud-simple cloud-float" cx="55" cy="28" rx="11" ry="7" fill="var(--color-white)" opacity="0.75" />
             <!-- Second cloud group (front) -->
-            <ellipse class="cloud-simple cloud-float" cx="52" cy="32" rx="17" ry="10" fill="#FFF" opacity="0.95" />
-            <ellipse class="cloud-simple cloud-float" cx="42" cy="36" rx="14" ry="9" fill="#FFF" opacity="0.9" />
-            <ellipse class="cloud-simple cloud-float" cx="62" cy="37" rx="12" ry="8" fill="#FFF" opacity="0.85" />
+            <ellipse class="cloud-simple cloud-float" cx="52" cy="32" rx="17" ry="10" fill="var(--color-white)" opacity="0.95" />
+            <ellipse class="cloud-simple cloud-float" cx="42" cy="36" rx="14" ry="9" fill="var(--color-white)" opacity="0.9" />
+            <ellipse class="cloud-simple cloud-float" cx="62" cy="37" rx="12" ry="8" fill="var(--color-white)" opacity="0.85" />
         </svg>
 
         <!-- Rainy -->
         <svg v-else-if="weatherType === 'rainy'" class="weather-icon" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
             <!-- Cloud -->
-            <ellipse class="cloud-simple" cx="50" cy="22" rx="16" ry="10" fill="#FFF" opacity="0.9" />
-            <ellipse class="cloud-simple" cx="40" cy="26" rx="12" ry="8" fill="#FFF" opacity="0.9" />
-            <ellipse class="cloud-simple" cx="60" cy="26" rx="10" ry="7" fill="#FFF" opacity="0.9" />
+            <ellipse class="cloud-simple" cx="50" cy="22" rx="16" ry="10" fill="var(--color-white)" opacity="0.9" />
+            <ellipse class="cloud-simple" cx="40" cy="26" rx="12" ry="8" fill="var(--color-white)" opacity="0.9" />
+            <ellipse class="cloud-simple" cx="60" cy="26" rx="10" ry="7" fill="var(--color-white)" opacity="0.9" />
             <!-- Rain drops -->
-            <line class="rain-drop rain-drop-1" x1="42" y1="38" x2="40" y2="50" stroke="#FFF" stroke-width="2.5" stroke-linecap="round" />
-            <line class="rain-drop rain-drop-2" x1="50" y1="38" x2="48" y2="50" stroke="#FFF" stroke-width="2.5" stroke-linecap="round" />
-            <line class="rain-drop rain-drop-3" x1="58" y1="38" x2="56" y2="50" stroke="#FFF" stroke-width="2.5" stroke-linecap="round" />
+            <line class="rain-drop rain-drop-1" x1="42" y1="38" x2="40" y2="50" stroke="var(--color-white)" stroke-width="2.5" stroke-linecap="round" />
+            <line class="rain-drop rain-drop-2" x1="50" y1="38" x2="48" y2="50" stroke="var(--color-white)" stroke-width="2.5" stroke-linecap="round" />
+            <line class="rain-drop rain-drop-3" x1="58" y1="38" x2="56" y2="50" stroke="var(--color-white)" stroke-width="2.5" stroke-linecap="round" />
         </svg>
 
         <!-- Stormy -->
         <svg v-else-if="weatherType === 'stormy'" class="weather-icon" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
             <!-- Dark cloud -->
-            <ellipse class="cloud-simple" cx="50" cy="22" rx="18" ry="11" fill="#FFF" opacity="0.85" />
-            <ellipse class="cloud-simple" cx="38" cy="26" rx="14" ry="9" fill="#FFF" opacity="0.85" />
-            <ellipse class="cloud-simple" cx="62" cy="26" rx="12" ry="8" fill="#FFF" opacity="0.85" />
+            <ellipse class="cloud-simple" cx="50" cy="22" rx="18" ry="11" fill="var(--color-white)" opacity="0.85" />
+            <ellipse class="cloud-simple" cx="38" cy="26" rx="14" ry="9" fill="var(--color-white)" opacity="0.85" />
+            <ellipse class="cloud-simple" cx="62" cy="26" rx="12" ry="8" fill="var(--color-white)" opacity="0.85" />
             <!-- Lightning bolt -->
             <polygon class="lightning" points="50,32 47,42 49,42 45,54 53,40 51,40 54,32" fill="#FFD700" />
         </svg>
@@ -62,13 +62,13 @@
         <!-- Snowy -->
         <svg v-else-if="weatherType === 'snowy'" class="weather-icon" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
             <!-- Cloud -->
-            <ellipse class="cloud-simple" cx="50" cy="22" rx="16" ry="10" fill="#FFF" opacity="0.9" />
-            <ellipse class="cloud-simple" cx="40" cy="26" rx="12" ry="8" fill="#FFF" opacity="0.9" />
-            <ellipse class="cloud-simple" cx="60" cy="26" rx="10" ry="7" fill="#FFF" opacity="0.9" />
+            <ellipse class="cloud-simple" cx="50" cy="22" rx="16" ry="10" fill="var(--color-white)" opacity="0.9" />
+            <ellipse class="cloud-simple" cx="40" cy="26" rx="12" ry="8" fill="var(--color-white)" opacity="0.9" />
+            <ellipse class="cloud-simple" cx="60" cy="26" rx="10" ry="7" fill="var(--color-white)" opacity="0.9" />
             <!-- Snowflakes -->
-            <text class="snowflake snowflake-1" x="34" y="45" fill="#FFF" font-size="12">❄</text>
-            <text class="snowflake snowflake-2" x="44" y="50" fill="#FFF" font-size="12">❄</text>
-            <text class="snowflake snowflake-3" x="54" y="45" fill="#FFF" font-size="12">❄</text>
+            <text class="snowflake snowflake-1" x="34" y="45" fill="var(--color-white)" font-size="12">❄</text>
+            <text class="snowflake snowflake-2" x="44" y="50" fill="var(--color-white)" font-size="12">❄</text>
+            <text class="snowflake snowflake-3" x="54" y="45" fill="var(--color-white)" font-size="12">❄</text>
         </svg>
 
         <!-- Temp display -->
@@ -167,7 +167,7 @@ const weatherType = computed(() => {
 }
 
 .weather-rainy::before {
-    background: radial-gradient(circle at 75% 25%, #4A90E2 0%, #6FA8E8 20%, rgba(180, 212, 241, 0.3) 40%, transparent 60%);
+    background: radial-gradient(circle at 75% 25%, var(--color-primary) 0%, #6FA8E8 20%, rgba(180, 212, 241, 0.3) 40%, transparent 60%);
 }
 
 .weather-stormy::before {
@@ -195,7 +195,7 @@ const weatherType = computed(() => {
     right: 72px;
     font-size: 16px;
     font-weight: 800;
-    color: #FFF;
+    color: var(--color-white);
     text-shadow:
         0 1px 3px rgba(0, 0, 0, 0.6),
         0 0 6px rgba(0, 0, 0, 0.4);
