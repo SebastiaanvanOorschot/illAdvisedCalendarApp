@@ -117,7 +117,6 @@ import RecurringEventEditPromptModal from './RecurringEventEditPromptModal.vue';
 import { useWeather } from '@/composables/useWeather';
 import { useEventOperations, EventFormData } from '@/composables/useEventOperations';
 import type { CalendarDate } from '@/types/calendar';
-import { formatDate } from '@/utils/dateFormat';
 
 dayjs.extend(weekOfYear);
 dayjs.extend(isoWeek);
