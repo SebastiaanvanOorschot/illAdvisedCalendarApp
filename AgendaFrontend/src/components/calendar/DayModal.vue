@@ -35,7 +35,7 @@
                     <div class="events-header-row">
                         <h3 class="events-header">Events</h3>
                         <button class="btn-new-event" @click="openCreateModal" title="Create new event">
-                            <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#ffffff">
+                            <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="var(--color-white)">
                                 <path d="m499-287 335-335-52-52-335 335 52 52Zm-261 87q-100-5-149-42T40-349q0-65 53.5-105.5T242-503q39-3 58.5-12.5T320-542q0-26-29.5-39T193-600l7-80q103 8 151.5 41.5T400-542q0 53-38.5 83T248-423q-64 5-96 23.5T120-349q0 35 28 50.5t94 18.5l-4 80Zm280 7L353-358l382-382q20-20 47.5-20t47.5 20l70 70q20 20 20 47.5T900-575L518-193Zm-159 33q-17 4-30-9t-9-30l33-159 165 165-159 33Z"/>
                             </svg>
                         </button>
@@ -45,7 +45,7 @@
                         <div v-else-if="events.length === 0" class="no-events">No events yet</div>
                         <div v-else>
                             <div v-for="event in events" :key="event.id" class="event-item" @click="openEventDetails(event)">
-                                <span class="event-color-dot" :style="{ backgroundColor: event.color || '#4a90e2' }"></span>
+                                <span class="event-color-dot" :style="{ backgroundColor: event.color || 'var(--color-primary)' }"></span>
                                 <div class="event-content">
                                     <div class="event-time">
                                         <template v-if="event.isAllDay">All day</template>
@@ -117,6 +117,7 @@ import WeatherIcon from '../weather/WeatherIcon.vue';
 import { useWeather } from '@/composables/useWeather';
 import { useEventOperations } from '@/composables/useEventOperations';
 import { useBackButton } from '@/composables/useBackButton';
+import { formatTime } from '@/utils/dateFormat';
 
 interface Props {
     show: boolean;
@@ -132,7 +133,7 @@ const props = defineProps<Props>();
 const modalBannerStyle = computed(() => {
     if (!props.monthImageUrl) {
         return {
-            background: '#e0e0e0'
+            background: 'var(--color-border)'
         };
     }
     return {
@@ -388,11 +389,6 @@ async function handleFormSubmit(formData: any) {
     }
 }
 
-function formatTime(date?: Date) {
-    if (!date) return '';
-    return dayjs(date).format('HH:mm');
-}
-
 function navigatePreviousDay() {
     const newDate = selectedDate.value.subtract(1, 'day');
     displayDay.value = newDate.date();
@@ -544,7 +540,7 @@ watch([displayDay, displayMonth, displayYear], () => {
     font-size: 32px !important;
     line-height: 1 !important;
     cursor: pointer;
-    color: #ffffff !important;
+    color: var(--color-white) !important;
     padding: 5px 12px !important;
     width: 40px !important;
     height: 40px !important;
@@ -575,7 +571,7 @@ watch([displayDay, displayMonth, displayYear], () => {
 .image h3 {
     margin: 0;
     padding: 0;
-    color: #fff;
+    color: var(--color-white);
     text-shadow: 0 2px 2px rgba(0, 0, 0, .2);
 }
 
@@ -680,13 +676,13 @@ watch([displayDay, displayMonth, displayYear], () => {
 
 .events-header {
     margin: 0;
-    color: #262626;
+    color: var(--color-text-dark);
     font-size: 1.2rem;
     font-weight: 600;
 }
 
 .btn-new-event {
-    background: #4a90e2 !important;
+    background: var(--color-primary) !important;
     border: none;
     border-radius: 50%;
     width: 48px;
@@ -701,7 +697,7 @@ watch([displayDay, displayMonth, displayYear], () => {
 }
 
 .btn-new-event:hover {
-    background: #357abd !important;
+    background: var(--color-primary-hover) !important;
     transform: scale(1.05);
 }
 
@@ -720,7 +716,7 @@ watch([displayDay, displayMonth, displayYear], () => {
 
 .loading,
 .no-events {
-    color: #666;
+    color: var(--color-text-muted);
     font-style: italic;
     padding: 20px;
     text-align: center;
@@ -728,7 +724,7 @@ watch([displayDay, displayMonth, displayYear], () => {
 
 .event-item {
     background: transparent;
-    border: 1px solid #e0e0e0;
+    border: 1px solid var(--color-border);
     border-radius: 4px;
     padding: 15px;
     margin-bottom: 10px;
@@ -759,19 +755,19 @@ watch([displayDay, displayMonth, displayYear], () => {
 
 .event-time {
     font-size: 14px;
-    color: #4a90e2;
+    color: var(--color-primary);
     font-weight: 600;
     margin-bottom: 8px;
 }
 
 .event-details h4 {
     margin: 0 0 5px 0;
-    color: #262626;
+    color: var(--color-text-dark);
 }
 
 .event-details p {
     margin: 0;
-    color: #666;
+    color: var(--color-text-muted);
     font-size: 14px;
 }
 

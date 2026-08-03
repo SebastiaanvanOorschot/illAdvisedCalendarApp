@@ -100,7 +100,7 @@
       </div>
 
       <div v-if="lastSyncTime" class="last-sync">
-        Last sync: {{ formatDate(lastSyncTime) }}
+        Last sync: {{ formatSyncTimestamp(lastSyncTime) }}
       </div>
     </div>
   </div>
@@ -111,21 +111,11 @@ import { ref, computed, onMounted } from 'vue';
 import { useAuth } from '@/composables/useAuth';
 import { AgendaAPI, GoogleCalendarInfo, ImportRequest, CalendarImportItem, ConnectRequest } from '@/api/agenda-api-swagger';
 import { authenticatedAxios, getApiBaseUrl } from '@/api/axios-config';
+import { EVENT_COLOR_OPTIONS } from '@/constants/eventColors';
 
 const api = new AgendaAPI(getApiBaseUrl(), authenticatedAxios);
 
-// Color options matching the app's palette
-const colorOptions = [
-  '#000000', // Black (default)
-  '#FF0000', // Red
-  '#00FF00', // Green
-  '#0000FF', // Blue
-  '#FFFF00', // Yellow
-  '#FF00FF', // Magenta
-  '#00FFFF', // Cyan
-  '#FF8800', // Orange
-  '#8800FF', // Purple
-];
+const colorOptions = EVENT_COLOR_OPTIONS;
 
 interface GoogleCalendar {
   id: string;
@@ -263,7 +253,7 @@ const loadCalendars = async () => {
       description: cal.description,
       primary: cal.primary || false,
       selected: cal.primary || false, // Auto-select primary calendar
-      color: '#000000' // Default color
+      color: 'var(--color-black)' // Default color
     }));
 
   } catch (err: any) {
@@ -339,7 +329,7 @@ const disconnectGoogle = () => {
   }
 };
 
-const formatDate = (date: Date) => {
+const formatSyncTimestamp = (date: Date) => {
   return new Intl.DateTimeFormat('en-US', {
     year: 'numeric',
     month: 'short',
@@ -352,7 +342,7 @@ const formatDate = (date: Date) => {
 
 <style scoped>
 .google-calendar-sync {
-  border: 1px solid #e0e0e0;
+  border: 1px solid var(--color-border);
   border-radius: 8px;
   padding: 24px;
   margin-top: 16px;
@@ -380,7 +370,7 @@ const formatDate = (date: Date) => {
   margin: 0;
   font-size: 18px;
   font-weight: 600;
-  color: #333;
+  color: var(--color-text);
 }
 
 .sync-status {
@@ -394,37 +384,37 @@ const formatDate = (date: Date) => {
 }
 
 .status-connected {
-  background: #d4edda;
-  color: #155724;
+  background: var(--color-success-bg);
+  color: var(--color-success-text);
 }
 
 .status-disconnected {
-  background: #f8d7da;
-  color: #721c24;
+  background: var(--color-danger-bg);
+  color: var(--color-danger-text);
 }
 
 .error-message {
-  background: #f8d7da;
-  color: #721c24;
+  background: var(--color-danger-bg);
+  color: var(--color-danger-text);
   padding: 12px 16px;
   border-radius: 6px;
   margin-bottom: 16px;
   font-size: 14px;
-  border: 1px solid #f5c6cb;
+  border: 1px solid var(--color-danger-border);
 }
 
 .success-message {
-  background: #d4edda;
-  color: #155724;
+  background: var(--color-success-bg);
+  color: var(--color-success-text);
   padding: 12px 16px;
   border-radius: 6px;
   margin-bottom: 16px;
   font-size: 14px;
-  border: 1px solid #c3e6cb;
+  border: 1px solid var(--color-success-border);
 }
 
 .description {
-  color: #666;
+  color: var(--color-text-muted);
   font-size: 14px;
   line-height: 1.5;
   margin-bottom: 20px;
@@ -434,7 +424,7 @@ const formatDate = (date: Date) => {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  background: #4285f4;
+  background: var(--color-google);
   color: white;
   border: none;
   padding: 12px 24px;
@@ -450,7 +440,7 @@ const formatDate = (date: Date) => {
 }
 
 .btn-connect:disabled {
-  background: #ccc;
+  background: var(--color-border-strong);
   cursor: not-allowed;
 }
 
@@ -459,14 +449,14 @@ const formatDate = (date: Date) => {
   align-items: center;
   gap: 12px;
   padding: 24px;
-  color: #666;
+  color: var(--color-text-muted);
 }
 
 .spinner {
   width: 24px;
   height: 24px;
   border: 3px solid #f3f3f3;
-  border-top: 3px solid #4285f4;
+  border-top: 3px solid var(--color-google);
   border-radius: 50%;
   animation: spin 1s linear infinite;
 }
@@ -475,7 +465,7 @@ const formatDate = (date: Date) => {
   width: 16px;
   height: 16px;
   border: 2px solid #f3f3f3;
-  border-top: 2px solid #fff;
+  border-top: 2px solid var(--color-white);
   border-radius: 50%;
   animation: spin 1s linear infinite;
 }
@@ -493,7 +483,7 @@ const formatDate = (date: Date) => {
 }
 
 .calendar-item {
-  border: 1px solid #e0e0e0;
+  border: 1px solid var(--color-border);
   border-radius: 6px;
   padding: 16px;
   background: #fafafa;
@@ -523,13 +513,13 @@ const formatDate = (date: Date) => {
 
 .calendar-name {
   font-weight: 600;
-  color: #333;
+  color: var(--color-text);
   font-size: 15px;
 }
 
 .primary-badge {
   display: inline-block;
-  background: #4285f4;
+  background: var(--color-google);
   color: white;
   font-size: 11px;
   font-weight: 600;
@@ -540,7 +530,7 @@ const formatDate = (date: Date) => {
 
 .calendar-description {
   font-size: 13px;
-  color: #666;
+  color: var(--color-text-muted);
 }
 
 .color-picker {
@@ -549,7 +539,7 @@ const formatDate = (date: Date) => {
   gap: 12px;
   margin-top: 8px;
   padding-top: 12px;
-  border-top: 1px solid #e0e0e0;
+  border-top: 1px solid var(--color-border);
 }
 
 .color-picker label {
@@ -568,7 +558,7 @@ const formatDate = (date: Date) => {
   width: 32px;
   height: 32px;
   border-radius: 6px;
-  border: 2px solid #e0e0e0;
+  border: 2px solid var(--color-border);
   cursor: pointer;
   transition: all 0.2s;
   padding: 0;
@@ -576,11 +566,11 @@ const formatDate = (date: Date) => {
 
 .color-swatch:hover {
   transform: scale(1.1);
-  border-color: #999;
+  border-color: var(--color-text-subtle);
 }
 
 .color-swatch.selected {
-  border-color: #4285f4;
+  border-color: var(--color-google);
   border-width: 3px;
   box-shadow: 0 0 0 2px rgba(66, 133, 244, 0.2);
 }
@@ -588,7 +578,7 @@ const formatDate = (date: Date) => {
 .no-calendars {
   text-align: center;
   padding: 40px 20px;
-  color: #999;
+  color: var(--color-text-subtle);
   font-style: italic;
 }
 
@@ -618,14 +608,14 @@ const formatDate = (date: Date) => {
 }
 
 .btn-import:disabled {
-  background: #ccc;
+  background: var(--color-border-strong);
   cursor: not-allowed;
 }
 
 .btn-disconnect {
   background: none;
-  color: #666;
-  border: 1px solid #e0e0e0;
+  color: var(--color-text-muted);
+  border: 1px solid var(--color-border);
   padding: 12px 24px;
   border-radius: 6px;
   font-size: 14px;
@@ -635,8 +625,8 @@ const formatDate = (date: Date) => {
 }
 
 .btn-disconnect:hover:not(:disabled) {
-  background: #f5f5f5;
-  border-color: #999;
+  background: var(--color-bg-subtle-2);
+  border-color: var(--color-text-subtle);
 }
 
 .btn-disconnect:disabled {
@@ -647,9 +637,9 @@ const formatDate = (date: Date) => {
 .last-sync {
   margin-top: 16px;
   padding-top: 16px;
-  border-top: 1px solid #e0e0e0;
+  border-top: 1px solid var(--color-border);
   font-size: 13px;
-  color: #666;
+  color: var(--color-text-muted);
 }
 
 /* Mobile responsive adjustments */

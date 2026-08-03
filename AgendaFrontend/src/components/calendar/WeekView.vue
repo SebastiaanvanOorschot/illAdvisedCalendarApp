@@ -27,7 +27,7 @@
                         v-for="occurrence in getEventsForDay(index)"
                         :key="`${occurrence.eventId}-${occurrence.occurrenceStart?.getTime()}`"
                         class="event-item"
-                        :style="{ borderLeftColor: occurrence.color || '#4a90e2' }"
+                        :style="{ borderLeftColor: occurrence.color || 'var(--color-primary)' }"
                         @click.stop="openEventDetails(occurrence)"
                         @touchend.stop.prevent="openEventDetails(occurrence)"
                     >
@@ -107,6 +107,7 @@ import WeatherIcon from '../weather/WeatherIcon.vue';
 import { useWeather } from '@/composables/useWeather';
 import { useEventOperations } from '@/composables/useEventOperations';
 import type { CalendarDate } from '@/types/calendar';
+import { formatTime, formatDate } from '@/utils/dateFormat';
 
 dayjs.extend(weekOfYear);
 dayjs.extend(isoWeek);
@@ -229,16 +230,6 @@ function getEventsForDay(dayIndex: number): EventOccurrence[] {
         if (!a.occurrenceStart || !b.occurrenceStart) return 0;
         return new Date(a.occurrenceStart).getTime() - new Date(b.occurrenceStart).getTime();
     });
-}
-
-function formatTime(date?: Date) {
-    if (!date) return '';
-    return dayjs(date).format('HH:mm');
-}
-
-function formatDate(date?: Date) {
-    if (!date) return '';
-    return dayjs(date).format('MMMM D, YYYY');
 }
 
 async function openEventDetails(occurrence: EventOccurrence) {
@@ -483,14 +474,14 @@ onMounted(() => {
     flex: 1;
     display: flex;
     flex-direction: column;
-    border-right: 1px solid #e0e0e0;
+    border-right: 1px solid var(--color-border);
     cursor: pointer;
     transition: background-color 0.2s;
     position: relative;
 }
 
 .week-column:hover {
-    background-color: #f9f9f9;
+    background-color: var(--color-bg-subtle);
 }
 
 .week-column:last-child {
@@ -498,7 +489,7 @@ onMounted(() => {
 }
 
 .week-header {
-    border-bottom: 2px solid #e0e0e0;
+    border-bottom: 2px solid var(--color-border);
     text-align: center;
     position: relative;
     overflow: hidden;
@@ -507,7 +498,7 @@ onMounted(() => {
 .day-name {
     font-weight: 700;
     font-size: 0.9rem;
-    color: #262626;
+    color: var(--color-text-dark);
     margin-top: 25px;
     margin-bottom: 5px;
     position: relative;
@@ -530,12 +521,12 @@ onMounted(() => {
 .day-number {
     font-size: 1.5rem;
     font-weight: 600;
-    color: #262626;
+    color: var(--color-text-dark);
     margin-bottom: 5px;
 }
 
 .day-number.not-this-month {
-    color: #999;
+    color: var(--color-text-subtle);
 }
 
 .week-column:nth-child(7) .day-number {
@@ -556,7 +547,7 @@ onMounted(() => {
 
 .loading,
 .no-events {
-    color: #999;
+    color: var(--color-text-subtle);
     font-size: 0.85rem;
     text-align: center;
     margin-top: 20px;
@@ -570,7 +561,7 @@ onMounted(() => {
 
 .event-item {
     background: white;
-    border-left: 3px solid #4a90e2;
+    border-left: 3px solid var(--color-primary);
     padding: 8px;
     border-radius: 4px;
     box-shadow: 0 1px 3px rgba(0,0,0,0.1);
@@ -584,14 +575,14 @@ onMounted(() => {
 
 .event-time {
     font-size: 0.75rem;
-    color: #4a90e2;
+    color: var(--color-primary);
     font-weight: 600;
     margin-bottom: 4px;
 }
 
 .event-title {
     font-size: 0.85rem;
-    color: #262626;
+    color: var(--color-text-dark);
     font-weight: 500;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -632,7 +623,7 @@ onMounted(() => {
 
 .modal-header h3 {
     margin: 0;
-    color: #262626;
+    color: var(--color-text-dark);
 }
 
 .btn-close {
@@ -641,7 +632,7 @@ onMounted(() => {
     font-size: 28px;
     line-height: 1;
     cursor: pointer;
-    color: #666;
+    color: var(--color-text-muted);
     padding: 0;
     width: 32px;
     height: 32px;
@@ -653,7 +644,7 @@ onMounted(() => {
 }
 
 .btn-close:hover {
-    background: #f0f0f0;
+    background: var(--color-bg-muted);
 }
 
 /* Event Details Modal */
@@ -668,7 +659,7 @@ onMounted(() => {
 .detail-group label {
     display: block;
     font-weight: 600;
-    color: #666;
+    color: var(--color-text-muted);
     font-size: 12px;
     text-transform: uppercase;
     margin-bottom: 5px;
@@ -676,7 +667,7 @@ onMounted(() => {
 
 .detail-group p {
     margin: 0;
-    color: #262626;
+    color: var(--color-text-dark);
     font-size: 14px;
 }
 
@@ -698,14 +689,14 @@ onMounted(() => {
     display: block;
     margin-bottom: 5px;
     font-weight: 600;
-    color: #262626;
+    color: var(--color-text-dark);
 }
 
 .form-group input,
 .form-group textarea {
     width: 100%;
     padding: 8px 12px;
-    border: 1px solid #e0e0e0;
+    border: 1px solid var(--color-border);
     border-radius: 4px;
     font-size: 14px;
     font-family: inherit;
@@ -715,7 +706,7 @@ onMounted(() => {
 .form-group input:focus,
 .form-group textarea:focus {
     outline: none;
-    border-color: #4a90e2;
+    border-color: var(--color-primary);
 }
 
 .form-row {
@@ -735,15 +726,15 @@ onMounted(() => {
 }
 
 .message.success {
-    background: #d4edda;
-    color: #155724;
-    border: 1px solid #c3e6cb;
+    background: var(--color-success-bg);
+    color: var(--color-success-text);
+    border: 1px solid var(--color-success-border);
 }
 
 .message.error {
-    background: #f8d7da;
-    color: #721c24;
-    border: 1px solid #f5c6cb;
+    background: var(--color-danger-bg);
+    color: var(--color-danger-text);
+    border: 1px solid var(--color-danger-border);
 }
 
 .modal-actions {
@@ -755,9 +746,9 @@ onMounted(() => {
 
 .btn-cancel {
     padding: 10px 20px;
-    background: #f5f5f5;
-    color: #262626;
-    border: 1px solid #e0e0e0;
+    background: var(--color-bg-subtle-2);
+    color: var(--color-text-dark);
+    border: 1px solid var(--color-border);
     border-radius: 4px;
     font-size: 14px;
     font-weight: 600;
@@ -766,12 +757,12 @@ onMounted(() => {
 }
 
 .btn-cancel:hover {
-    background: #e0e0e0;
+    background: var(--color-border);
 }
 
 .btn-create {
     padding: 10px 20px;
-    background: #4a90e2;
+    background: var(--color-primary);
     color: white;
     border: none;
     border-radius: 4px;
@@ -782,17 +773,17 @@ onMounted(() => {
 }
 
 .btn-create:hover:not(:disabled) {
-    background: #357abd;
+    background: var(--color-primary-hover);
 }
 
 .btn-create:disabled {
-    background: #ccc;
+    background: var(--color-border-strong);
     cursor: not-allowed;
 }
 
 .btn-delete {
     padding: 10px 20px;
-    background: #dc3545;
+    background: var(--color-danger);
     color: white;
     border: none;
     border-radius: 4px;
@@ -803,12 +794,12 @@ onMounted(() => {
 }
 
 .btn-delete:hover {
-    background: #c82333;
+    background: var(--color-danger-hover);
 }
 
 .btn-edit {
     padding: 10px 20px;
-    background: #4a90e2;
+    background: var(--color-primary);
     color: white;
     border: none;
     border-radius: 4px;
@@ -819,7 +810,7 @@ onMounted(() => {
 }
 
 .btn-edit:hover {
-    background: #357abd;
+    background: var(--color-primary-hover);
 }
 
 .color-picker-container {
@@ -836,7 +827,7 @@ onMounted(() => {
     width: 36px;
     height: 36px;
     border-radius: 6px;
-    border: 2px solid #e0e0e0;
+    border: 2px solid var(--color-border);
     cursor: pointer;
     transition: all 0.2s;
     padding: 0;
@@ -844,17 +835,17 @@ onMounted(() => {
 
 .color-swatch:hover {
     transform: scale(1.1);
-    border-color: #999;
+    border-color: var(--color-text-subtle);
 }
 
 .color-swatch.selected {
-    border-color: #4a90e2;
+    border-color: var(--color-primary);
     border-width: 3px;
     box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.2);
 }
 
 .btn-add-event {
-    background: #4a90e2;
+    background: var(--color-primary);
     border: none;
     border-radius: 3px;
     color: white;
@@ -876,7 +867,7 @@ onMounted(() => {
 }
 
 .btn-add-event:hover {
-    background: #357abd;
+    background: var(--color-primary-hover);
     transform: scale(1.1);
 }
 
@@ -931,7 +922,7 @@ onMounted(() => {
     right: 55px !important;
     font-size: 14px !important;
     font-weight: 800 !important;
-    color: #FFF !important;
+    color: var(--color-white) !important;
     text-shadow:
         0 1px 3px rgba(0, 0, 0, 0.6),
         0 0 6px rgba(0, 0, 0, 0.4) !important;
@@ -958,7 +949,7 @@ onMounted(() => {
     right: 55px !important;
     font-size: 14px !important;
     font-weight: 800 !important;
-    color: #FFF !important;
+    color: var(--color-white) !important;
     text-shadow:
         0 1px 3px rgba(0, 0, 0, 0.6),
         0 0 6px rgba(0, 0, 0, 0.4) !important;
@@ -1127,7 +1118,7 @@ div.temp-display[data-v-157d367b] {
     right: 55px !important;
     font-size: 14px !important;
     font-weight: 800 !important;
-    color: #FFF !important;
+    color: var(--color-white) !important;
     text-shadow:
         0 1px 3px rgba(0, 0, 0, 0.6),
         0 0 6px rgba(0, 0, 0, 0.4) !important;

@@ -96,6 +96,7 @@ import RecurringEventEditPromptModal from './RecurringEventEditPromptModal.vue';
 import WeatherIcon from '../weather/WeatherIcon.vue';
 import { useWeather } from '@/composables/useWeather';
 import { useEventOperations } from '@/composables/useEventOperations';
+import { formatTime } from '@/utils/dateFormat';
 
 interface Props {
     currentMonth: number;
@@ -111,7 +112,7 @@ const dayBannerStyle = computed(() => {
     if (!props.monthImageUrl) {
         console.log('No monthImageUrl provided to DayView');
         return {
-            background: '#e0e0e0'
+            background: 'var(--color-border)'
         };
     }
     return {
@@ -356,11 +357,6 @@ async function handleFormSubmit(formData: any) {
     }
 }
 
-function formatTime(date?: Date) {
-    if (!date) return '';
-    return dayjs(date).format('HH:mm');
-}
-
 function getDayTitle() {
     const selectedDate = dayjs().date(props.selectedDay).month(props.currentMonth).year(props.currentYear);
     return selectedDate.format("dddd");
@@ -446,7 +442,7 @@ onMounted(() => {
 .day-title {
     font-size: 2.5rem;
     font-weight: 700;
-    color: #fff;
+    color: var(--color-white);
     margin: 0 0 8px 0;
     text-shadow:
         0 0 3px rgba(0, 0, 0, 0.8),
@@ -460,7 +456,7 @@ onMounted(() => {
 
 .day-date {
     font-size: 1.2rem;
-    color: #fff;
+    color: var(--color-white);
     margin: 0;
     font-weight: 500;
     text-shadow:
@@ -499,7 +495,7 @@ onMounted(() => {
 }
 
 .btn-new-event {
-    background: #4a90e2;
+    background: var(--color-primary);
     border: none;
     border-radius: 50%;
     width: 48px;
@@ -514,7 +510,7 @@ onMounted(() => {
 }
 
 .btn-new-event:hover {
-    background: #357abd;
+    background: var(--color-primary-hover);
     transform: scale(1.05);
 }
 
@@ -547,7 +543,7 @@ onMounted(() => {
 
 .events-header {
     margin: 0;
-    color: #262626;
+    color: var(--color-text-dark);
     font-size: 1.2rem;
     font-weight: 600;
 }
@@ -562,7 +558,7 @@ onMounted(() => {
 
 .loading,
 .no-events {
-    color: #666;
+    color: var(--color-text-muted);
     font-style: italic;
     padding: 20px;
     text-align: center;
@@ -570,7 +566,7 @@ onMounted(() => {
 
 .event-item {
     background: transparent;
-    border: 1px solid #e0e0e0;
+    border: 1px solid var(--color-border);
     border-radius: 4px;
     padding: 15px;
     margin-bottom: 10px;
@@ -586,19 +582,19 @@ onMounted(() => {
 
 .event-time {
     font-size: 14px;
-    color: #4a90e2;
+    color: var(--color-primary);
     font-weight: 600;
     margin-bottom: 8px;
 }
 
 .event-details h4 {
     margin: 0 0 5px 0;
-    color: #262626;
+    color: var(--color-text-dark);
 }
 
 .event-details p {
     margin: 0;
-    color: #666;
+    color: var(--color-text-muted);
     font-size: 14px;
 }
 </style>

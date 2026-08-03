@@ -39,7 +39,7 @@
                             class="event-item"
                             @click.stop="openEventDetails(event)"
                         >
-                            <span class="event-dot" :style="{ backgroundColor: event.color || '#4a90e2' }"></span>
+                            <span class="event-dot" :style="{ backgroundColor: event.color || 'var(--color-primary)' }"></span>
                             <span class="event-title">{{ event.title }}</span>
                             <span class="event-time">{{ formatEventTime(event.startDateTime) }}</span>
                         </div>
@@ -117,6 +117,7 @@ import RecurringEventEditPromptModal from './RecurringEventEditPromptModal.vue';
 import { useWeather } from '@/composables/useWeather';
 import { useEventOperations, EventFormData } from '@/composables/useEventOperations';
 import type { CalendarDate } from '@/types/calendar';
+import { formatDate } from '@/utils/dateFormat';
 
 dayjs.extend(weekOfYear);
 dayjs.extend(isoWeek);
@@ -529,11 +530,6 @@ async function loadMoreDays() {
 function formatEventTime(date?: Date): string {
     if (!date) return '';
     return dayjs(date).format('HH:mm');
-}
-
-function formatEventDate(date?: Date): string {
-    if (!date) return '';
-    return dayjs(date).format('MMMM D, YYYY');
 }
 
 function openDayModal(day: DayData) {
@@ -958,7 +954,7 @@ onMounted(async () => {
 .list-view {
     height: 60vh;
     overflow-y: auto;
-    background: #fff;
+    background: var(--color-white);
     scroll-behavior: smooth;
 }
 
@@ -972,7 +968,7 @@ onMounted(async () => {
 
 .loading-message {
     font-size: 1.1rem;
-    color: #666;
+    color: var(--color-text-muted);
     font-weight: 500;
 }
 
@@ -982,7 +978,7 @@ onMounted(async () => {
 }
 
 .day-item {
-    border-bottom: 1px solid #e0e0e0;
+    border-bottom: 1px solid var(--color-border);
     padding: 16px;
     cursor: pointer;
     transition: background-color 0.2s;
@@ -1012,7 +1008,7 @@ onMounted(async () => {
 .day-number {
     font-size: 2rem;
     font-weight: 700;
-    color: #262626;
+    color: var(--color-text-dark);
     min-width: 50px;
     text-align: center;
 }
@@ -1026,12 +1022,12 @@ onMounted(async () => {
 .day-name {
     font-size: 1rem;
     font-weight: 600;
-    color: #262626;
+    color: var(--color-text-dark);
 }
 
 .month-year {
     font-size: 0.85rem;
-    color: #666;
+    color: var(--color-text-muted);
     white-space: nowrap;
 }
 
@@ -1052,12 +1048,12 @@ onMounted(async () => {
 
 .loading-small {
     font-size: 0.85rem;
-    color: #999;
+    color: var(--color-text-subtle);
 }
 
 .no-events {
     font-size: 0.85rem;
-    color: #999;
+    color: var(--color-text-subtle);
     font-style: italic;
 }
 
@@ -1090,13 +1086,13 @@ onMounted(async () => {
 .event-title {
     flex: 1;
     font-size: 0.9rem;
-    color: #262626;
+    color: var(--color-text-dark);
     font-weight: 500;
 }
 
 .event-time {
     font-size: 0.85rem;
-    color: #666;
+    color: var(--color-text-muted);
     font-weight: 600;
     flex-shrink: 0;
 }
@@ -1104,7 +1100,7 @@ onMounted(async () => {
 .loading-more {
     padding: 20px;
     text-align: center;
-    color: #666;
+    color: var(--color-text-muted);
     font-style: italic;
 }
 

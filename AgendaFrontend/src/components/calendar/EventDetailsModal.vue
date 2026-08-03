@@ -81,8 +81,8 @@
 <script setup lang="ts">
 import { computed, toRef } from 'vue';
 import { Event, EventWithOwner } from '@/api/agenda-api-swagger';
-import dayjs from 'dayjs';
 import { useBackButton } from '@/composables/useBackButton';
+import { formatTime, formatDate } from '@/utils/dateFormat';
 
 interface Props {
     show: boolean;
@@ -135,16 +135,6 @@ const ownerInitials = computed(() => {
     return props.event.ownerName.substring(0, 2).toUpperCase();
 });
 
-function formatTime(date?: Date): string {
-    if (!date) return '';
-    return dayjs(date).format('HH:mm');
-}
-
-function formatDate(date?: Date): string {
-    if (!date) return '';
-    return dayjs(date).format('MMMM D, YYYY');
-}
-
 function close() {
     emit('close');
 }
@@ -196,7 +186,7 @@ function handleDelete() {
 
 .modal-header h3 {
     margin: 0;
-    color: #262626;
+    color: var(--color-text-dark);
 }
 
 .btn-close {
@@ -205,7 +195,7 @@ function handleDelete() {
     font-size: 28px;
     line-height: 1;
     cursor: pointer;
-    color: #666;
+    color: var(--color-text-muted);
     padding: 0;
     width: 32px;
     height: 32px;
@@ -217,7 +207,7 @@ function handleDelete() {
 }
 
 .btn-close:hover {
-    background: #f0f0f0;
+    background: var(--color-bg-muted);
 }
 
 .event-details-content {
@@ -231,7 +221,7 @@ function handleDelete() {
 .detail-group label {
     display: block;
     font-weight: 600;
-    color: #666;
+    color: var(--color-text-muted);
     font-size: 12px;
     text-transform: uppercase;
     margin-bottom: 5px;
@@ -239,7 +229,7 @@ function handleDelete() {
 
 .detail-group p {
     margin: 0;
-    color: #262626;
+    color: var(--color-text-dark);
     font-size: 14px;
 }
 
@@ -257,7 +247,7 @@ function handleDelete() {
     gap: 12px;
     justify-content: flex-end;
     padding-top: 16px;
-    border-top: 1px solid #e0e0e0;
+    border-top: 1px solid var(--color-border);
 }
 
 .btn-delete,
@@ -272,21 +262,21 @@ function handleDelete() {
 }
 
 .btn-delete {
-    background: #dc3545 !important;
+    background: var(--color-danger) !important;
     color: white !important;
 }
 
 .btn-delete:hover {
-    background: #c82333 !important;
+    background: var(--color-danger-hover) !important;
 }
 
 .btn-edit {
-    background: #4a90e2 !important;
+    background: var(--color-primary) !important;
     color: white !important;
 }
 
 .btn-edit:hover {
-    background: #357abd !important;
+    background: var(--color-primary-hover) !important;
 }
 
 .recurring-indicator {
@@ -355,7 +345,7 @@ function handleDelete() {
     width: 36px;
     height: 36px;
     border-radius: 50%;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, var(--color-accent) 0%, var(--color-accent-2) 100%);
     color: white;
     display: flex;
     align-items: center;
@@ -383,7 +373,7 @@ function handleDelete() {
 }
 
 .read-only-notice {
-    color: #666;
+    color: var(--color-text-muted);
     font-size: 13px;
     font-style: italic;
 }
