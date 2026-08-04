@@ -96,7 +96,7 @@ import { ref, watch, onMounted } from 'vue';
 import dayjs from "dayjs";
 import weekOfYear from 'dayjs/plugin/weekOfYear';
 import isoWeek from 'dayjs/plugin/isoWeek';
-import { AgendaAPI, Event, EventOccurrence } from '@/api/agenda-api-swagger';
+import { AgendaAPI, EventWithOwnerDto, EventOccurrenceDto } from '@/api/agenda-api-swagger';
 import { authenticatedAxios, getApiBaseUrl } from '@/api/axios-config';
 import DayModal from './DayModal.vue';
 import EventFormModal from './EventFormModal.vue';
@@ -149,11 +149,11 @@ const daysAbbreviated = [
 ];
 
 const dates = ref<CalendarDate[]>([]);
-const weekOccurrences = ref<EventOccurrence[]>([]);
+const weekOccurrences = ref<EventOccurrenceDto[]>([]);
 const loadingEvents = ref(false);
 const showDetailsModal = ref(false);
 const showEditModal = ref(false);
-const selectedEvent = ref<Event | null>(null);
+const selectedEvent = ref<EventWithOwnerDto | null>(null);
 const formModalRef = ref<InstanceType<typeof EventFormModal> | null>(null);
 
 // Day Modal state
@@ -170,11 +170,11 @@ const { createEvent, updateEvent, editOccurrence, deleteEvent, confirmDelete, is
 
 // Recurring event delete prompt state
 const showRecurringDeletePrompt = ref(false);
-const eventToDelete = ref<Event | null>(null);
+const eventToDelete = ref<EventWithOwnerDto | null>(null);
 
 // Recurring event edit prompt state
 const showRecurringEditPrompt = ref(false);
-const pendingEditEvent = ref<Event | null>(null);
+const pendingEditEvent = ref<EventWithOwnerDto | null>(null);
 const editSeriesMode = ref(false);
 
 function generateWeekView() {
@@ -217,7 +217,7 @@ async function loadWeekEvents() {
     }
 }
 
-function getEventsForDay(dayIndex: number): EventOccurrence[] {
+function getEventsForDay(dayIndex: number): EventOccurrenceDto[] {
     const selectedDate = dayjs().date(props.selectedDay).month(props.currentMonth).year(props.currentYear);
     const startOfWeek = selectedDate.startOf('isoWeek');
     const targetDay = startOfWeek.add(dayIndex, 'day');
@@ -232,7 +232,7 @@ function getEventsForDay(dayIndex: number): EventOccurrence[] {
     });
 }
 
-async function openEventDetails(occurrence: EventOccurrence) {
+async function openEventDetails(occurrence: EventOccurrenceDto) {
     // Fetch the full event from the API using the eventId
     if (!occurrence.eventId) return;
 
@@ -250,7 +250,7 @@ function closeDetailsModal() {
     selectedEvent.value = null;
 }
 
-function handleEditEvent(event: Event) {
+function handleEditEvent(event: EventWithOwnerDto) {
     closeDetailsModal();
 
     // Check if recurring event
@@ -328,7 +328,7 @@ async function handleFormSubmit(formData: any) {
     }
 }
 
-async function handleDeleteEvent(event: Event) {
+async function handleDeleteEvent(event: EventWithOwnerDto) {
     if (!event.id) return;
 
     // Check if recurring event

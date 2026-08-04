@@ -106,7 +106,7 @@ import { ref, onMounted, computed, watch, reactive, nextTick } from 'vue';
 import dayjs from 'dayjs';
 import weekOfYear from 'dayjs/plugin/weekOfYear';
 import isoWeek from 'dayjs/plugin/isoWeek';
-import { AgendaAPI, Event, EventOccurrence } from '@/api/agenda-api-swagger';
+import { AgendaAPI, EventWithOwnerDto, EventOccurrenceDto } from '@/api/agenda-api-swagger';
 import { authenticatedAxios, getApiBaseUrl } from '@/api/axios-config';
 import DayModal from './DayModal.vue';
 import WeatherIcon from '../weather/WeatherIcon.vue';
@@ -142,7 +142,7 @@ interface DayData {
     year: number;
     dayName: string;
     monthName: string;
-    events: Event[];
+    events: EventWithOwnerDto[];
     weather: WeatherForecast | null;
 }
 
@@ -172,18 +172,18 @@ const modalYear = ref(2024);
 
 // Event Details Modal state
 const showDetailsModal = ref(false);
-const selectedEvent = ref<Event | null>(null);
+const selectedEvent = ref<EventWithOwnerDto | null>(null);
 
 // Event Form Modal state
 const showFormModal = ref(false);
-const eventToEdit = ref<Event | null>(null);
+const eventToEdit = ref<EventWithOwnerDto | null>(null);
 const formModalRef = ref<InstanceType<typeof EventFormModal> | null>(null);
 
 // Recurring event prompts state
 const showRecurringDeletePrompt = ref(false);
 const showRecurringEditPrompt = ref(false);
-const eventToDelete = ref<Event | null>(null);
-const pendingEditEvent = ref<Event | null>(null);
+const eventToDelete = ref<EventWithOwnerDto | null>(null);
+const pendingEditEvent = ref<EventWithOwnerDto | null>(null);
 const editSeriesMode = ref(false);
 
 // Weather functionality
@@ -232,7 +232,7 @@ async function loadEventsForRange(start: dayjs.Dayjs, end: dayjs.Dayjs) {
             if (!occurrence.occurrenceStart || !occurrence.eventId) return;
 
             // Create a display event from occurrence data
-            const displayEvent = new Event({
+            const displayEvent = new EventWithOwnerDto({
                 id: occurrence.eventId,
                 startDateTime: occurrence.occurrenceStart,
                 endDateTime: occurrence.occurrenceEnd,
@@ -391,7 +391,7 @@ async function loadPreviousDays() {
         occurrences.forEach(occurrence => {
             if (!occurrence.occurrenceStart || !occurrence.eventId) return;
 
-            const displayEvent = new Event({
+            const displayEvent = new EventWithOwnerDto({
                 id: occurrence.eventId,
                 startDateTime: occurrence.occurrenceStart,
                 endDateTime: occurrence.occurrenceEnd,
@@ -482,7 +482,7 @@ async function loadMoreDays() {
         occurrences.forEach(occurrence => {
             if (!occurrence.occurrenceStart || !occurrence.eventId) return;
 
-            const displayEvent = new Event({
+            const displayEvent = new EventWithOwnerDto({
                 id: occurrence.eventId,
                 startDateTime: occurrence.occurrenceStart,
                 endDateTime: occurrence.occurrenceEnd,
@@ -550,7 +550,7 @@ function closeDayModal() {
     showDayModal.value = false;
 }
 
-async function openEventDetails(event: Event) {
+async function openEventDetails(event: EventWithOwnerDto) {
     if (!event.startDateTime || !event.id) return;
 
     const eventDate = dayjs(event.startDateTime);
@@ -585,7 +585,7 @@ function closeDetailsModal() {
     selectedEvent.value = null;
 }
 
-function handleEditEvent(event: Event) {
+function handleEditEvent(event: EventWithOwnerDto) {
     closeDetailsModal();
 
     // Check if recurring event
@@ -676,7 +676,7 @@ async function handleFormSubmit(formData: EventFormData) {
     }
 }
 
-async function handleDeleteEvent(event: Event) {
+async function handleDeleteEvent(event: EventWithOwnerDto) {
     if (!event.id) return;
 
     // Check if recurring event

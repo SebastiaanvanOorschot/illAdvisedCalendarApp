@@ -80,19 +80,19 @@
 
 <script setup lang="ts">
 import { computed, toRef } from 'vue';
-import { Event, EventWithOwner } from '@/api/agenda-api-swagger';
+import { EventDto, EventWithOwnerDto } from '@/api/agenda-api-swagger';
 import { useBackButton } from '@/composables/useBackButton';
 import { formatTime, formatDate } from '@/utils/dateFormat';
 
 interface Props {
     show: boolean;
-    event: EventWithOwner | null;
+    event: EventWithOwnerDto | null;
 }
 
 interface Emits {
     (e: 'close'): void;
-    (e: 'edit', event: Event | EventWithOwner): void;
-    (e: 'delete', event: Event | EventWithOwner): void;
+    (e: 'edit', event: EventDto | EventWithOwnerDto): void;
+    (e: 'delete', event: EventDto | EventWithOwnerDto): void;
 }
 
 const props = defineProps<Props>();

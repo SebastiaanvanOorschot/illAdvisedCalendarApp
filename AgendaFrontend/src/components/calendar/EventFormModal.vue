@@ -201,14 +201,14 @@
 
 <script setup lang="ts">
 import { reactive, ref, watch, computed, toRef } from 'vue';
-import { Event } from '@/api/agenda-api-swagger';
+import { EventWithOwnerDto } from '@/api/agenda-api-swagger';
 import dayjs from 'dayjs';
 import { useBackButton } from '@/composables/useBackButton';
 import { EVENT_COLOR_OPTIONS, DEFAULT_EVENT_COLOR } from '@/constants/eventColors';
 
 interface Props {
     show: boolean;
-    event?: Event | null;
+    event?: EventWithOwnerDto | null;
 }
 
 interface EventFormData {
@@ -298,7 +298,7 @@ function resetForm() {
     advancedPattern.value = 'weekdays';
 }
 
-function populateForm(event: Event) {
+function populateForm(event: EventWithOwnerDto) {
     form.title = event.title || '';
     form.description = event.description || '';
     form.color = event.color || DEFAULT_EVENT_COLOR;

@@ -1,5 +1,5 @@
 import dayjs from 'dayjs';
-import { AgendaAPI, Event, EditOccurrenceRequest } from '@/api/agenda-api-swagger';
+import { AgendaAPI, EventDto, EventWithOwnerDto, CreateEventDto, UpdateEventDto, EditOccurrenceDto } from '@/api/agenda-api-swagger';
 import { authenticatedAxios, getApiBaseUrl } from '@/api/axios-config';
 
 const api = new AgendaAPI(getApiBaseUrl(), authenticatedAxios);
@@ -22,7 +22,7 @@ export function useEventOperations() {
     /**
      * Create a new event
      */
-    async function createEvent(formData: EventFormData, selectedDate: dayjs.Dayjs): Promise<Event> {
+    async function createEvent(formData: EventFormData, selectedDate: dayjs.Dayjs): Promise<EventDto> {
         const startDateTime = formData.isAllDay
             ? selectedDate.startOf('day').toDate()
             : selectedDate
@@ -41,7 +41,7 @@ export function useEventOperations() {
                 .millisecond(0)
                 .toDate();
 
-        const newEvent = new Event({
+        const newEvent = new CreateEventDto({
             title: formData.title,
             description: formData.description || undefined,
             isAllDay: formData.isAllDay || false,
@@ -64,7 +64,7 @@ export function useEventOperations() {
      * Update an existing event
      */
     async function updateEvent(
-        eventToUpdate: Event,
+        eventToUpdate: EventWithOwnerDto,
         formData: EventFormData,
         selectedDate: dayjs.Dayjs
     ): Promise<void> {
@@ -91,8 +91,7 @@ export function useEventOperations() {
                 .millisecond(0)
                 .toDate();
 
-        const updatedEvent = new Event({
-            id: eventToUpdate.id,
+        const updatedEvent = new UpdateEventDto({
             title: formData.title,
             description: formData.description || undefined,
             isAllDay: formData.isAllDay || false,
@@ -106,10 +105,7 @@ export function useEventOperations() {
             recurrenceEndDate: formData.isRecurring && formData.recurrenceEndDate
                 ? new Date(formData.recurrenceEndDate)
                 : undefined,
-            parentEventId: eventToUpdate.parentEventId,
-            userId: eventToUpdate.userId,
-            createdAt: eventToUpdate.createdAt,
-            updatedAt: eventToUpdate.updatedAt
+            parentEventId: eventToUpdate.parentEventId
         });
 
         await api.eventsPUT(eventToUpdate.id, updatedEvent);
@@ -119,7 +115,7 @@ export function useEventOperations() {
      * Delete an event or event series
      * For single occurrences of recurring events, adds an exception date instead of deleting
      */
-    async function deleteEvent(event: Event, deleteSeries: boolean = false): Promise<void> {
+    async function deleteEvent(event: EventWithOwnerDto, deleteSeries: boolean = false): Promise<void> {
         if (!event.id) {
             throw new Error('Event ID is required for deletion');
         }
@@ -158,7 +154,7 @@ export function useEventOperations() {
      * Creates a new event for the modified occurrence and adds an exception to the parent series
      */
     async function editOccurrence(
-        event: Event,
+        event: EventWithOwnerDto,
         formData: EventFormData,
         selectedDate: dayjs.Dayjs
     ): Promise<void> {
@@ -182,7 +178,7 @@ export function useEventOperations() {
                 .toDate()
             : undefined;
 
-        const request = new EditOccurrenceRequest({
+        const request = new EditOccurrenceDto({
             originalOccurrenceDate: event.startDateTime,
             title: formData.title,
             description: formData.description || undefined,
@@ -197,14 +193,14 @@ export function useEventOperations() {
     /**
      * Check if an event is recurring
      */
-    function isRecurringEvent(event: Event): boolean {
+    function isRecurringEvent(event: EventWithOwnerDto): boolean {
         return event.isRecurring || !!event.recurrenceRule;
     }
 
     /**
      * Prompt user for delete confirmation (non-recurring events only)
      */
-    function confirmDelete(event: Event): boolean {
+    function confirmDelete(event: EventWithOwnerDto): boolean {
         return confirm('Are you sure you want to delete this event?');
     }
 

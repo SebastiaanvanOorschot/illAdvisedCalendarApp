@@ -128,21 +128,21 @@ export interface IAgendaAPI {
     /**
      * @return Success
      */
-    eventsAll( cancelToken?: CancelToken): Promise<EventWithOwner[]>;
+    eventsAll( cancelToken?: CancelToken): Promise<EventWithOwnerDto[]>;
     /**
      * @param body (optional) 
      * @return Success
      */
-    eventsPOST(body?: Event | undefined,  cancelToken?: CancelToken): Promise<Event>;
+    eventsPOST(body?: CreateEventDto | undefined,  cancelToken?: CancelToken): Promise<EventDto>;
     /**
      * @return Success
      */
-    eventsGET(id: number,  cancelToken?: CancelToken): Promise<EventWithOwner>;
+    eventsGET(id: number,  cancelToken?: CancelToken): Promise<EventWithOwnerDto>;
     /**
      * @param body (optional) 
      * @return Success
      */
-    eventsPUT(id: number, body?: Event | undefined,  cancelToken?: CancelToken): Promise<void>;
+    eventsPUT(id: number, body?: UpdateEventDto | undefined,  cancelToken?: CancelToken): Promise<void>;
     /**
      * @return Success
      */
@@ -150,19 +150,19 @@ export interface IAgendaAPI {
     /**
      * @return Success
      */
-    date(date: Date,  cancelToken?: CancelToken): Promise<Event[]>;
+    date(date: Date,  cancelToken?: CancelToken): Promise<EventDto[]>;
     /**
      * @param startDate (optional) 
      * @param endDate (optional) 
      * @return Success
      */
-    range(startDate?: Date | undefined, endDate?: Date | undefined,  cancelToken?: CancelToken): Promise<EventWithOwner[]>;
+    range(startDate?: Date | undefined, endDate?: Date | undefined,  cancelToken?: CancelToken): Promise<EventWithOwnerDto[]>;
     /**
      * @param startDate (optional) 
      * @param endDate (optional) 
      * @return Success
      */
-    occurrences(startDate?: Date | undefined, endDate?: Date | undefined,  cancelToken?: CancelToken): Promise<EventOccurrence[]>;
+    occurrences(startDate?: Date | undefined, endDate?: Date | undefined,  cancelToken?: CancelToken): Promise<EventOccurrenceDto[]>;
     /**
      * @param body (optional) 
      * @return Success
@@ -172,7 +172,7 @@ export interface IAgendaAPI {
      * @param body (optional) 
      * @return Success
      */
-    editOccurrence(id: number, body?: EditOccurrenceRequest | undefined,  cancelToken?: CancelToken): Promise<Event>;
+    editOccurrence(id: number, body?: EditOccurrenceDto | undefined,  cancelToken?: CancelToken): Promise<EventDto>;
     /**
      * @param body (optional) 
      * @return Success
@@ -1422,7 +1422,7 @@ export class AgendaAPI extends BaseAPI implements IAgendaAPI {
     /**
      * @return Success
      */
-    eventsAll( cancelToken?: CancelToken): Promise<EventWithOwner[]> {
+    eventsAll( cancelToken?: CancelToken): Promise<EventWithOwnerDto[]> {
         let url_ = this.baseUrl + "/api/Events";
         url_ = url_.replace(/[?&]$/, "");
 
@@ -1448,7 +1448,7 @@ export class AgendaAPI extends BaseAPI implements IAgendaAPI {
         });
     }
 
-    protected processEventsAll(response: AxiosResponse): Promise<EventWithOwner[]> {
+    protected processEventsAll(response: AxiosResponse): Promise<EventWithOwnerDto[]> {
         const status = response.status;
         let _headers: any = {};
         if (response.headers && typeof response.headers === "object") {
@@ -1465,25 +1465,25 @@ export class AgendaAPI extends BaseAPI implements IAgendaAPI {
             if (Array.isArray(resultData200)) {
                 result200 = [] as any;
                 for (let item of resultData200)
-                    result200!.push(EventWithOwner.fromJS(item));
+                    result200!.push(EventWithOwnerDto.fromJS(item));
             }
             else {
                 result200 = null as any;
             }
-            return Promise.resolve<EventWithOwner[]>(result200);
+            return Promise.resolve<EventWithOwnerDto[]>(result200);
 
         } else if (status !== 200 && status !== 204) {
             const _responseText = response.data;
             return throwException("An unexpected server error occurred.", status, _responseText, _headers);
         }
-        return Promise.resolve<EventWithOwner[]>(null as any);
+        return Promise.resolve<EventWithOwnerDto[]>(null as any);
     }
 
     /**
      * @param body (optional) 
      * @return Success
      */
-    eventsPOST(body?: Event | undefined, cancelToken?: CancelToken): Promise<Event> {
+    eventsPOST(body?: CreateEventDto | undefined, cancelToken?: CancelToken): Promise<EventDto> {
         let url_ = this.baseUrl + "/api/Events";
         url_ = url_.replace(/[?&]$/, "");
 
@@ -1513,7 +1513,7 @@ export class AgendaAPI extends BaseAPI implements IAgendaAPI {
         });
     }
 
-    protected processEventsPOST(response: AxiosResponse): Promise<Event> {
+    protected processEventsPOST(response: AxiosResponse): Promise<EventDto> {
         const status = response.status;
         let _headers: any = {};
         if (response.headers && typeof response.headers === "object") {
@@ -1527,20 +1527,20 @@ export class AgendaAPI extends BaseAPI implements IAgendaAPI {
             const _responseText = response.data;
             let result200: any = null;
             let resultData200  = _responseText;
-            result200 = Event.fromJS(resultData200);
-            return Promise.resolve<Event>(result200);
+            result200 = EventDto.fromJS(resultData200);
+            return Promise.resolve<EventDto>(result200);
 
         } else if (status !== 200 && status !== 204) {
             const _responseText = response.data;
             return throwException("An unexpected server error occurred.", status, _responseText, _headers);
         }
-        return Promise.resolve<Event>(null as any);
+        return Promise.resolve<EventDto>(null as any);
     }
 
     /**
      * @return Success
      */
-    eventsGET(id: number, cancelToken?: CancelToken): Promise<EventWithOwner> {
+    eventsGET(id: number, cancelToken?: CancelToken): Promise<EventWithOwnerDto> {
         let url_ = this.baseUrl + "/api/Events/{id}";
         if (id === undefined || id === null)
             throw new globalThis.Error("The parameter 'id' must be defined.");
@@ -1569,7 +1569,7 @@ export class AgendaAPI extends BaseAPI implements IAgendaAPI {
         });
     }
 
-    protected processEventsGET(response: AxiosResponse): Promise<EventWithOwner> {
+    protected processEventsGET(response: AxiosResponse): Promise<EventWithOwnerDto> {
         const status = response.status;
         let _headers: any = {};
         if (response.headers && typeof response.headers === "object") {
@@ -1583,21 +1583,21 @@ export class AgendaAPI extends BaseAPI implements IAgendaAPI {
             const _responseText = response.data;
             let result200: any = null;
             let resultData200  = _responseText;
-            result200 = EventWithOwner.fromJS(resultData200);
-            return Promise.resolve<EventWithOwner>(result200);
+            result200 = EventWithOwnerDto.fromJS(resultData200);
+            return Promise.resolve<EventWithOwnerDto>(result200);
 
         } else if (status !== 200 && status !== 204) {
             const _responseText = response.data;
             return throwException("An unexpected server error occurred.", status, _responseText, _headers);
         }
-        return Promise.resolve<EventWithOwner>(null as any);
+        return Promise.resolve<EventWithOwnerDto>(null as any);
     }
 
     /**
      * @param body (optional) 
      * @return Success
      */
-    eventsPUT(id: number, body?: Event | undefined, cancelToken?: CancelToken): Promise<void> {
+    eventsPUT(id: number, body?: UpdateEventDto | undefined, cancelToken?: CancelToken): Promise<void> {
         let url_ = this.baseUrl + "/api/Events/{id}";
         if (id === undefined || id === null)
             throw new globalThis.Error("The parameter 'id' must be defined.");
@@ -1705,7 +1705,7 @@ export class AgendaAPI extends BaseAPI implements IAgendaAPI {
     /**
      * @return Success
      */
-    date(date: Date, cancelToken?: CancelToken): Promise<Event[]> {
+    date(date: Date, cancelToken?: CancelToken): Promise<EventDto[]> {
         let url_ = this.baseUrl + "/api/Events/date/{date}";
         if (date === undefined || date === null)
             throw new globalThis.Error("The parameter 'date' must be defined.");
@@ -1734,7 +1734,7 @@ export class AgendaAPI extends BaseAPI implements IAgendaAPI {
         });
     }
 
-    protected processDate(response: AxiosResponse): Promise<Event[]> {
+    protected processDate(response: AxiosResponse): Promise<EventDto[]> {
         const status = response.status;
         let _headers: any = {};
         if (response.headers && typeof response.headers === "object") {
@@ -1751,18 +1751,18 @@ export class AgendaAPI extends BaseAPI implements IAgendaAPI {
             if (Array.isArray(resultData200)) {
                 result200 = [] as any;
                 for (let item of resultData200)
-                    result200!.push(Event.fromJS(item));
+                    result200!.push(EventDto.fromJS(item));
             }
             else {
                 result200 = null as any;
             }
-            return Promise.resolve<Event[]>(result200);
+            return Promise.resolve<EventDto[]>(result200);
 
         } else if (status !== 200 && status !== 204) {
             const _responseText = response.data;
             return throwException("An unexpected server error occurred.", status, _responseText, _headers);
         }
-        return Promise.resolve<Event[]>(null as any);
+        return Promise.resolve<EventDto[]>(null as any);
     }
 
     /**
@@ -1770,7 +1770,7 @@ export class AgendaAPI extends BaseAPI implements IAgendaAPI {
      * @param endDate (optional) 
      * @return Success
      */
-    range(startDate?: Date | undefined, endDate?: Date | undefined, cancelToken?: CancelToken): Promise<EventWithOwner[]> {
+    range(startDate?: Date | undefined, endDate?: Date | undefined, cancelToken?: CancelToken): Promise<EventWithOwnerDto[]> {
         let url_ = this.baseUrl + "/api/Events/range?";
         if (startDate === null)
             throw new globalThis.Error("The parameter 'startDate' cannot be null.");
@@ -1804,7 +1804,7 @@ export class AgendaAPI extends BaseAPI implements IAgendaAPI {
         });
     }
 
-    protected processRange(response: AxiosResponse): Promise<EventWithOwner[]> {
+    protected processRange(response: AxiosResponse): Promise<EventWithOwnerDto[]> {
         const status = response.status;
         let _headers: any = {};
         if (response.headers && typeof response.headers === "object") {
@@ -1821,18 +1821,18 @@ export class AgendaAPI extends BaseAPI implements IAgendaAPI {
             if (Array.isArray(resultData200)) {
                 result200 = [] as any;
                 for (let item of resultData200)
-                    result200!.push(EventWithOwner.fromJS(item));
+                    result200!.push(EventWithOwnerDto.fromJS(item));
             }
             else {
                 result200 = null as any;
             }
-            return Promise.resolve<EventWithOwner[]>(result200);
+            return Promise.resolve<EventWithOwnerDto[]>(result200);
 
         } else if (status !== 200 && status !== 204) {
             const _responseText = response.data;
             return throwException("An unexpected server error occurred.", status, _responseText, _headers);
         }
-        return Promise.resolve<EventWithOwner[]>(null as any);
+        return Promise.resolve<EventWithOwnerDto[]>(null as any);
     }
 
     /**
@@ -1840,7 +1840,7 @@ export class AgendaAPI extends BaseAPI implements IAgendaAPI {
      * @param endDate (optional) 
      * @return Success
      */
-    occurrences(startDate?: Date | undefined, endDate?: Date | undefined, cancelToken?: CancelToken): Promise<EventOccurrence[]> {
+    occurrences(startDate?: Date | undefined, endDate?: Date | undefined, cancelToken?: CancelToken): Promise<EventOccurrenceDto[]> {
         let url_ = this.baseUrl + "/api/Events/occurrences?";
         if (startDate === null)
             throw new globalThis.Error("The parameter 'startDate' cannot be null.");
@@ -1874,7 +1874,7 @@ export class AgendaAPI extends BaseAPI implements IAgendaAPI {
         });
     }
 
-    protected processOccurrences(response: AxiosResponse): Promise<EventOccurrence[]> {
+    protected processOccurrences(response: AxiosResponse): Promise<EventOccurrenceDto[]> {
         const status = response.status;
         let _headers: any = {};
         if (response.headers && typeof response.headers === "object") {
@@ -1891,18 +1891,18 @@ export class AgendaAPI extends BaseAPI implements IAgendaAPI {
             if (Array.isArray(resultData200)) {
                 result200 = [] as any;
                 for (let item of resultData200)
-                    result200!.push(EventOccurrence.fromJS(item));
+                    result200!.push(EventOccurrenceDto.fromJS(item));
             }
             else {
                 result200 = null as any;
             }
-            return Promise.resolve<EventOccurrence[]>(result200);
+            return Promise.resolve<EventOccurrenceDto[]>(result200);
 
         } else if (status !== 200 && status !== 204) {
             const _responseText = response.data;
             return throwException("An unexpected server error occurred.", status, _responseText, _headers);
         }
-        return Promise.resolve<EventOccurrence[]>(null as any);
+        return Promise.resolve<EventOccurrenceDto[]>(null as any);
     }
 
     /**
@@ -1966,7 +1966,7 @@ export class AgendaAPI extends BaseAPI implements IAgendaAPI {
      * @param body (optional) 
      * @return Success
      */
-    editOccurrence(id: number, body?: EditOccurrenceRequest | undefined, cancelToken?: CancelToken): Promise<Event> {
+    editOccurrence(id: number, body?: EditOccurrenceDto | undefined, cancelToken?: CancelToken): Promise<EventDto> {
         let url_ = this.baseUrl + "/api/Events/{id}/edit-occurrence";
         if (id === undefined || id === null)
             throw new globalThis.Error("The parameter 'id' must be defined.");
@@ -1999,7 +1999,7 @@ export class AgendaAPI extends BaseAPI implements IAgendaAPI {
         });
     }
 
-    protected processEditOccurrence(response: AxiosResponse): Promise<Event> {
+    protected processEditOccurrence(response: AxiosResponse): Promise<EventDto> {
         const status = response.status;
         let _headers: any = {};
         if (response.headers && typeof response.headers === "object") {
@@ -2013,14 +2013,14 @@ export class AgendaAPI extends BaseAPI implements IAgendaAPI {
             const _responseText = response.data;
             let result200: any = null;
             let resultData200  = _responseText;
-            result200 = Event.fromJS(resultData200);
-            return Promise.resolve<Event>(result200);
+            result200 = EventDto.fromJS(resultData200);
+            return Promise.resolve<EventDto>(result200);
 
         } else if (status !== 200 && status !== 204) {
             const _responseText = response.data;
             return throwException("An unexpected server error occurred.", status, _responseText, _headers);
         }
-        return Promise.resolve<Event>(null as any);
+        return Promise.resolve<EventDto>(null as any);
     }
 
     /**
@@ -2933,7 +2933,95 @@ export interface IConnectRequest {
     accessToken?: string | undefined;
 }
 
-export class EditOccurrenceRequest implements IEditOccurrenceRequest {
+export class CreateEventDto implements ICreateEventDto {
+    title?: string | undefined;
+    description?: string | undefined;
+    startDateTime?: Date;
+    endDateTime?: Date | undefined;
+    isAllDay?: boolean;
+    color?: string | undefined;
+    isRecurring?: boolean;
+    recurrencePattern?: string | undefined;
+    recurrenceInterval?: number | undefined;
+    recurrenceEndDate?: Date | undefined;
+    recurrenceRule?: string | undefined;
+    exceptionDates?: string | undefined;
+    recurrenceId?: Date | undefined;
+    parentEventId?: number | undefined;
+
+    constructor(data?: ICreateEventDto) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (this as any)[property] = (data as any)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.title = _data["title"];
+            this.description = _data["description"];
+            this.startDateTime = _data["startDateTime"] ? new Date(_data["startDateTime"].toString()) : undefined as any;
+            this.endDateTime = _data["endDateTime"] ? new Date(_data["endDateTime"].toString()) : undefined as any;
+            this.isAllDay = _data["isAllDay"];
+            this.color = _data["color"];
+            this.isRecurring = _data["isRecurring"];
+            this.recurrencePattern = _data["recurrencePattern"];
+            this.recurrenceInterval = _data["recurrenceInterval"];
+            this.recurrenceEndDate = _data["recurrenceEndDate"] ? new Date(_data["recurrenceEndDate"].toString()) : undefined as any;
+            this.recurrenceRule = _data["recurrenceRule"];
+            this.exceptionDates = _data["exceptionDates"];
+            this.recurrenceId = _data["recurrenceId"] ? new Date(_data["recurrenceId"].toString()) : undefined as any;
+            this.parentEventId = _data["parentEventId"];
+        }
+    }
+
+    static fromJS(data: any): CreateEventDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new CreateEventDto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["title"] = this.title;
+        data["description"] = this.description;
+        data["startDateTime"] = this.startDateTime ? this.startDateTime.toISOString() : undefined as any;
+        data["endDateTime"] = this.endDateTime ? this.endDateTime.toISOString() : undefined as any;
+        data["isAllDay"] = this.isAllDay;
+        data["color"] = this.color;
+        data["isRecurring"] = this.isRecurring;
+        data["recurrencePattern"] = this.recurrencePattern;
+        data["recurrenceInterval"] = this.recurrenceInterval;
+        data["recurrenceEndDate"] = this.recurrenceEndDate ? this.recurrenceEndDate.toISOString() : undefined as any;
+        data["recurrenceRule"] = this.recurrenceRule;
+        data["exceptionDates"] = this.exceptionDates;
+        data["recurrenceId"] = this.recurrenceId ? this.recurrenceId.toISOString() : undefined as any;
+        data["parentEventId"] = this.parentEventId;
+        return data;
+    }
+}
+
+export interface ICreateEventDto {
+    title?: string | undefined;
+    description?: string | undefined;
+    startDateTime?: Date;
+    endDateTime?: Date | undefined;
+    isAllDay?: boolean;
+    color?: string | undefined;
+    isRecurring?: boolean;
+    recurrencePattern?: string | undefined;
+    recurrenceInterval?: number | undefined;
+    recurrenceEndDate?: Date | undefined;
+    recurrenceRule?: string | undefined;
+    exceptionDates?: string | undefined;
+    recurrenceId?: Date | undefined;
+    parentEventId?: number | undefined;
+}
+
+export class EditOccurrenceDto implements IEditOccurrenceDto {
     originalOccurrenceDate?: Date;
     title?: string | undefined;
     description?: string | undefined;
@@ -2941,7 +3029,7 @@ export class EditOccurrenceRequest implements IEditOccurrenceRequest {
     newEndDateTime?: Date;
     color?: string | undefined;
 
-    constructor(data?: IEditOccurrenceRequest) {
+    constructor(data?: IEditOccurrenceDto) {
         if (data) {
             for (var property in data) {
                 if (data.hasOwnProperty(property))
@@ -2961,9 +3049,9 @@ export class EditOccurrenceRequest implements IEditOccurrenceRequest {
         }
     }
 
-    static fromJS(data: any): EditOccurrenceRequest {
+    static fromJS(data: any): EditOccurrenceDto {
         data = typeof data === 'object' ? data : {};
-        let result = new EditOccurrenceRequest();
+        let result = new EditOccurrenceDto();
         result.init(data);
         return result;
     }
@@ -2980,7 +3068,7 @@ export class EditOccurrenceRequest implements IEditOccurrenceRequest {
     }
 }
 
-export interface IEditOccurrenceRequest {
+export interface IEditOccurrenceDto {
     originalOccurrenceDate?: Date;
     title?: string | undefined;
     description?: string | undefined;
@@ -2989,7 +3077,7 @@ export interface IEditOccurrenceRequest {
     color?: string | undefined;
 }
 
-export class Event implements IEvent {
+export class EventDto implements IEventDto {
     id?: number;
     title?: string | undefined;
     description?: string | undefined;
@@ -2997,27 +3085,24 @@ export class Event implements IEvent {
     endDateTime?: Date | undefined;
     createdAt?: Date;
     updatedAt?: Date;
+    isAllDay?: boolean;
+    color?: string | undefined;
     isRecurring?: boolean;
     recurrencePattern?: string | undefined;
     recurrenceInterval?: number | undefined;
     recurrenceEndDate?: Date | undefined;
-    parentEventId?: number | undefined;
     recurrenceRule?: string | undefined;
     exceptionDates?: string | undefined;
     recurrenceId?: Date | undefined;
-    isAllDay?: boolean;
-    color?: string | undefined;
-    googleCalendarId?: string | undefined;
-    googleEventId?: string | undefined;
+    parentEventId?: number | undefined;
     isImportedFromGoogle?: boolean;
     isLocallyModified?: boolean;
-    calendarSubscriptionId?: number | undefined;
-    externalEventId?: string | undefined;
     isFromSubscription?: boolean;
     isReadOnly?: boolean;
+    calendarSubscriptionId?: number | undefined;
     userId?: number;
 
-    constructor(data?: IEvent) {
+    constructor(data?: IEventDto) {
         if (data) {
             for (var property in data) {
                 if (data.hasOwnProperty(property))
@@ -3035,31 +3120,28 @@ export class Event implements IEvent {
             this.endDateTime = _data["endDateTime"] ? new Date(_data["endDateTime"].toString()) : undefined as any;
             this.createdAt = _data["createdAt"] ? new Date(_data["createdAt"].toString()) : undefined as any;
             this.updatedAt = _data["updatedAt"] ? new Date(_data["updatedAt"].toString()) : undefined as any;
+            this.isAllDay = _data["isAllDay"];
+            this.color = _data["color"];
             this.isRecurring = _data["isRecurring"];
             this.recurrencePattern = _data["recurrencePattern"];
             this.recurrenceInterval = _data["recurrenceInterval"];
             this.recurrenceEndDate = _data["recurrenceEndDate"] ? new Date(_data["recurrenceEndDate"].toString()) : undefined as any;
-            this.parentEventId = _data["parentEventId"];
             this.recurrenceRule = _data["recurrenceRule"];
             this.exceptionDates = _data["exceptionDates"];
             this.recurrenceId = _data["recurrenceId"] ? new Date(_data["recurrenceId"].toString()) : undefined as any;
-            this.isAllDay = _data["isAllDay"];
-            this.color = _data["color"];
-            this.googleCalendarId = _data["googleCalendarId"];
-            this.googleEventId = _data["googleEventId"];
+            this.parentEventId = _data["parentEventId"];
             this.isImportedFromGoogle = _data["isImportedFromGoogle"];
             this.isLocallyModified = _data["isLocallyModified"];
-            this.calendarSubscriptionId = _data["calendarSubscriptionId"];
-            this.externalEventId = _data["externalEventId"];
             this.isFromSubscription = _data["isFromSubscription"];
             this.isReadOnly = _data["isReadOnly"];
+            this.calendarSubscriptionId = _data["calendarSubscriptionId"];
             this.userId = _data["userId"];
         }
     }
 
-    static fromJS(data: any): Event {
+    static fromJS(data: any): EventDto {
         data = typeof data === 'object' ? data : {};
-        let result = new Event();
+        let result = new EventDto();
         result.init(data);
         return result;
     }
@@ -3073,30 +3155,27 @@ export class Event implements IEvent {
         data["endDateTime"] = this.endDateTime ? this.endDateTime.toISOString() : undefined as any;
         data["createdAt"] = this.createdAt ? this.createdAt.toISOString() : undefined as any;
         data["updatedAt"] = this.updatedAt ? this.updatedAt.toISOString() : undefined as any;
+        data["isAllDay"] = this.isAllDay;
+        data["color"] = this.color;
         data["isRecurring"] = this.isRecurring;
         data["recurrencePattern"] = this.recurrencePattern;
         data["recurrenceInterval"] = this.recurrenceInterval;
         data["recurrenceEndDate"] = this.recurrenceEndDate ? this.recurrenceEndDate.toISOString() : undefined as any;
-        data["parentEventId"] = this.parentEventId;
         data["recurrenceRule"] = this.recurrenceRule;
         data["exceptionDates"] = this.exceptionDates;
         data["recurrenceId"] = this.recurrenceId ? this.recurrenceId.toISOString() : undefined as any;
-        data["isAllDay"] = this.isAllDay;
-        data["color"] = this.color;
-        data["googleCalendarId"] = this.googleCalendarId;
-        data["googleEventId"] = this.googleEventId;
+        data["parentEventId"] = this.parentEventId;
         data["isImportedFromGoogle"] = this.isImportedFromGoogle;
         data["isLocallyModified"] = this.isLocallyModified;
-        data["calendarSubscriptionId"] = this.calendarSubscriptionId;
-        data["externalEventId"] = this.externalEventId;
         data["isFromSubscription"] = this.isFromSubscription;
         data["isReadOnly"] = this.isReadOnly;
+        data["calendarSubscriptionId"] = this.calendarSubscriptionId;
         data["userId"] = this.userId;
         return data;
     }
 }
 
-export interface IEvent {
+export interface IEventDto {
     id?: number;
     title?: string | undefined;
     description?: string | undefined;
@@ -3104,28 +3183,25 @@ export interface IEvent {
     endDateTime?: Date | undefined;
     createdAt?: Date;
     updatedAt?: Date;
+    isAllDay?: boolean;
+    color?: string | undefined;
     isRecurring?: boolean;
     recurrencePattern?: string | undefined;
     recurrenceInterval?: number | undefined;
     recurrenceEndDate?: Date | undefined;
-    parentEventId?: number | undefined;
     recurrenceRule?: string | undefined;
     exceptionDates?: string | undefined;
     recurrenceId?: Date | undefined;
-    isAllDay?: boolean;
-    color?: string | undefined;
-    googleCalendarId?: string | undefined;
-    googleEventId?: string | undefined;
+    parentEventId?: number | undefined;
     isImportedFromGoogle?: boolean;
     isLocallyModified?: boolean;
-    calendarSubscriptionId?: number | undefined;
-    externalEventId?: string | undefined;
     isFromSubscription?: boolean;
     isReadOnly?: boolean;
+    calendarSubscriptionId?: number | undefined;
     userId?: number;
 }
 
-export class EventOccurrence implements IEventOccurrence {
+export class EventOccurrenceDto implements IEventOccurrenceDto {
     eventId?: number;
     occurrenceStart?: Date;
     occurrenceEnd?: Date | undefined;
@@ -3138,7 +3214,7 @@ export class EventOccurrence implements IEventOccurrence {
     isOwnEvent?: boolean;
     permission?: SharePermission;
 
-    constructor(data?: IEventOccurrence) {
+    constructor(data?: IEventOccurrenceDto) {
         if (data) {
             for (var property in data) {
                 if (data.hasOwnProperty(property))
@@ -3163,9 +3239,9 @@ export class EventOccurrence implements IEventOccurrence {
         }
     }
 
-    static fromJS(data: any): EventOccurrence {
+    static fromJS(data: any): EventOccurrenceDto {
         data = typeof data === 'object' ? data : {};
-        let result = new EventOccurrence();
+        let result = new EventOccurrenceDto();
         result.init(data);
         return result;
     }
@@ -3187,7 +3263,7 @@ export class EventOccurrence implements IEventOccurrence {
     }
 }
 
-export interface IEventOccurrence {
+export interface IEventOccurrenceDto {
     eventId?: number;
     occurrenceStart?: Date;
     occurrenceEnd?: Date | undefined;
@@ -3201,7 +3277,7 @@ export interface IEventOccurrence {
     permission?: SharePermission;
 }
 
-export class EventWithOwner implements IEventWithOwner {
+export class EventWithOwnerDto implements IEventWithOwnerDto {
     id?: number;
     title?: string | undefined;
     description?: string | undefined;
@@ -3209,24 +3285,21 @@ export class EventWithOwner implements IEventWithOwner {
     endDateTime?: Date | undefined;
     createdAt?: Date;
     updatedAt?: Date;
+    isAllDay?: boolean;
+    color?: string | undefined;
     isRecurring?: boolean;
     recurrencePattern?: string | undefined;
     recurrenceInterval?: number | undefined;
     recurrenceEndDate?: Date | undefined;
-    parentEventId?: number | undefined;
     recurrenceRule?: string | undefined;
     exceptionDates?: string | undefined;
     recurrenceId?: Date | undefined;
-    isAllDay?: boolean;
-    color?: string | undefined;
-    googleCalendarId?: string | undefined;
-    googleEventId?: string | undefined;
+    parentEventId?: number | undefined;
     isImportedFromGoogle?: boolean;
     isLocallyModified?: boolean;
-    calendarSubscriptionId?: number | undefined;
-    externalEventId?: string | undefined;
     isFromSubscription?: boolean;
     isReadOnly?: boolean;
+    calendarSubscriptionId?: number | undefined;
     userId?: number;
     ownerName?: string | undefined;
     ownerEmail?: string | undefined;
@@ -3234,7 +3307,7 @@ export class EventWithOwner implements IEventWithOwner {
     permission?: SharePermission;
     subscriptionName?: string | undefined;
 
-    constructor(data?: IEventWithOwner) {
+    constructor(data?: IEventWithOwnerDto) {
         if (data) {
             for (var property in data) {
                 if (data.hasOwnProperty(property))
@@ -3252,24 +3325,21 @@ export class EventWithOwner implements IEventWithOwner {
             this.endDateTime = _data["endDateTime"] ? new Date(_data["endDateTime"].toString()) : undefined as any;
             this.createdAt = _data["createdAt"] ? new Date(_data["createdAt"].toString()) : undefined as any;
             this.updatedAt = _data["updatedAt"] ? new Date(_data["updatedAt"].toString()) : undefined as any;
+            this.isAllDay = _data["isAllDay"];
+            this.color = _data["color"];
             this.isRecurring = _data["isRecurring"];
             this.recurrencePattern = _data["recurrencePattern"];
             this.recurrenceInterval = _data["recurrenceInterval"];
             this.recurrenceEndDate = _data["recurrenceEndDate"] ? new Date(_data["recurrenceEndDate"].toString()) : undefined as any;
-            this.parentEventId = _data["parentEventId"];
             this.recurrenceRule = _data["recurrenceRule"];
             this.exceptionDates = _data["exceptionDates"];
             this.recurrenceId = _data["recurrenceId"] ? new Date(_data["recurrenceId"].toString()) : undefined as any;
-            this.isAllDay = _data["isAllDay"];
-            this.color = _data["color"];
-            this.googleCalendarId = _data["googleCalendarId"];
-            this.googleEventId = _data["googleEventId"];
+            this.parentEventId = _data["parentEventId"];
             this.isImportedFromGoogle = _data["isImportedFromGoogle"];
             this.isLocallyModified = _data["isLocallyModified"];
-            this.calendarSubscriptionId = _data["calendarSubscriptionId"];
-            this.externalEventId = _data["externalEventId"];
             this.isFromSubscription = _data["isFromSubscription"];
             this.isReadOnly = _data["isReadOnly"];
+            this.calendarSubscriptionId = _data["calendarSubscriptionId"];
             this.userId = _data["userId"];
             this.ownerName = _data["ownerName"];
             this.ownerEmail = _data["ownerEmail"];
@@ -3279,9 +3349,9 @@ export class EventWithOwner implements IEventWithOwner {
         }
     }
 
-    static fromJS(data: any): EventWithOwner {
+    static fromJS(data: any): EventWithOwnerDto {
         data = typeof data === 'object' ? data : {};
-        let result = new EventWithOwner();
+        let result = new EventWithOwnerDto();
         result.init(data);
         return result;
     }
@@ -3295,24 +3365,21 @@ export class EventWithOwner implements IEventWithOwner {
         data["endDateTime"] = this.endDateTime ? this.endDateTime.toISOString() : undefined as any;
         data["createdAt"] = this.createdAt ? this.createdAt.toISOString() : undefined as any;
         data["updatedAt"] = this.updatedAt ? this.updatedAt.toISOString() : undefined as any;
+        data["isAllDay"] = this.isAllDay;
+        data["color"] = this.color;
         data["isRecurring"] = this.isRecurring;
         data["recurrencePattern"] = this.recurrencePattern;
         data["recurrenceInterval"] = this.recurrenceInterval;
         data["recurrenceEndDate"] = this.recurrenceEndDate ? this.recurrenceEndDate.toISOString() : undefined as any;
-        data["parentEventId"] = this.parentEventId;
         data["recurrenceRule"] = this.recurrenceRule;
         data["exceptionDates"] = this.exceptionDates;
         data["recurrenceId"] = this.recurrenceId ? this.recurrenceId.toISOString() : undefined as any;
-        data["isAllDay"] = this.isAllDay;
-        data["color"] = this.color;
-        data["googleCalendarId"] = this.googleCalendarId;
-        data["googleEventId"] = this.googleEventId;
+        data["parentEventId"] = this.parentEventId;
         data["isImportedFromGoogle"] = this.isImportedFromGoogle;
         data["isLocallyModified"] = this.isLocallyModified;
-        data["calendarSubscriptionId"] = this.calendarSubscriptionId;
-        data["externalEventId"] = this.externalEventId;
         data["isFromSubscription"] = this.isFromSubscription;
         data["isReadOnly"] = this.isReadOnly;
+        data["calendarSubscriptionId"] = this.calendarSubscriptionId;
         data["userId"] = this.userId;
         data["ownerName"] = this.ownerName;
         data["ownerEmail"] = this.ownerEmail;
@@ -3323,7 +3390,7 @@ export class EventWithOwner implements IEventWithOwner {
     }
 }
 
-export interface IEventWithOwner {
+export interface IEventWithOwnerDto {
     id?: number;
     title?: string | undefined;
     description?: string | undefined;
@@ -3331,24 +3398,21 @@ export interface IEventWithOwner {
     endDateTime?: Date | undefined;
     createdAt?: Date;
     updatedAt?: Date;
+    isAllDay?: boolean;
+    color?: string | undefined;
     isRecurring?: boolean;
     recurrencePattern?: string | undefined;
     recurrenceInterval?: number | undefined;
     recurrenceEndDate?: Date | undefined;
-    parentEventId?: number | undefined;
     recurrenceRule?: string | undefined;
     exceptionDates?: string | undefined;
     recurrenceId?: Date | undefined;
-    isAllDay?: boolean;
-    color?: string | undefined;
-    googleCalendarId?: string | undefined;
-    googleEventId?: string | undefined;
+    parentEventId?: number | undefined;
     isImportedFromGoogle?: boolean;
     isLocallyModified?: boolean;
-    calendarSubscriptionId?: number | undefined;
-    externalEventId?: string | undefined;
     isFromSubscription?: boolean;
     isReadOnly?: boolean;
+    calendarSubscriptionId?: number | undefined;
     userId?: number;
     ownerName?: string | undefined;
     ownerEmail?: string | undefined;
@@ -3667,6 +3731,94 @@ export interface ISendInviteRequest {
 export enum SharePermission {
     _0 = 0,
     _1 = 1,
+}
+
+export class UpdateEventDto implements IUpdateEventDto {
+    title?: string | undefined;
+    description?: string | undefined;
+    startDateTime?: Date;
+    endDateTime?: Date | undefined;
+    isAllDay?: boolean;
+    color?: string | undefined;
+    isRecurring?: boolean;
+    recurrencePattern?: string | undefined;
+    recurrenceInterval?: number | undefined;
+    recurrenceEndDate?: Date | undefined;
+    recurrenceRule?: string | undefined;
+    exceptionDates?: string | undefined;
+    recurrenceId?: Date | undefined;
+    parentEventId?: number | undefined;
+
+    constructor(data?: IUpdateEventDto) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (this as any)[property] = (data as any)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.title = _data["title"];
+            this.description = _data["description"];
+            this.startDateTime = _data["startDateTime"] ? new Date(_data["startDateTime"].toString()) : undefined as any;
+            this.endDateTime = _data["endDateTime"] ? new Date(_data["endDateTime"].toString()) : undefined as any;
+            this.isAllDay = _data["isAllDay"];
+            this.color = _data["color"];
+            this.isRecurring = _data["isRecurring"];
+            this.recurrencePattern = _data["recurrencePattern"];
+            this.recurrenceInterval = _data["recurrenceInterval"];
+            this.recurrenceEndDate = _data["recurrenceEndDate"] ? new Date(_data["recurrenceEndDate"].toString()) : undefined as any;
+            this.recurrenceRule = _data["recurrenceRule"];
+            this.exceptionDates = _data["exceptionDates"];
+            this.recurrenceId = _data["recurrenceId"] ? new Date(_data["recurrenceId"].toString()) : undefined as any;
+            this.parentEventId = _data["parentEventId"];
+        }
+    }
+
+    static fromJS(data: any): UpdateEventDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new UpdateEventDto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["title"] = this.title;
+        data["description"] = this.description;
+        data["startDateTime"] = this.startDateTime ? this.startDateTime.toISOString() : undefined as any;
+        data["endDateTime"] = this.endDateTime ? this.endDateTime.toISOString() : undefined as any;
+        data["isAllDay"] = this.isAllDay;
+        data["color"] = this.color;
+        data["isRecurring"] = this.isRecurring;
+        data["recurrencePattern"] = this.recurrencePattern;
+        data["recurrenceInterval"] = this.recurrenceInterval;
+        data["recurrenceEndDate"] = this.recurrenceEndDate ? this.recurrenceEndDate.toISOString() : undefined as any;
+        data["recurrenceRule"] = this.recurrenceRule;
+        data["exceptionDates"] = this.exceptionDates;
+        data["recurrenceId"] = this.recurrenceId ? this.recurrenceId.toISOString() : undefined as any;
+        data["parentEventId"] = this.parentEventId;
+        return data;
+    }
+}
+
+export interface IUpdateEventDto {
+    title?: string | undefined;
+    description?: string | undefined;
+    startDateTime?: Date;
+    endDateTime?: Date | undefined;
+    isAllDay?: boolean;
+    color?: string | undefined;
+    isRecurring?: boolean;
+    recurrencePattern?: string | undefined;
+    recurrenceInterval?: number | undefined;
+    recurrenceEndDate?: Date | undefined;
+    recurrenceRule?: string | undefined;
+    exceptionDates?: string | undefined;
+    recurrenceId?: Date | undefined;
+    parentEventId?: number | undefined;
 }
 
 export class UpdatePermissionRequest implements IUpdatePermissionRequest {

@@ -57,7 +57,7 @@ import { ref, watch, onMounted, onUnmounted } from 'vue';
 import dayjs from "dayjs";
 import weekOfYear from 'dayjs/plugin/weekOfYear';
 import isoWeek from 'dayjs/plugin/isoWeek';
-import { AgendaAPI, EventOccurrence } from '@/api/agenda-api-swagger';
+import { AgendaAPI, EventOccurrenceDto } from '@/api/agenda-api-swagger';
 import { authenticatedAxios, getApiBaseUrl } from '@/api/axios-config';
 import DayModal from './DayModal.vue';
 import WeatherIcon from '../weather/WeatherIcon.vue';
@@ -104,7 +104,7 @@ const daysAbbreviated = [
 ];
 
 const dates = ref<CalendarDate[]>([]);
-const monthOccurrences = ref<EventOccurrence[]>([]);
+const monthOccurrences = ref<EventOccurrenceDto[]>([]);
 const loadingEvents = ref(false);
 const MAX_VISIBLE_EVENTS = 3;
 const showEventTitleInMonthView = ref(false);
@@ -279,7 +279,7 @@ async function loadMonthEvents() {
     }
 }
 
-function getEventsForDay(d: CalendarDate, index: number): EventOccurrence[] {
+function getEventsForDay(d: CalendarDate, index: number): EventOccurrenceDto[] {
     // Determine which month this date belongs to
     let targetMonth = props.currentMonth;
     if (!d.thisMonth) {
@@ -310,7 +310,7 @@ function getEventsForDay(d: CalendarDate, index: number): EventOccurrence[] {
     });
 }
 
-function getVisibleEvents(d: CalendarDate, index: number): EventOccurrence[] {
+function getVisibleEvents(d: CalendarDate, index: number): EventOccurrenceDto[] {
     const events = getEventsForDay(d, index);
     return events.slice(0, MAX_VISIBLE_EVENTS);
 }

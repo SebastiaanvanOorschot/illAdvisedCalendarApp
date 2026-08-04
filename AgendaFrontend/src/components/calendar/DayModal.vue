@@ -107,7 +107,7 @@
 <script setup lang="ts">
 import { ref, watch, computed, toRef } from 'vue';
 import dayjs from "dayjs";
-import { AgendaAPI, Event, EventOccurrence } from '@/api/agenda-api-swagger';
+import { AgendaAPI, EventWithOwnerDto, EventOccurrenceDto } from '@/api/agenda-api-swagger';
 import { authenticatedAxios, getApiBaseUrl } from '@/api/axios-config';
 import EventDetailsModal from './EventDetailsModal.vue';
 import EventFormModal from './EventFormModal.vue';
@@ -158,17 +158,17 @@ const displayDay = ref(props.selectedDay);
 const displayMonth = ref(props.currentMonth);
 const displayYear = ref(props.currentYear);
 
-const events = ref<Event[]>([]);
-const occurrences = ref<EventOccurrence[]>([]);
+const events = ref<EventWithOwnerDto[]>([]);
+const occurrences = ref<EventOccurrenceDto[]>([]);
 const loadingEvents = ref(false);
 const showDetailsModal = ref(false);
 const showFormModal = ref(false);
 const showRecurringDeletePrompt = ref(false);
 const showRecurringEditPrompt = ref(false);
-const selectedEvent = ref<Event | null>(null);
-const eventToEdit = ref<Event | null>(null);
-const eventToDelete = ref<Event | null>(null);
-const pendingEditEvent = ref<Event | null>(null);
+const selectedEvent = ref<EventWithOwnerDto | null>(null);
+const eventToEdit = ref<EventWithOwnerDto | null>(null);
+const eventToDelete = ref<EventWithOwnerDto | null>(null);
+const pendingEditEvent = ref<EventWithOwnerDto | null>(null);
 const formModalRef = ref<InstanceType<typeof EventFormModal> | null>(null);
 const editSeriesMode = ref(false);
 
@@ -218,7 +218,7 @@ function openCreateModal() {
     showFormModal.value = true;
 }
 
-function openEventDetails(event: Event) {
+function openEventDetails(event: EventWithOwnerDto) {
     selectedEvent.value = event;
     showDetailsModal.value = true;
 }
@@ -228,7 +228,7 @@ function closeDetailsModal() {
     selectedEvent.value = null;
 }
 
-function handleEditEvent(event: Event) {
+function handleEditEvent(event: EventWithOwnerDto) {
     closeDetailsModal();
 
     // Check if recurring event
@@ -266,7 +266,7 @@ function cancelEdit() {
     pendingEditEvent.value = null;
 }
 
-async function handleDeleteEvent(event: Event) {
+async function handleDeleteEvent(event: EventWithOwnerDto) {
     if (!event.id) return;
 
     // Check if recurring event

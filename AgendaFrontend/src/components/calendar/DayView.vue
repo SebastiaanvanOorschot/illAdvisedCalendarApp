@@ -87,7 +87,7 @@
 <script setup lang="ts">
 import { computed, ref, watch, onMounted } from 'vue';
 import dayjs from "dayjs";
-import { AgendaAPI, Event, EventOccurrence } from '@/api/agenda-api-swagger';
+import { AgendaAPI, EventWithOwnerDto, EventOccurrenceDto } from '@/api/agenda-api-swagger';
 import { authenticatedAxios, getApiBaseUrl } from '@/api/axios-config';
 import EventDetailsModal from './EventDetailsModal.vue';
 import EventFormModal from './EventFormModal.vue';
@@ -125,21 +125,21 @@ const dayBannerStyle = computed(() => {
 const api = new AgendaAPI(getApiBaseUrl(), authenticatedAxios);
 const { createEvent, updateEvent, editOccurrence, deleteEvent, confirmDelete, isRecurringEvent, formatErrorMessage } = useEventOperations();
 
-const events = ref<Event[]>([]);
+const events = ref<EventWithOwnerDto[]>([]);
 const loadingEvents = ref(false);
 const showDetailsModal = ref(false);
 const showFormModal = ref(false);
-const selectedEvent = ref<Event | null>(null);
-const eventToEdit = ref<Event | null>(null);
+const selectedEvent = ref<EventWithOwnerDto | null>(null);
+const eventToEdit = ref<EventWithOwnerDto | null>(null);
 const formModalRef = ref<InstanceType<typeof EventFormModal> | null>(null);
 
 // Recurring event delete prompt state
 const showRecurringDeletePrompt = ref(false);
-const eventToDelete = ref<Event | null>(null);
+const eventToDelete = ref<EventWithOwnerDto | null>(null);
 
 // Recurring event edit prompt state
 const showRecurringEditPrompt = ref(false);
-const pendingEditEvent = ref<Event | null>(null);
+const pendingEditEvent = ref<EventWithOwnerDto | null>(null);
 const editSeriesMode = ref(false);
 
 // Weather functionality
@@ -170,7 +170,7 @@ async function loadEvents() {
         const fullEvents = await Promise.all(eventPromises);
 
         // Create a map of eventId to full event
-        const eventMap = new Map<number, Event>();
+        const eventMap = new Map<number, EventWithOwnerDto>();
         fullEvents.forEach(event => {
             if (event.id !== undefined) {
                 eventMap.set(event.id, event);
@@ -188,9 +188,9 @@ async function loadEvents() {
                     ...fullEvent,
                     startDateTime: occurrence.occurrenceStart,
                     endDateTime: occurrence.occurrenceEnd
-                } as Event;
+                } as EventWithOwnerDto;
             })
-            .filter(e => e !== null) as Event[];
+            .filter(e => e !== null) as EventWithOwnerDto[];
 
         console.log('Loaded events:', events.value);
     } catch (error) {
@@ -206,7 +206,7 @@ function openCreateModal() {
     showFormModal.value = true;
 }
 
-function openEventDetails(event: Event) {
+function openEventDetails(event: EventWithOwnerDto) {
     selectedEvent.value = event;
     showDetailsModal.value = true;
 }
@@ -216,7 +216,7 @@ function closeDetailsModal() {
     selectedEvent.value = null;
 }
 
-function handleEditEvent(event: Event) {
+function handleEditEvent(event: EventWithOwnerDto) {
     closeDetailsModal();
 
     // Check if recurring event
@@ -254,7 +254,7 @@ function cancelEdit() {
     pendingEditEvent.value = null;
 }
 
-async function handleDeleteEvent(event: Event) {
+async function handleDeleteEvent(event: EventWithOwnerDto) {
     if (!event.id) return;
 
     // Check if recurring event
