@@ -30,6 +30,9 @@ builder.Services.AddScoped<IGoogleCalendarService, GoogleCalendarService>();
 // Register Calendar Share service
 builder.Services.AddScoped<CalendarShareService>();
 
+// Register Event service
+builder.Services.AddScoped<EventService>();
+
 // Configure JWT authentication
 var jwtSecretKey = builder.Configuration["Jwt:SecretKey"];
 var jwtIssuer    = builder.Configuration["Jwt:Issuer"];
