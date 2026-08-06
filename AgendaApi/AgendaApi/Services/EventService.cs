@@ -4,6 +4,7 @@ using AgendaApi.Mapping;
 using AgendaApi.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
+using System.Globalization;
 
 namespace AgendaApi.Services;
 
@@ -345,7 +346,7 @@ public class EventService
         {
             exceptions = eventItem.ExceptionDates
                 .Split(',', StringSplitOptions.RemoveEmptyEntries)
-                .Select(s => DateTime.Parse(s.Trim()))
+                .Select(s => DateTime.Parse(s.Trim(), CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind))
                 .ToList();
         }
 
@@ -379,7 +380,7 @@ public class EventService
         {
             exceptions = parentEvent.ExceptionDates
                 .Split(',', StringSplitOptions.RemoveEmptyEntries)
-                .Select(s => DateTime.Parse(s.Trim()))
+                .Select(s => DateTime.Parse(s.Trim(), CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind))
                 .ToList();
         }
 

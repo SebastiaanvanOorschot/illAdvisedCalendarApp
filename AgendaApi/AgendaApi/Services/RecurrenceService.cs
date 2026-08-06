@@ -375,7 +375,8 @@ public class RecurrenceService : IRecurrenceService
         var parts = exceptionDates.Split(',', StringSplitOptions.RemoveEmptyEntries);
         foreach (var part in parts)
         {
-            if (DateTime.TryParse(part.Trim(), out DateTime date))
+            if (DateTime.TryParse(part.Trim(), System.Globalization.CultureInfo.InvariantCulture,
+                    System.Globalization.DateTimeStyles.RoundtripKind, out DateTime date))
             {
                 dates.Add(date);
             }
