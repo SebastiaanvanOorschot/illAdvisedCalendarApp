@@ -105,8 +105,13 @@ public static class EventMapper
         target.RecurrenceInterval = dto.RecurrenceInterval;
         target.RecurrenceEndDate = dto.RecurrenceEndDate;
         target.RecurrenceRule = dto.RecurrenceRule;
-        target.ExceptionDates = dto.ExceptionDates;
-        target.RecurrenceId = dto.RecurrenceId;
+        // ExceptionDates/RecurrenceId are not sent by the regular edit form — only
+        // overwrite them when the DTO actually carries a value, so a normal series
+        // edit doesn't wipe out previously-deleted occurrences.
+        if (dto.ExceptionDates != null)
+            target.ExceptionDates = dto.ExceptionDates;
+        if (dto.RecurrenceId != null)
+            target.RecurrenceId = dto.RecurrenceId;
         target.ParentEventId = dto.ParentEventId;
     }
 

@@ -238,7 +238,13 @@ async function openEventDetails(occurrence: EventOccurrenceDto) {
 
     try {
         const fullEvent = await api.eventsGET(occurrence.eventId);
-        selectedEvent.value = fullEvent;
+        // Use the occurrence's own dates, not the series' original start/end,
+        // so that delete/edit act on the occurrence the user actually clicked
+        selectedEvent.value = {
+            ...fullEvent,
+            startDateTime: occurrence.occurrenceStart ?? fullEvent.startDateTime,
+            endDateTime: occurrence.occurrenceEnd ?? fullEvent.endDateTime
+        } as EventWithOwnerDto;
         showDetailsModal.value = true;
     } catch (error) {
         console.error('Failed to load event details:', error);

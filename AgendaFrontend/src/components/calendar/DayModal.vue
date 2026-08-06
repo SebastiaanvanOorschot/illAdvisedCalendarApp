@@ -44,7 +44,7 @@
                         <div v-if="loadingEvents" class="loading">Loading events...</div>
                         <div v-else-if="events.length === 0" class="no-events">No events yet</div>
                         <div v-else>
-                            <div v-for="event in events" :key="event.id" class="event-item" @click="openEventDetails(event)">
+                            <div v-for="event in events" :key="`${event.id}-${event.startDateTime?.getTime()}`" class="event-item" @click="openEventDetails(event)">
                                 <span class="event-color-dot" :style="{ backgroundColor: event.color || 'var(--color-primary)' }"></span>
                                 <div class="event-content">
                                     <div class="event-time">
@@ -203,7 +203,31 @@ async function loadEvents() {
         const uniqueEventIds = [...new Set(occurrences.value.map(o => o.eventId).filter(id => id !== undefined))];
         const eventPromises = uniqueEventIds.map(id => api.eventsGET(id!));
         const fetchedEvents = await Promise.all(eventPromises);
-        events.value = fetchedEvents;
+
+        // Create a map of eventId to full event
+        const eventMap = new Map<number, EventWithOwnerDto>();
+        fetchedEvents.forEach(event => {
+            if (event.id !== undefined) {
+                eventMap.set(event.id, event);
+            }
+        });
+
+        // Create display events with occurrence-specific times (one entry per occurrence,
+        // not per unique event — so multiple occurrences of the same series on this day
+        // each get their own, correctly-dated entry for delete/edit)
+        events.value = occurrences.value
+            .filter(o => o.eventId !== undefined)
+            .map(occurrence => {
+                const fullEvent = eventMap.get(occurrence.eventId!);
+                if (!fullEvent) return null;
+
+                return {
+                    ...fullEvent,
+                    startDateTime: occurrence.occurrenceStart,
+                    endDateTime: occurrence.occurrenceEnd
+                } as EventWithOwnerDto;
+            })
+            .filter((e): e is EventWithOwnerDto => e !== null);
     } catch (error) {
         console.error('Failed to load events:', error);
         events.value = [];
