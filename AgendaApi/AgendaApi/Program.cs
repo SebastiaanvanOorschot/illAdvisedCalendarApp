@@ -44,6 +44,9 @@ builder.Services.AddScoped<CalendarSubscriptionService>();
 // Register Month Image service
 builder.Services.AddScoped<MonthImageService>();
 
+// Register User Preferences service
+builder.Services.AddScoped<UserPreferencesService>();
+
 // Configure JWT authentication
 var jwtSecretKey = builder.Configuration["Jwt:SecretKey"];
 var jwtIssuer    = builder.Configuration["Jwt:Issuer"];

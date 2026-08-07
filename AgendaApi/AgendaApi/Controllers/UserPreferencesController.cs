@@ -1,8 +1,7 @@
-using AgendaApi.Data;
-using AgendaApi.Models;
+using AgendaApi.DTOs;
+using AgendaApi.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 
 namespace AgendaApi.Controllers;
@@ -12,11 +11,11 @@ namespace AgendaApi.Controllers;
 [Authorize]
 public class UserPreferencesController : ControllerBase
 {
-    private readonly AgendaDbContext _context;
+    private readonly UserPreferencesService _userPreferencesService;
 
-    public UserPreferencesController(AgendaDbContext context)
+    public UserPreferencesController(UserPreferencesService userPreferencesService)
     {
-        _context = context;
+        _userPreferencesService = userPreferencesService;
     }
 
     private int GetCurrentUserId()
@@ -29,52 +28,27 @@ public class UserPreferencesController : ControllerBase
     public async Task<ActionResult<UserPreferencesDto>> GetPreferences()
     {
         var userId = GetCurrentUserId();
-        var user = await _context.Users.FindAsync(userId);
+        var result = await _userPreferencesService.GetPreferencesAsync(userId);
 
-        if (user == null)
+        if (result.Status == UserPreferencesServiceStatus.NotFound)
         {
             return NotFound(new { message = "User not found" });
         }
 
-        return Ok(new UserPreferencesDto
-        {
-            ShowEventTitleInMonthView = user.ShowEventTitleInMonthView
-        });
+        return Ok(result.Value);
     }
 
     [HttpPut]
     public async Task<ActionResult<UserPreferencesDto>> UpdatePreferences([FromBody] UpdateUserPreferencesRequest request)
     {
         var userId = GetCurrentUserId();
-        var user = await _context.Users.FindAsync(userId);
+        var result = await _userPreferencesService.UpdatePreferencesAsync(userId, request);
 
-        if (user == null)
+        if (result.Status == UserPreferencesServiceStatus.NotFound)
         {
             return NotFound(new { message = "User not found" });
         }
 
-        // Update preferences
-        if (request.ShowEventTitleInMonthView.HasValue)
-        {
-            user.ShowEventTitleInMonthView = request.ShowEventTitleInMonthView.Value;
-        }
-
-        await _context.SaveChangesAsync();
-
-        return Ok(new UserPreferencesDto
-        {
-            ShowEventTitleInMonthView = user.ShowEventTitleInMonthView
-        });
+        return Ok(result.Value);
     }
-}
-
-// DTOs
-public class UserPreferencesDto
-{
-    public bool ShowEventTitleInMonthView { get; set; }
-}
-
-public class UpdateUserPreferencesRequest
-{
-    public bool? ShowEventTitleInMonthView { get; set; }
 }
