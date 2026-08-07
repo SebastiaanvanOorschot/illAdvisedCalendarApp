@@ -20,6 +20,7 @@ builder.Services.AddHttpClient<GoogleAuthService>();
 
 // Register authentication services
 builder.Services.AddScoped<JwtService>();
+builder.Services.AddScoped<AuthService>();
 
 // Register recurrence service
 builder.Services.AddScoped<IRecurrenceService, RecurrenceService>();
