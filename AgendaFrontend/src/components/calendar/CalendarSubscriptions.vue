@@ -150,13 +150,13 @@
 
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue';
-import { AgendaAPI, CalendarSubscriptionRequest, CalendarSubscription } from '@/api/agenda-api-swagger';
+import { AgendaAPI, CreateCalendarSubscriptionDto, UpdateCalendarSubscriptionDto, CalendarSubscriptionDto } from '@/api/agenda-api-swagger';
 import { authenticatedAxios, getApiBaseUrl } from '@/api/axios-config';
 import { EVENT_COLOR_OPTIONS } from '@/constants/eventColors';
 
-const subscriptions = ref<CalendarSubscription[]>([]);
+const subscriptions = ref<CalendarSubscriptionDto[]>([]);
 const showAddForm = ref(false);
-const editingSubscription = ref<CalendarSubscription | null>(null);
+const editingSubscription = ref<CalendarSubscriptionDto | null>(null);
 const syncing = ref<number | null>(null);
 const error = ref('');
 
@@ -176,7 +176,7 @@ const isFormValid = computed(() => {
 });
 
 const validSubscriptions = computed(() =>
-  subscriptions.value.filter((s): s is CalendarSubscription & { id: number } => s.id != null)
+  subscriptions.value.filter((s): s is CalendarSubscriptionDto & { id: number } => s.id != null)
 );
 
 async function loadSubscriptions() {
@@ -209,7 +209,7 @@ function formatLastSync(date: Date): string {
   return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
 }
 
-async function syncSubscription(subscription: CalendarSubscription) {
+async function syncSubscription(subscription: CalendarSubscriptionDto) {
   syncing.value = subscription.id ?? null;
   error.value = '';
 
@@ -224,7 +224,7 @@ async function syncSubscription(subscription: CalendarSubscription) {
   }
 }
 
-async function toggleSubscription(subscription: CalendarSubscription) {
+async function toggleSubscription(subscription: CalendarSubscriptionDto) {
   try {
     await api.toggle(subscription.id!);
     await loadSubscriptions();
@@ -234,7 +234,7 @@ async function toggleSubscription(subscription: CalendarSubscription) {
   }
 }
 
-function editSubscription(subscription: CalendarSubscription) {
+function editSubscription(subscription: CalendarSubscriptionDto) {
   editingSubscription.value = subscription;
   formData.value = {
     name: subscription.name ?? '',
@@ -246,13 +246,13 @@ function editSubscription(subscription: CalendarSubscription) {
   error.value = ''; // Clear any previous errors
 }
 
-function confirmDelete(subscription: CalendarSubscription) {
+function confirmDelete(subscription: CalendarSubscriptionDto) {
   if (confirm(`Are you sure you want to delete "${subscription.name}"? All imported events will be removed.`)) {
     deleteSubscription(subscription);
   }
 }
 
-async function deleteSubscription(subscription: CalendarSubscription) {
+async function deleteSubscription(subscription: CalendarSubscriptionDto) {
   try {
     await api.calendarSubscriptionDELETE(subscription.id!);
     await loadSubscriptions();
@@ -266,18 +266,18 @@ async function deleteSubscription(subscription: CalendarSubscription) {
 async function saveSubscription() {
   error.value = '';
 
-  const request = new CalendarSubscriptionRequest({
+  const requestData = {
     name: formData.value.name.trim(),
     iCalUrl: formData.value.iCalUrl.trim(),
     color: formData.value.color || undefined,
     syncIntervalMinutes: formData.value.syncIntervalMinutes || 60
-  });
+  };
 
   try {
     if (editingSubscription.value) {
-      await api.calendarSubscriptionPUT(editingSubscription.value.id!, request);
+      await api.calendarSubscriptionPUT(editingSubscription.value.id!, new UpdateCalendarSubscriptionDto(requestData));
     } else {
-      await api.calendarSubscriptionPOST(request);
+      await api.calendarSubscriptionPOST(new CreateCalendarSubscriptionDto(requestData));
     }
 
     await loadSubscriptions();

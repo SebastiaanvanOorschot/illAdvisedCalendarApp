@@ -33,6 +33,12 @@ builder.Services.AddScoped<CalendarShareService>();
 // Register Event service
 builder.Services.AddScoped<EventService>();
 
+// Register iCal sync service (was previously never registered in DI)
+builder.Services.AddScoped<ICalSyncService>();
+
+// Register Calendar Subscription service
+builder.Services.AddScoped<CalendarSubscriptionService>();
+
 // Configure JWT authentication
 var jwtSecretKey = builder.Configuration["Jwt:SecretKey"];
 var jwtIssuer    = builder.Configuration["Jwt:Issuer"];

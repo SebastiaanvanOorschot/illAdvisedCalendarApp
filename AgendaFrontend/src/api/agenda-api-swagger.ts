@@ -98,21 +98,21 @@ export interface IAgendaAPI {
     /**
      * @return Success
      */
-    calendarSubscriptionAll( cancelToken?: CancelToken): Promise<CalendarSubscription[]>;
+    calendarSubscriptionAll( cancelToken?: CancelToken): Promise<CalendarSubscriptionDto[]>;
     /**
      * @param body (optional) 
      * @return Success
      */
-    calendarSubscriptionPOST(body?: CalendarSubscriptionRequest | undefined,  cancelToken?: CancelToken): Promise<CalendarSubscription>;
+    calendarSubscriptionPOST(body?: CreateCalendarSubscriptionDto | undefined,  cancelToken?: CancelToken): Promise<CalendarSubscriptionDto>;
     /**
      * @return Success
      */
-    calendarSubscriptionGET(id: number,  cancelToken?: CancelToken): Promise<CalendarSubscription>;
+    calendarSubscriptionGET(id: number,  cancelToken?: CancelToken): Promise<CalendarSubscriptionDto>;
     /**
      * @param body (optional) 
      * @return Success
      */
-    calendarSubscriptionPUT(id: number, body?: CalendarSubscriptionRequest | undefined,  cancelToken?: CancelToken): Promise<void>;
+    calendarSubscriptionPUT(id: number, body?: UpdateCalendarSubscriptionDto | undefined,  cancelToken?: CancelToken): Promise<void>;
     /**
      * @return Success
      */
@@ -1035,7 +1035,7 @@ export class AgendaAPI extends BaseAPI implements IAgendaAPI {
     /**
      * @return Success
      */
-    calendarSubscriptionAll( cancelToken?: CancelToken): Promise<CalendarSubscription[]> {
+    calendarSubscriptionAll( cancelToken?: CancelToken): Promise<CalendarSubscriptionDto[]> {
         let url_ = this.baseUrl + "/api/CalendarSubscription";
         url_ = url_.replace(/[?&]$/, "");
 
@@ -1061,7 +1061,7 @@ export class AgendaAPI extends BaseAPI implements IAgendaAPI {
         });
     }
 
-    protected processCalendarSubscriptionAll(response: AxiosResponse): Promise<CalendarSubscription[]> {
+    protected processCalendarSubscriptionAll(response: AxiosResponse): Promise<CalendarSubscriptionDto[]> {
         const status = response.status;
         let _headers: any = {};
         if (response.headers && typeof response.headers === "object") {
@@ -1078,25 +1078,25 @@ export class AgendaAPI extends BaseAPI implements IAgendaAPI {
             if (Array.isArray(resultData200)) {
                 result200 = [] as any;
                 for (let item of resultData200)
-                    result200!.push(CalendarSubscription.fromJS(item));
+                    result200!.push(CalendarSubscriptionDto.fromJS(item));
             }
             else {
                 result200 = null as any;
             }
-            return Promise.resolve<CalendarSubscription[]>(result200);
+            return Promise.resolve<CalendarSubscriptionDto[]>(result200);
 
         } else if (status !== 200 && status !== 204) {
             const _responseText = response.data;
             return throwException("An unexpected server error occurred.", status, _responseText, _headers);
         }
-        return Promise.resolve<CalendarSubscription[]>(null as any);
+        return Promise.resolve<CalendarSubscriptionDto[]>(null as any);
     }
 
     /**
      * @param body (optional) 
      * @return Success
      */
-    calendarSubscriptionPOST(body?: CalendarSubscriptionRequest | undefined, cancelToken?: CancelToken): Promise<CalendarSubscription> {
+    calendarSubscriptionPOST(body?: CreateCalendarSubscriptionDto | undefined, cancelToken?: CancelToken): Promise<CalendarSubscriptionDto> {
         let url_ = this.baseUrl + "/api/CalendarSubscription";
         url_ = url_.replace(/[?&]$/, "");
 
@@ -1126,7 +1126,7 @@ export class AgendaAPI extends BaseAPI implements IAgendaAPI {
         });
     }
 
-    protected processCalendarSubscriptionPOST(response: AxiosResponse): Promise<CalendarSubscription> {
+    protected processCalendarSubscriptionPOST(response: AxiosResponse): Promise<CalendarSubscriptionDto> {
         const status = response.status;
         let _headers: any = {};
         if (response.headers && typeof response.headers === "object") {
@@ -1140,20 +1140,20 @@ export class AgendaAPI extends BaseAPI implements IAgendaAPI {
             const _responseText = response.data;
             let result200: any = null;
             let resultData200  = _responseText;
-            result200 = CalendarSubscription.fromJS(resultData200);
-            return Promise.resolve<CalendarSubscription>(result200);
+            result200 = CalendarSubscriptionDto.fromJS(resultData200);
+            return Promise.resolve<CalendarSubscriptionDto>(result200);
 
         } else if (status !== 200 && status !== 204) {
             const _responseText = response.data;
             return throwException("An unexpected server error occurred.", status, _responseText, _headers);
         }
-        return Promise.resolve<CalendarSubscription>(null as any);
+        return Promise.resolve<CalendarSubscriptionDto>(null as any);
     }
 
     /**
      * @return Success
      */
-    calendarSubscriptionGET(id: number, cancelToken?: CancelToken): Promise<CalendarSubscription> {
+    calendarSubscriptionGET(id: number, cancelToken?: CancelToken): Promise<CalendarSubscriptionDto> {
         let url_ = this.baseUrl + "/api/CalendarSubscription/{id}";
         if (id === undefined || id === null)
             throw new globalThis.Error("The parameter 'id' must be defined.");
@@ -1182,7 +1182,7 @@ export class AgendaAPI extends BaseAPI implements IAgendaAPI {
         });
     }
 
-    protected processCalendarSubscriptionGET(response: AxiosResponse): Promise<CalendarSubscription> {
+    protected processCalendarSubscriptionGET(response: AxiosResponse): Promise<CalendarSubscriptionDto> {
         const status = response.status;
         let _headers: any = {};
         if (response.headers && typeof response.headers === "object") {
@@ -1196,21 +1196,21 @@ export class AgendaAPI extends BaseAPI implements IAgendaAPI {
             const _responseText = response.data;
             let result200: any = null;
             let resultData200  = _responseText;
-            result200 = CalendarSubscription.fromJS(resultData200);
-            return Promise.resolve<CalendarSubscription>(result200);
+            result200 = CalendarSubscriptionDto.fromJS(resultData200);
+            return Promise.resolve<CalendarSubscriptionDto>(result200);
 
         } else if (status !== 200 && status !== 204) {
             const _responseText = response.data;
             return throwException("An unexpected server error occurred.", status, _responseText, _headers);
         }
-        return Promise.resolve<CalendarSubscription>(null as any);
+        return Promise.resolve<CalendarSubscriptionDto>(null as any);
     }
 
     /**
      * @param body (optional) 
      * @return Success
      */
-    calendarSubscriptionPUT(id: number, body?: CalendarSubscriptionRequest | undefined, cancelToken?: CancelToken): Promise<void> {
+    calendarSubscriptionPUT(id: number, body?: UpdateCalendarSubscriptionDto | undefined, cancelToken?: CancelToken): Promise<void> {
         let url_ = this.baseUrl + "/api/CalendarSubscription/{id}";
         if (id === undefined || id === null)
             throw new globalThis.Error("The parameter 'id' must be defined.");
@@ -2773,7 +2773,7 @@ export interface ICalendarShareInvite {
     respondedAt?: Date | undefined;
 }
 
-export class CalendarSubscription implements ICalendarSubscription {
+export class CalendarSubscriptionDto implements ICalendarSubscriptionDto {
     id?: number;
     name?: string | undefined;
     iCalUrl?: string | undefined;
@@ -2786,7 +2786,7 @@ export class CalendarSubscription implements ICalendarSubscription {
     updatedAt?: Date;
     userId?: number;
 
-    constructor(data?: ICalendarSubscription) {
+    constructor(data?: ICalendarSubscriptionDto) {
         if (data) {
             for (var property in data) {
                 if (data.hasOwnProperty(property))
@@ -2811,9 +2811,9 @@ export class CalendarSubscription implements ICalendarSubscription {
         }
     }
 
-    static fromJS(data: any): CalendarSubscription {
+    static fromJS(data: any): CalendarSubscriptionDto {
         data = typeof data === 'object' ? data : {};
-        let result = new CalendarSubscription();
+        let result = new CalendarSubscriptionDto();
         result.init(data);
         return result;
     }
@@ -2835,7 +2835,7 @@ export class CalendarSubscription implements ICalendarSubscription {
     }
 }
 
-export interface ICalendarSubscription {
+export interface ICalendarSubscriptionDto {
     id?: number;
     name?: string | undefined;
     iCalUrl?: string | undefined;
@@ -2847,54 +2847,6 @@ export interface ICalendarSubscription {
     createdAt?: Date;
     updatedAt?: Date;
     userId?: number;
-}
-
-export class CalendarSubscriptionRequest implements ICalendarSubscriptionRequest {
-    name?: string | undefined;
-    iCalUrl?: string | undefined;
-    color?: string | undefined;
-    syncIntervalMinutes?: number | undefined;
-
-    constructor(data?: ICalendarSubscriptionRequest) {
-        if (data) {
-            for (var property in data) {
-                if (data.hasOwnProperty(property))
-                    (this as any)[property] = (data as any)[property];
-            }
-        }
-    }
-
-    init(_data?: any) {
-        if (_data) {
-            this.name = _data["name"];
-            this.iCalUrl = _data["iCalUrl"];
-            this.color = _data["color"];
-            this.syncIntervalMinutes = _data["syncIntervalMinutes"];
-        }
-    }
-
-    static fromJS(data: any): CalendarSubscriptionRequest {
-        data = typeof data === 'object' ? data : {};
-        let result = new CalendarSubscriptionRequest();
-        result.init(data);
-        return result;
-    }
-
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        data["name"] = this.name;
-        data["iCalUrl"] = this.iCalUrl;
-        data["color"] = this.color;
-        data["syncIntervalMinutes"] = this.syncIntervalMinutes;
-        return data;
-    }
-}
-
-export interface ICalendarSubscriptionRequest {
-    name?: string | undefined;
-    iCalUrl?: string | undefined;
-    color?: string | undefined;
-    syncIntervalMinutes?: number | undefined;
 }
 
 export class ConnectRequest implements IConnectRequest {
@@ -2931,6 +2883,54 @@ export class ConnectRequest implements IConnectRequest {
 
 export interface IConnectRequest {
     accessToken?: string | undefined;
+}
+
+export class CreateCalendarSubscriptionDto implements ICreateCalendarSubscriptionDto {
+    name?: string | undefined;
+    iCalUrl?: string | undefined;
+    color?: string | undefined;
+    syncIntervalMinutes?: number | undefined;
+
+    constructor(data?: ICreateCalendarSubscriptionDto) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (this as any)[property] = (data as any)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.name = _data["name"];
+            this.iCalUrl = _data["iCalUrl"];
+            this.color = _data["color"];
+            this.syncIntervalMinutes = _data["syncIntervalMinutes"];
+        }
+    }
+
+    static fromJS(data: any): CreateCalendarSubscriptionDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new CreateCalendarSubscriptionDto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["name"] = this.name;
+        data["iCalUrl"] = this.iCalUrl;
+        data["color"] = this.color;
+        data["syncIntervalMinutes"] = this.syncIntervalMinutes;
+        return data;
+    }
+}
+
+export interface ICreateCalendarSubscriptionDto {
+    name?: string | undefined;
+    iCalUrl?: string | undefined;
+    color?: string | undefined;
+    syncIntervalMinutes?: number | undefined;
 }
 
 export class CreateEventDto implements ICreateEventDto {
@@ -3731,6 +3731,54 @@ export interface ISendInviteRequest {
 export enum SharePermission {
     _0 = 0,
     _1 = 1,
+}
+
+export class UpdateCalendarSubscriptionDto implements IUpdateCalendarSubscriptionDto {
+    name?: string | undefined;
+    iCalUrl?: string | undefined;
+    color?: string | undefined;
+    syncIntervalMinutes?: number | undefined;
+
+    constructor(data?: IUpdateCalendarSubscriptionDto) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (this as any)[property] = (data as any)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.name = _data["name"];
+            this.iCalUrl = _data["iCalUrl"];
+            this.color = _data["color"];
+            this.syncIntervalMinutes = _data["syncIntervalMinutes"];
+        }
+    }
+
+    static fromJS(data: any): UpdateCalendarSubscriptionDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new UpdateCalendarSubscriptionDto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["name"] = this.name;
+        data["iCalUrl"] = this.iCalUrl;
+        data["color"] = this.color;
+        data["syncIntervalMinutes"] = this.syncIntervalMinutes;
+        return data;
+    }
+}
+
+export interface IUpdateCalendarSubscriptionDto {
+    name?: string | undefined;
+    iCalUrl?: string | undefined;
+    color?: string | undefined;
+    syncIntervalMinutes?: number | undefined;
 }
 
 export class UpdateEventDto implements IUpdateEventDto {
