@@ -1,9 +1,7 @@
-using AgendaApi.Data;
-using AgendaApi.Models;
+using AgendaApi.DTOs;
 using AgendaApi.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 
 namespace AgendaApi.Controllers;
@@ -14,16 +12,16 @@ namespace AgendaApi.Controllers;
 public class GoogleCalendarController : ControllerBase
 {
     private readonly IGoogleCalendarService _googleCalendarService;
-    private readonly AgendaDbContext _context;
+    private readonly GoogleCalendarConnectionService _connectionService;
     private readonly ILogger<GoogleCalendarController> _logger;
 
     public GoogleCalendarController(
         IGoogleCalendarService googleCalendarService,
-        AgendaDbContext context,
+        GoogleCalendarConnectionService connectionService,
         ILogger<GoogleCalendarController> logger)
     {
         _googleCalendarService = googleCalendarService;
-        _context = context;
+        _connectionService = connectionService;
         _logger = logger;
     }
 
@@ -46,21 +44,12 @@ public class GoogleCalendarController : ControllerBase
         try
         {
             var userId = GetCurrentUserId();
-            var user = await _context.Users.FindAsync(userId);
+            var result = await _connectionService.ConnectAsync(userId, request.AccessToken);
 
-            if (user == null)
+            if (result.Status == GoogleCalendarConnectionServiceStatus.NotFound)
             {
                 return NotFound(new { message = "User not found" });
             }
-
-            // Store the calendar access token
-            // Note: This is the same field as the main Google token, but now with calendar scope
-            user.GoogleAccessToken = request.AccessToken;
-            user.GoogleTokenExpiry = DateTime.UtcNow.AddHours(1); // Google tokens typically expire in 1 hour
-
-            await _context.SaveChangesAsync();
-
-            _logger.LogInformation($"Stored Google Calendar token for user {userId}");
 
             return Ok(new { message = "Successfully connected to Google Calendar" });
         }
@@ -105,81 +94,14 @@ public class GoogleCalendarController : ControllerBase
                 return BadRequest(new { message = "No calendars selected for import" });
             }
 
-            var totalImported = 0;
-            var errors = new List<string>();
+            var result = await _connectionService.ImportAsync(userId, request.Calendars);
 
-            // Calculate date range for import
-            var startDate = DateTime.Today; // Today
-            var endDate = DateTime.Today.AddYears(1); // +1 year for non-recurring events
-
-            // Use a transaction to ensure all-or-nothing import
-            using var transaction = await _context.Database.BeginTransactionAsync();
-
-            try
+            if (!result.Success)
             {
-                foreach (var calendarRequest in request.Calendars)
-                {
-                    try
-                    {
-                        _logger.LogInformation($"Importing calendar {calendarRequest.CalendarId} with color {calendarRequest.Color}");
-
-                        var events = await _googleCalendarService.ImportCalendarEventsAsync(
-                            userId,
-                            calendarRequest.CalendarId,
-                            calendarRequest.Color,
-                            startDate,
-                            endDate
-                        );
-
-                        // Save or update events in database
-                        foreach (var evt in events)
-                        {
-                            // The service already handles the logic for existing vs new events
-                            // If evt.Id > 0, it's an existing event that was already updated by the service
-                            // If evt.Id == 0, it's a new event that needs to be added
-                            if (evt.Id == 0)
-                            {
-                                // New event - add to database
-                                _context.Events.Add(evt);
-                            }
-                            // Existing events are already tracked and updated by the service
-                            totalImported++;
-                        }
-
-                        await _context.SaveChangesAsync();
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogError(ex, $"Error importing calendar {calendarRequest.CalendarId}");
-                        errors.Add($"Failed to import calendar {calendarRequest.CalendarId}: {ex.Message}");
-                        // Rollback transaction on any error
-                        await transaction.RollbackAsync();
-                        throw;
-                    }
-                }
-
-                // Commit transaction if all calendars imported successfully
-                await transaction.CommitAsync();
-
-                return Ok(new ImportResult
-                {
-                    Success = true,
-                    TotalImported = totalImported,
-                    Message = $"Successfully imported {totalImported} events",
-                    Errors = errors
-                });
+                return StatusCode(500, result);
             }
-            catch (Exception)
-            {
-                // Transaction already rolled back in catch block above
-                return StatusCode(500, new ImportResult
-                {
-                    Success = false,
-                    TotalImported = 0,
-                    Message = "Import failed. No events were imported.",
-                    Errors = errors
-                });
-            }
+
+            return Ok(result);
         }
         catch (Exception ex)
         {
@@ -187,37 +109,4 @@ public class GoogleCalendarController : ControllerBase
             return StatusCode(500, new { message = "An error occurred during import. Please try again later." });
         }
     }
-}
-
-/// <summary>
-/// Request model for importing calendars
-/// </summary>
-public class ImportRequest
-{
-    public List<CalendarImportItem> Calendars { get; set; } = new();
-}
-
-public class CalendarImportItem
-{
-    public string CalendarId { get; set; } = string.Empty;
-    public string Color { get; set; } = "#000000";
-}
-
-/// <summary>
-/// Result of calendar import operation
-/// </summary>
-public class ImportResult
-{
-    public bool Success { get; set; }
-    public int TotalImported { get; set; }
-    public string Message { get; set; } = string.Empty;
-    public List<string> Errors { get; set; } = new();
-}
-
-/// <summary>
-/// Request model for connecting Google Calendar
-/// </summary>
-public class ConnectRequest
-{
-    public string AccessToken { get; set; } = string.Empty;
 }

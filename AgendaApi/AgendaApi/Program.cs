@@ -27,6 +27,7 @@ builder.Services.AddScoped<IRecurrenceService, RecurrenceService>();
 
 // Register Google Calendar service
 builder.Services.AddScoped<IGoogleCalendarService, GoogleCalendarService>();
+builder.Services.AddScoped<GoogleCalendarConnectionService>();
 
 // Register Calendar Share service
 builder.Services.AddScoped<CalendarShareService>();
