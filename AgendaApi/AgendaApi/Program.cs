@@ -40,6 +40,9 @@ builder.Services.AddScoped<ICalSyncService>();
 // Register Calendar Subscription service
 builder.Services.AddScoped<CalendarSubscriptionService>();
 
+// Register Month Image service
+builder.Services.AddScoped<MonthImageService>();
+
 // Configure JWT authentication
 var jwtSecretKey = builder.Configuration["Jwt:SecretKey"];
 var jwtIssuer    = builder.Configuration["Jwt:Issuer"];
