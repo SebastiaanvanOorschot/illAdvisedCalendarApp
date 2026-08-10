@@ -85,7 +85,7 @@ const handleGoogleResponse = async (response: any) => {
   background: white;
   padding: 3rem 2rem;
   border-radius: 12px;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
   text-align: center;
   max-width: 400px;
   width: 90%;
