@@ -31,7 +31,7 @@ Monorepo with two independently deployed services:
 | ASP.NET Core API | `AgendaApi/` | https://calendar-api.sebaslive.xyz |
 | Vue 3 frontend | `AgendaFrontend/` | https://calendar.sebaslive.xyz |
 
-Schema management uses `EnsureCreated()` plus manual `ExecuteSqlRaw` calls in `Program.cs` — there's no migrations tool. See [CLAUDE.md](CLAUDE.md) for deeper implementation notes (recurrence performance, caching, etc.).
+Schema management uses `EnsureCreated()` plus manual `ExecuteSqlRaw` calls in `Program.cs` — there's no migrations tool. See [ARCHITECTURE.md](ARCHITECTURE.md) for deeper implementation notes (recurrence performance, caching, etc.).
 
 ## Getting Started
 
@@ -105,6 +105,6 @@ AgendaFrontend/            Vue 3 + TypeScript frontend
 
 ## Documentation
 
-- [CLAUDE.md](CLAUDE.md) — architecture and implementation notes
+- [ARCHITECTURE.md](ARCHITECTURE.md) — architecture and implementation notes
 - [AUTHENTICATION_SETUP.md](AUTHENTICATION_SETUP.md) — Google OAuth setup
 - [DEPLOYMENT_GUIDE.md](DEPLOYMENT_GUIDE.md) — deployment notes
