@@ -1,5 +1,5 @@
 <template>
-  <div class="login-container">
+  <div class="login-container" :style="backgroundImageStyle">
     <div class="login-card">
       <h1>Welcome to IllAdvisedCalendar</h1>
       <p class="subtitle">Sign in to access your calendar</p>
@@ -22,9 +22,17 @@ import { onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuth } from '@/composables/useAuth';
 
+const defaultImage = new URL('../images/Default image.jpg', import.meta.url).href;
+
 const router = useRouter();
 const { login } = useAuth();
 const error = ref<string | null>(null);
+
+const backgroundImageStyle = {
+  backgroundImage: `url(${defaultImage})`,
+  backgroundSize: 'cover',
+  backgroundPosition: 'center'
+};
 
 onMounted(() => {
   // Initialize Google Sign-In
@@ -70,7 +78,6 @@ const handleGoogleResponse = async (response: any) => {
   justify-content: center;
   align-items: center;
   min-height: 100vh;
-  background: linear-gradient(135deg, var(--color-accent) 0%, var(--color-accent-2) 100%);
 }
 
 .login-card {
