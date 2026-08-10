@@ -34,7 +34,7 @@ public class MonthImagesController : ControllerBase
         var result = await _monthImageService.GetMonthImageAsync(userId, month);
 
         if (result.Status == MonthImageServiceStatus.NotFound)
-            return NotFound();
+            return NoContent();
 
         return File(result.Value.Data, result.Value.ContentType);
     }

@@ -316,11 +316,16 @@ async function loadMonthImage() {
         const response = await authenticatedAxios.get(`/api/MonthImages/${m}`, {
             responseType: 'blob'
         });
+        if (response.status === 204 || (response.data as Blob).size === 0) {
+            // No custom image for this month
+            monthImageUrl.value = null;
+            return;
+        }
         const url = URL.createObjectURL(new Blob([response.data]));
         monthImageCache.set(m, url);
         monthImageUrl.value = url;
     } catch {
-        // No custom image for this month
+        // Real error (network, 500, etc.)
         monthImageUrl.value = null;
     }
 }
