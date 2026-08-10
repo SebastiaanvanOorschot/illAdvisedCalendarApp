@@ -29,7 +29,7 @@ const { login } = useAuth();
 const error = ref<string | null>(null);
 
 const backgroundImageStyle = {
-  backgroundImage: `url(${defaultImage})`,
+  backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.35), rgba(0, 0, 0, 0.35)), url(${defaultImage})`,
   backgroundSize: 'cover',
   backgroundPosition: 'center'
 };
