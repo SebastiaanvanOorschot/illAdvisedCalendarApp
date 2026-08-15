@@ -1,0 +1,44 @@
+name: CI
+
+on:
+  push:
+    branches: [development]
+  pull_request:
+    branches: [master]
+
+jobs:
+  backend:
+    name: Backend build (.NET)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Restore
+        run: dotnet restore AgendaApi/AgendaApi.sln
+
+      - name: Build
+        run: dotnet build AgendaApi/AgendaApi.sln --configuration Release --no-restore
+
+  frontend:
+    name: Frontend build (Vue/TS)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'yarn'
+          cache-dependency-path: AgendaFrontend/yarn.lock
+
+      - name: Install dependencies
+        working-directory: AgendaFrontend
+        run: yarn install --frozen-lockfile
+
+      - name: Type-check and build
+        working-directory: AgendaFrontend
+        run: yarn build
