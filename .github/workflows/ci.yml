@@ -18,10 +18,10 @@ jobs:
           dotnet-version: 8.0.x
 
       - name: Restore
-        run: dotnet restore AgendaApi/AgendaApi.sln
+        run: dotnet restore AgendaApi/AgendaApi/AgendaApi.csproj
 
       - name: Build
-        run: dotnet build AgendaApi/AgendaApi.sln --configuration Release --no-restore
+        run: dotnet build AgendaApi/AgendaApi/AgendaApi.csproj --configuration Release --no-restore
 
   frontend:
     name: Frontend build (Vue/TS)
