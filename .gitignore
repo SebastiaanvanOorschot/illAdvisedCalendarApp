@@ -19,6 +19,7 @@ publish/
 *.ntvs*
 *.njsproj
 *.sln
+!AgendaApi/AgendaApi.sln
 *.sw?
 *.user
 
