@@ -1,6 +1,8 @@
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap');
 
 :root {
+  color-scheme: light;
+
   /* neutrals / borders */
   --color-border: #e0e0e0;
   --color-border-light: #ddd;
@@ -8,6 +10,9 @@
   --color-bg-subtle: #f9f9f9;
   --color-bg-subtle-2: #f5f5f5;
   --color-bg-muted: #f0f0f0;
+
+  /* surfaces: panels, modals, menus — everything that sits on top of the page background */
+  --color-surface: #fff;
 
   /* text */
   --color-text: #333;
@@ -28,6 +33,10 @@
   --color-accent-2: #764ba2;
   --color-accent-hover: #5568d3;
 
+  /* accent tints: hovered / selected option rows */
+  --color-accent-tint: #f8f9ff;
+  --color-accent-tint-strong: #f0f2ff;
+
   /* status: success */
   --color-success-bg: #d4edda;
   --color-success-text: #155724;
@@ -45,6 +54,66 @@
 
   /* overlays */
   --overlay-backdrop: rgba(0, 0, 0, 0.5);
+}
+
+/*
+ * Dark theme — set as data-theme="dark" on <html> by src/composables/useTheme.ts
+ * (and pre-applied by the inline script in index.html to avoid a flash on load).
+ *
+ * Only chrome tokens are overridden here. Deliberately NOT re-themed:
+ *   --color-white  : stays literal white, it is the "text/icon on a colored or
+ *                    photographic background" token (month banner, coloured buttons).
+ *   --color-black  : stays literal black, it doubles as the default *event* colour
+ *                    (see constants/eventColors.ts) — event colours are data, not theme.
+ * Month images, weather icons and event colours are therefore unaffected.
+ */
+[data-theme='dark'] {
+  color-scheme: dark;
+
+  /* neutrals / borders */
+  --color-border: #3a4048;
+  --color-border-light: #343a42;
+  --color-border-strong: #4b525c;
+  --color-bg-subtle: #22262c;
+  --color-bg-subtle-2: #272c33;
+  --color-bg-muted: #15181c;
+
+  /* surfaces */
+  --color-surface: #1e2228;
+
+  /* text */
+  --color-text: #e3e6ea;
+  --color-text-dark: #f4f6f8;
+  --color-text-muted: #a5acb6;
+  --color-text-subtle: #7b828d;
+
+  /* brand — lifted slightly so it keeps contrast against the dark surfaces */
+  --color-primary: #5b9ded;
+  --color-primary-hover: #7ab0f2;
+
+  /* accent gradient */
+  --color-accent: #7b8ef0;
+  --color-accent-2: #8b5fc0;
+  --color-accent-hover: #6a7ce0;
+
+  /* accent tints: hovered / selected option rows */
+  --color-accent-tint: #262b3a;
+  --color-accent-tint-strong: #2f3549;
+
+  /* status: success */
+  --color-success-bg: #1b3327;
+  --color-success-text: #a7e0bd;
+  --color-success-border: #2c5540;
+
+  /* status: danger */
+  --color-danger-bg: #3a2023;
+  --color-danger-text: #f0b4ba;
+  --color-danger-border: #5d3035;
+  --color-danger: #e4606d;
+  --color-danger-hover: #ef7b86;
+
+  /* overlays */
+  --overlay-backdrop: rgba(0, 0, 0, 0.65);
 }
 
 * {
@@ -96,7 +165,7 @@ body {
 }
 .navMenu button:hover {
   color: var(--color-text-dark);
-  background: var(--color-white);
+  background: var(--color-surface);
 }
 
 
@@ -104,7 +173,7 @@ body {
 .calendar {
   width: 55vw;
   height: 100vh;
-  background: var(--color-white);
+  background: var(--color-surface);
   box-sizing: border-box;
   box-shadow: 0 5px 50px rgba(0, 0, 0, 5);
   display: flex;
@@ -168,7 +237,7 @@ body {
 }
 .calendar .image .dateGroupYear .dateNav:hover {
   color: var(--color-text-dark);
-  background: var(--color-white);
+  background: var(--color-surface);
 }
 .calendar .days {
   height: 60vh;
@@ -248,7 +317,7 @@ body {
   .calendar {
     width: 100vw;
     height: 100vh;
-    background: var(--color-white);
+    background: var(--color-surface);
     box-sizing: border-box;
     box-shadow: 0 5px 50px rgba(0, 0, 0, 5);
     display: flex;

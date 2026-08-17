@@ -68,7 +68,7 @@ function handleCancel() {
 }
 
 .modal-content {
-    background: white;
+    background: var(--color-surface);
     border-radius: 8px;
     padding: 24px;
     max-width: 500px;
@@ -121,7 +121,7 @@ function handleCancel() {
 }
 
 .btn-cancel:hover {
-    background: #d0d0d0;
+    background: var(--color-border-strong);
 }
 
 .btn-this-event {

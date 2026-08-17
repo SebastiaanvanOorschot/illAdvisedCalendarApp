@@ -167,7 +167,7 @@ function handleDelete() {
 }
 
 .modal-content {
-    background: white;
+    background: var(--color-surface);
     border-radius: 8px;
     padding: 24px;
     max-width: 500px;

@@ -2,6 +2,9 @@ import { createApp } from 'vue'
 import { createRouter, createWebHistory } from 'vue-router'
 import App from './App.vue'
 import routes from "./router/routes"
+import { initTheme } from './composables/useTheme'
+
+initTheme()
 
 const router = createRouter({
     history: createWebHistory(import.meta.env.BASE_URL),
