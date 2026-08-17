@@ -8,6 +8,14 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="Agenda">
     <title>Agenda</title>
+    <script>
+      // Apply the saved theme before first paint so the app never flashes light.
+      // Storage key and 'dark' default mirror src/composables/useTheme.ts.
+      document.documentElement.setAttribute(
+        'data-theme',
+        localStorage.getItem('theme') === 'light' ? 'light' : 'dark'
+      );
+    </script>
     <link rel="manifest" href="/manifest.json">
     <link rel="icon" href="/icon-192.png" type="image/png">
     <link rel="apple-touch-icon" href="/icon-192.png">

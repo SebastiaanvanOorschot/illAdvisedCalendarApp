@@ -953,7 +953,7 @@ onMounted(async () => {
 .list-view {
     height: 60vh;
     overflow-y: auto;
-    background: var(--color-white);
+    background: var(--color-surface);
     scroll-behavior: smooth;
 }
 

@@ -200,7 +200,7 @@ async function uploadImage() {
 }
 
 .modal-content {
-  background: white;
+  background: var(--color-surface);
   border-radius: 12px;
   width: 90%;
   max-width: 500px;
@@ -273,12 +273,12 @@ async function uploadImage() {
 
 .drop-zone:hover {
   border-color: var(--color-accent);
-  background-color: #f5f7ff;
+  background-color: var(--color-accent-tint);
 }
 
 .drop-zone.drag-over {
   border-color: var(--color-accent);
-  background-color: #e8ecff;
+  background-color: var(--color-accent-tint-strong);
 }
 
 .drop-zone-content svg {

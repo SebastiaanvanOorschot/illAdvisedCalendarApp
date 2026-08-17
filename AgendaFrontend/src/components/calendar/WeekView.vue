@@ -566,7 +566,7 @@ onMounted(() => {
 }
 
 .event-item {
-    background: white;
+    background: var(--color-surface);
     border-left: 3px solid var(--color-primary);
     padding: 8px;
     border-radius: 4px;
@@ -610,7 +610,7 @@ onMounted(() => {
 }
 
 .modal-content {
-    background: white;
+    background: var(--color-surface);
     border-radius: 8px;
     padding: 24px;
     max-width: 500px;

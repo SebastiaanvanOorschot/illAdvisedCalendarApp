@@ -486,7 +486,7 @@ const formatSyncTimestamp = (date: Date) => {
   border: 1px solid var(--color-border);
   border-radius: 6px;
   padding: 16px;
-  background: #fafafa;
+  background: var(--color-bg-subtle);
 }
 
 .calendar-checkbox {
@@ -545,7 +545,7 @@ const formatSyncTimestamp = (date: Date) => {
 .color-picker label {
   font-size: 14px;
   font-weight: 500;
-  color: #555;
+  color: var(--color-text-muted);
 }
 
 .color-swatches {

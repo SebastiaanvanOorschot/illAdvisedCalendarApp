@@ -544,7 +544,7 @@ watch([displayDay, displayMonth, displayYear], () => {
 }
 
 .modal-container {
-    background: white;
+    background: var(--color-surface);
     width: 80%;
     max-width: 900px;
     max-height: 80vh;

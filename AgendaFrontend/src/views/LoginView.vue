@@ -82,7 +82,7 @@ const handleGoogleResponse = async (response: any) => {
 }
 
 .login-card {
-  background: white;
+  background: var(--color-surface);
   padding: 3rem 2rem;
   border-radius: 12px;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);

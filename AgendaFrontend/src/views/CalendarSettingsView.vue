@@ -68,7 +68,7 @@ import CalendarSubscriptions from '@/components/calendar/CalendarSubscriptions.v
 }
 
 .calendar-settings-header {
-  background: white;
+  background: var(--color-surface);
   padding: 20px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   margin-bottom: 24px;
@@ -105,7 +105,7 @@ import CalendarSubscriptions from '@/components/calendar/CalendarSubscriptions.v
 }
 
 .calendar-settings-card {
-  background: white;
+  background: var(--color-surface);
   border-radius: 12px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   padding: 48px;

@@ -427,7 +427,7 @@ onMounted(() => {
   border: 1px solid var(--color-border-light);
   border-radius: 6px;
   font-size: 14px;
-  background: white;
+  background: var(--color-surface);
   cursor: pointer;
   min-width: 140px;
 }
@@ -437,7 +437,7 @@ onMounted(() => {
   border: 1px solid var(--color-border-light);
   border-radius: 4px;
   font-size: 13px;
-  background: white;
+  background: var(--color-surface);
   cursor: pointer;
 }
 
@@ -522,7 +522,7 @@ onMounted(() => {
 
 .email-text {
   font-size: 13px;
-  color: #888;
+  color: var(--color-text-muted);
 }
 
 .pending-text {

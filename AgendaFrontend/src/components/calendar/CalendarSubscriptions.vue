@@ -330,7 +330,7 @@ onMounted(() => {
 }
 
 .subscription-item {
-  background: #f8f9fa;
+  background: var(--color-bg-subtle);
   border-radius: 8px;
   padding: 16px;
   margin-bottom: 12px;
@@ -400,7 +400,7 @@ onMounted(() => {
 }
 
 .btn-icon {
-  background: white;
+  background: var(--color-surface);
   border: 1px solid var(--color-border-light);
   border-radius: 6px;
   width: 36px;
@@ -470,7 +470,7 @@ onMounted(() => {
 }
 
 .subscription-form {
-  background: #f8f9fa;
+  background: var(--color-bg-subtle);
   border-radius: 8px;
   padding: 20px;
   margin-top: 20px;
@@ -492,7 +492,7 @@ onMounted(() => {
   margin-bottom: 6px;
   font-size: 13px;
   font-weight: 500;
-  color: #555;
+  color: var(--color-text-muted);
 }
 
 .form-group input[type="text"],
@@ -564,7 +564,7 @@ onMounted(() => {
 }
 
 .btn-cancel {
-  background: white;
+  background: var(--color-surface);
   border: 1px solid var(--color-border-light);
   color: var(--color-text-muted);
 }

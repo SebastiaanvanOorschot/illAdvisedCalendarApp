@@ -232,7 +232,7 @@ watch(() => props.show, (newValue) => {
 }
 
 .modal-content {
-    background: white;
+    background: var(--color-surface);
     border-radius: 8px;
     padding: 24px;
     max-width: 500px;
@@ -296,7 +296,7 @@ watch(() => props.show, (newValue) => {
     font-size: 14px;
     font-family: inherit;
     box-sizing: border-box;
-    background: white;
+    background: var(--color-surface);
 }
 
 .form-group input:focus,

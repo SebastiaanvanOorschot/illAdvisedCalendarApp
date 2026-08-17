@@ -546,7 +546,7 @@ onUnmounted(() => {
 .event-time {
     flex-shrink: 0;
     font-size: 0.65rem;
-    color: var(--color-black) !important;
+    color: var(--color-text-dark) !important;
     font-weight: 700;
 }
 
@@ -702,7 +702,7 @@ onUnmounted(() => {
     .event-tag:not(.show-title-mode) .event-time-mobile {
         display: inline;
         font-size: 0.65rem;
-        color: var(--color-black);
+        color: var(--color-text-dark);
         font-weight: 700;
     }
 

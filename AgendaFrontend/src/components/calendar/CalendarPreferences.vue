@@ -176,17 +176,17 @@ onMounted(() => {
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.2s;
-  background: white;
+  background: var(--color-surface);
 }
 
 .radio-option:hover {
   border-color: var(--color-accent);
-  background-color: #f8f9ff;
+  background-color: var(--color-accent-tint);
 }
 
 .radio-option.active {
   border-color: var(--color-accent);
-  background-color: #f0f2ff;
+  background-color: var(--color-accent-tint-strong);
 }
 
 .radio-option input[type="radio"] {
