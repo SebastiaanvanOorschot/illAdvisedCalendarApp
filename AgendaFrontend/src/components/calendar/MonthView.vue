@@ -411,11 +411,19 @@ onUnmounted(() => {
 
 /* Day Cell */
 .day-cell {
+    /* Shared grid for the top row of the cell. The temperature lives in an
+       absolutely positioned overlay (WeatherIcon), so it can only line up with
+       the day number if both are placed off the same values. */
+    --cell-pad: 8px;
+    --day-row-height: 20px;
+    --day-number-col: 20px;
+    --day-temp-gap: 6px;
+
     border-bottom: 1px solid var(--color-border);
     cursor: pointer;
     display: flex !important;
     flex-direction: column !important;
-    padding: 8px;
+    padding: var(--cell-pad);
     overflow: hidden;
     transition: background-color 0.2s;
     align-items: stretch !important;
@@ -451,6 +459,9 @@ onUnmounted(() => {
 
 .day-header {
     width: 100%;
+    height: var(--day-row-height);
+    display: flex;
+    align-items: center;
     margin-bottom: 5px;
 }
 
@@ -485,8 +496,24 @@ onUnmounted(() => {
 .day-number {
     font-weight: 600;
     font-size: 0.9rem;
+    line-height: 1;
     color: var(--color-text-dark);
     text-align: left;
+    min-width: var(--day-number-col);
+    flex-shrink: 0;
+}
+
+/* Pull the temperature onto the day-number row: same vertical centre line, and
+   a fixed offset after the day-number column instead of the old right-edge
+   anchor, whose distance to the day number changed with the cell width. */
+.day-cell :deep(.weather-triangle) .temp-display {
+    top: var(--cell-pad);
+    left: calc(var(--cell-pad) + var(--day-number-col) + var(--day-temp-gap));
+    right: auto;
+    height: var(--day-row-height);
+    display: flex;
+    align-items: center;
+    line-height: 1;
 }
 
 .day-events {
@@ -736,6 +763,8 @@ onUnmounted(() => {
 
     /* Reduce day cell padding */
     .day-cell {
+        --day-row-height: 16px;
+        --day-number-col: 16px;
         padding: 2px 3px;
     }
 
