@@ -48,9 +48,25 @@ builder.Services.AddScoped<MonthImageService>();
 builder.Services.AddScoped<UserPreferencesService>();
 
 // Configure JWT authentication
-var jwtSecretKey = builder.Configuration["Jwt:SecretKey"];
-var jwtIssuer    = builder.Configuration["Jwt:Issuer"];
-var jwtAudience  = builder.Configuration["Jwt:Audience"];
+// Fail fast: a deployment missing JWT config must refuse to start rather than accept
+// traffic and blow up on the first login. Values come from environment variables in
+// production (Jwt__SecretKey on Railway) and from user secrets locally.
+var requiredJwtKeys = new[] { "Jwt:SecretKey", "Jwt:Issuer", "Jwt:Audience" };
+var missingJwtKeys  = requiredJwtKeys
+    .Where(key => string.IsNullOrWhiteSpace(builder.Configuration[key]))
+    .ToArray();
+
+if (missingJwtKeys.Length > 0)
+{
+    throw new InvalidOperationException(
+        $"Missing or empty required configuration: {string.Join(", ", missingJwtKeys)}. " +
+        $"Set {string.Join(", ", missingJwtKeys.Select(k => k.Replace(":", "__")))} as environment " +
+        "variable(s), or use 'dotnet user-secrets set \"<key>\" \"<value>\"' for local development.");
+}
+
+var jwtSecretKey = builder.Configuration["Jwt:SecretKey"]!;
+var jwtIssuer    = builder.Configuration["Jwt:Issuer"]!;
+var jwtAudience  = builder.Configuration["Jwt:Audience"]!;
 
 builder.Services.AddAuthentication(options =>
 {
@@ -62,7 +78,7 @@ builder.Services.AddAuthentication(options =>
     options.TokenValidationParameters = new TokenValidationParameters
     {
         ValidateIssuerSigningKey = true,
-        IssuerSigningKey         = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecretKey!)),
+        IssuerSigningKey         = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecretKey)),
         ValidateIssuer           = true,
         ValidIssuer              = jwtIssuer,
         ValidateAudience         = true,
