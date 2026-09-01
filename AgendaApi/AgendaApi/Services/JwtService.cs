@@ -10,16 +10,26 @@ namespace AgendaApi.Services;
 public class JwtService
 {
     private readonly IConfiguration _configuration;
+    private readonly SymmetricSecurityKey _securityKey;
 
     public JwtService(IConfiguration configuration)
     {
         _configuration = configuration;
+
+        var secretKey = configuration["Jwt:SecretKey"];
+        if (string.IsNullOrWhiteSpace(secretKey))
+        {
+            throw new InvalidOperationException(
+                "Configuration value 'Jwt:SecretKey' is missing or empty. Set the environment " +
+                "variable 'Jwt__SecretKey' (Railway) or run 'dotnet user-secrets set \"Jwt:SecretKey\" \"...\"' locally.");
+        }
+
+        _securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));
     }
 
     public string GenerateAccessToken(User user)
     {
-        var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:SecretKey"]!));
-        var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
+        var credentials = new SigningCredentials(_securityKey, SecurityAlgorithms.HmacSha256);
 
         var claims = new[]
         {
@@ -52,14 +62,13 @@ public class JwtService
     public ClaimsPrincipal? ValidateToken(string token)
     {
         var tokenHandler = new JwtSecurityTokenHandler();
-        var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:SecretKey"]!));
 
         try
         {
             var principal = tokenHandler.ValidateToken(token, new TokenValidationParameters
             {
                 ValidateIssuerSigningKey = true,
-                IssuerSigningKey = securityKey,
+                IssuerSigningKey = _securityKey,
                 ValidateIssuer = true,
                 ValidIssuer = _configuration["Jwt:Issuer"],
                 ValidateAudience = true,
