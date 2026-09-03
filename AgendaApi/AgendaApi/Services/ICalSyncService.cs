@@ -4,11 +4,34 @@ using Ical.Net;
 using Ical.Net.CalendarComponents;
 using Ical.Net.DataTypes;
 using Microsoft.EntityFrameworkCore;
+using System.Text;
 
 namespace AgendaApi.Services;
 
 public class ICalSyncService
 {
+    /// <summary>
+    /// Upper bound on the iCal body we will read. A busy multi-year feed is a few hundred KB;
+    /// 5 MB leaves plenty of headroom while capping what a user-supplied URL can make us buffer.
+    /// </summary>
+    private const long MaxResponseBytes = 5 * 1024 * 1024;
+
+    private const int ResponseBufferSize = 8192;
+
+    /// <summary>
+    /// Content types we consider plausible for an iCal feed. Feeds that report something else
+    /// are logged but still parsed — see the note in SyncSubscriptionAsync.
+    /// </summary>
+    private static readonly string[] PlausibleContentTypes = { "text/calendar", "text/plain" };
+
+    // Messages returned to the caller (and stored in LastSyncError). Deliberately generic:
+    // URLs, status codes and exception details stay in the log.
+    private const string InvalidUrlError = "Invalid iCal URL. Only http and https URLs are supported.";
+    private const string FetchFailedError = "Could not fetch the iCal feed.";
+    private const string FeedTooLargeError = "The iCal feed is too large to process.";
+    private const string ParseFailedError = "Failed to parse iCal content or no events found";
+    private const string SyncFailedError = "An error occurred while syncing this calendar.";
+
     private readonly AgendaDbContext _context;
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly ILogger<ICalSyncService> _logger;
@@ -30,28 +53,60 @@ public class ICalSyncService
             _logger.LogInformation("Starting sync for subscription {SubscriptionId}: {Name}",
                 subscription.Id, subscription.Name);
 
+            // Only absolute http(s) URLs may be fetched on the user's behalf.
+            if (!Uri.TryCreate(subscription.ICalUrl, UriKind.Absolute, out var icalUri) ||
+                (icalUri.Scheme != Uri.UriSchemeHttp && icalUri.Scheme != Uri.UriSchemeHttps))
+            {
+                _logger.LogWarning("Rejected iCal URL with unsupported scheme for subscription {SubscriptionId}",
+                    subscription.Id);
+                return (false, InvalidUrlError);
+            }
+
             // Fetch iCal data
             var httpClient = _httpClientFactory.CreateClient();
             httpClient.Timeout = TimeSpan.FromSeconds(30);
 
-            var response = await httpClient.GetAsync(subscription.ICalUrl);
+            using var response = await httpClient.GetAsync(icalUri, HttpCompletionOption.ResponseHeadersRead);
             if (!response.IsSuccessStatusCode)
             {
-                var error = $"HTTP {response.StatusCode}: Failed to fetch iCal feed";
-                _logger.LogError("Failed to fetch iCal for subscription {SubscriptionId}: {Error}",
-                    subscription.Id, error);
-                return (false, error);
+                _logger.LogError("Failed to fetch iCal for subscription {SubscriptionId}: HTTP {StatusCode}",
+                    subscription.Id, (int)response.StatusCode);
+                return (false, FetchFailedError);
             }
 
-            var icalContent = await response.Content.ReadAsStringAsync();
+            // Not a hard rejection: plenty of real feeds serve a wrong or missing Content-Type,
+            // so a mismatch is logged and the body is still handed to the parser.
+            var mediaType = response.Content.Headers.ContentType?.MediaType;
+            if (mediaType == null ||
+                !PlausibleContentTypes.Contains(mediaType, StringComparer.OrdinalIgnoreCase))
+            {
+                _logger.LogWarning(
+                    "Unexpected Content-Type '{ContentType}' for subscription {SubscriptionId}; parsing anyway",
+                    mediaType ?? "(none)", subscription.Id);
+            }
+
+            if (response.Content.Headers.ContentLength > MaxResponseBytes)
+            {
+                _logger.LogError(
+                    "iCal feed for subscription {SubscriptionId} declares {Length} bytes, over the {Limit} byte limit",
+                    subscription.Id, response.Content.Headers.ContentLength, MaxResponseBytes);
+                return (false, FeedTooLargeError);
+            }
+
+            var (icalContent, exceededLimit) = await ReadCappedAsync(response);
+            if (exceededLimit)
+            {
+                _logger.LogError("iCal feed for subscription {SubscriptionId} exceeded the {Limit} byte limit",
+                    subscription.Id, MaxResponseBytes);
+                return (false, FeedTooLargeError);
+            }
 
             // Parse iCal content
             var calendar = Calendar.Load(icalContent);
             if (calendar == null || calendar.Events == null)
             {
-                var error = "Failed to parse iCal content or no events found";
                 _logger.LogWarning("Invalid iCal content for subscription {SubscriptionId}", subscription.Id);
-                return (false, error);
+                return (false, ParseFailedError);
             }
 
             // Get existing events for this subscription
@@ -126,15 +181,38 @@ public class ICalSyncService
         }
         catch (Exception ex)
         {
-            var error = $"Error syncing subscription: {ex.Message}";
             _logger.LogError(ex, "Error syncing subscription {SubscriptionId}", subscription.Id);
 
-            subscription.LastSyncError = error;
+            subscription.LastSyncError = SyncFailedError;
             subscription.UpdatedAt = DateTime.UtcNow;
             await _context.SaveChangesAsync();
 
-            return (false, error);
+            return (false, SyncFailedError);
         }
+    }
+
+    /// <summary>
+    /// Streams the response body, giving up as soon as it grows past <see cref="MaxResponseBytes"/>
+    /// so an oversized or endless feed can never be buffered in full.
+    /// </summary>
+    private static async Task<(string Content, bool ExceededLimit)> ReadCappedAsync(HttpResponseMessage response)
+    {
+        using var stream = await response.Content.ReadAsStreamAsync();
+        using var buffered = new MemoryStream();
+
+        var buffer = new byte[ResponseBufferSize];
+        int read;
+        while ((read = await stream.ReadAsync(buffer, 0, buffer.Length)) > 0)
+        {
+            if (buffered.Length + read > MaxResponseBytes)
+                return (string.Empty, true);
+
+            buffered.Write(buffer, 0, read);
+        }
+
+        buffered.Position = 0;
+        using var reader = new StreamReader(buffered, Encoding.UTF8, detectEncodingFromByteOrderMarks: true);
+        return (await reader.ReadToEndAsync(), false);
     }
 
     private Event? CreateEventFromICalEvent(CalendarEvent calEvent, CalendarSubscription subscription)
