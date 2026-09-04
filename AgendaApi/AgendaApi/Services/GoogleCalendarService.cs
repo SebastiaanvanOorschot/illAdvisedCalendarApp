@@ -179,7 +179,7 @@ public class GoogleCalendarService : IGoogleCalendarService
             // Single query to check which events already exist across ALL users (not just current user)
             // This prevents duplicates when multiple users import the same shared Google Calendar
             var existingEventLookup = await _context.Events
-                .Where(e => e.GoogleCalendarId == calendarId && googleEventIds.Contains(e.GoogleEventId))
+                .Where(e => e.GoogleCalendarId == calendarId && e.GoogleEventId != null && googleEventIds.Contains(e.GoogleEventId))
                 .ToDictionaryAsync(e => e.GoogleEventId!, e => e);
 
             _logger.LogInformation($"Found {existingEventLookup.Count} existing events out of {googleEventIds.Count} from calendar {calendarId}");
@@ -240,8 +240,10 @@ public class GoogleCalendarService : IGoogleCalendarService
             DateTime startDateTime;
             DateTime endDateTime;
 
-            // Handle all-day events
-            if (googleEvent.Start.DateTime == null)
+            // Handle all-day events. Google Calendar always sets DateTime for both Start and
+            // End on timed events (or neither, for all-day events) - but that's not something
+            // the compiler can see, so guard on both sides rather than assuming End matches Start.
+            if (googleEvent.Start.DateTime == null || googleEvent.End.DateTime == null)
             {
                 // All-day event
                 startDateTime = DateTime.Parse(googleEvent.Start.Date);

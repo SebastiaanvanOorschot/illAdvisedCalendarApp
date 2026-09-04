@@ -69,6 +69,7 @@ public class MonthImageService
 
         await _context.SaveChangesAsync();
         _cache.Set(CacheKey(userId, month), (imageData, contentType), TimeSpan.FromHours(24));
+        _logger.LogInformation("Saved month image for user {UserId}, month {Month}", userId, month);
 
         return MonthImageServiceResult.Ok();
     }
@@ -84,6 +85,7 @@ public class MonthImageService
         _context.MonthImages.Remove(monthImage);
         await _context.SaveChangesAsync();
         _cache.Remove(CacheKey(userId, month));
+        _logger.LogInformation("Deleted month image for user {UserId}, month {Month}", userId, month);
 
         return MonthImageServiceResult.Ok();
     }

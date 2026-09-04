@@ -452,7 +452,7 @@ public class RecurrenceService : IRecurrenceService
             }
 
             // Calculate next occurrence based on pattern
-            current = evt.RecurrencePattern.ToLower() switch
+            current = evt.RecurrencePattern?.ToLower() switch
             {
                 "daily" => current.AddDays(interval),
                 "weekly" => current.AddDays(7 * interval),
