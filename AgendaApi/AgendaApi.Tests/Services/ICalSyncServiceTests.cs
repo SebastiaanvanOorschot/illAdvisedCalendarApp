@@ -48,6 +48,34 @@ public sealed class ICalSyncServiceTests : IDisposable
         Assert.Empty(_feed.RequestedUris);
     }
 
+    [Theory]
+    [InlineData("http://127.0.0.1/feed.ics")]
+    [InlineData("http://10.0.0.5/feed.ics")]
+    [InlineData("http://192.168.1.20:8080/feed.ics")]
+    [InlineData("http://169.254.169.254/latest/meta-data/")]
+    [InlineData("http://[::1]/feed.ics")]
+    [InlineData("http://[fd12:3456::1]/feed.ics")]
+    [InlineData("http://localhost:5432/")]
+    [InlineData("http://postgres.railway.internal:5432/")]
+    [InlineData("http://printer.local/feed.ics")]
+    public async Task InternalAddresses_AreRejectedWithoutAnyRequest(string url)
+    {
+        var (success, error) = await Sync(AddSubscription(url));
+
+        Assert.False(success);
+        Assert.Equal("This iCal URL points to a private or internal address, which is not allowed.", error);
+        Assert.Empty(_feed.RequestedUris);
+    }
+
+    [Fact]
+    public async Task PublicIpAddress_IsFetched()
+    {
+        var (success, _) = await Sync(AddSubscription("https://93.184.216.34/feed.ics"));
+
+        Assert.True(success);
+        Assert.Single(_feed.RequestedUris);
+    }
+
     [Fact]
     public async Task HttpError_IsReportedGenerically()
     {

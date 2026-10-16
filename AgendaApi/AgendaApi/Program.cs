@@ -37,6 +37,9 @@ builder.Services.AddScoped<EventService>();
 
 // Register iCal sync service (was previously never registered in DI)
 builder.Services.AddScoped<ICalSyncService>();
+// Feed URLs come from users, so their client may only connect to public addresses (SSRF guard)
+builder.Services.AddHttpClient(ICalSyncService.HttpClientName)
+    .ConfigurePrimaryHttpMessageHandler(OutboundAddressGuard.CreateHandler);
 
 // Register Calendar Subscription service
 builder.Services.AddScoped<CalendarSubscriptionService>();

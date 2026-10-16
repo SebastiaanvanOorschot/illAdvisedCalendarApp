@@ -11,6 +11,12 @@ namespace AgendaApi.Services;
 public class ICalSyncService
 {
     /// <summary>
+    /// Named HttpClient for feed requests; Program.cs gives it <see cref="OutboundAddressGuard"/>'s
+    /// handler so it can only connect to public addresses.
+    /// </summary>
+    public const string HttpClientName = "ical-feeds";
+
+    /// <summary>
     /// Upper bound on the iCal body we will read. A busy multi-year feed is a few hundred KB;
     /// 5 MB leaves plenty of headroom while capping what a user-supplied URL can make us buffer.
     /// </summary>
@@ -27,6 +33,7 @@ public class ICalSyncService
     // Messages returned to the caller (and stored in LastSyncError). Deliberately generic:
     // URLs, status codes and exception details stay in the log.
     private const string InvalidUrlError = "Invalid iCal URL. Only http and https URLs are supported.";
+    private const string BlockedUrlError = "This iCal URL points to a private or internal address, which is not allowed.";
     private const string FetchFailedError = "Could not fetch the iCal feed.";
     private const string FeedTooLargeError = "The iCal feed is too large to process.";
     private const string ParseFailedError = "Failed to parse iCal content or no events found";
@@ -62,8 +69,17 @@ public class ICalSyncService
                 return (false, InvalidUrlError);
             }
 
+            // Early, readable rejection of obviously internal URLs. The connection-level check in
+            // the "ical-feeds" client also catches names that resolve to private addresses.
+            if (OutboundAddressGuard.IsBlockedHost(icalUri.Host))
+            {
+                _logger.LogWarning("Rejected iCal URL pointing to an internal host for subscription {SubscriptionId}",
+                    subscription.Id);
+                return (false, BlockedUrlError);
+            }
+
             // Fetch iCal data
-            var httpClient = _httpClientFactory.CreateClient();
+            var httpClient = _httpClientFactory.CreateClient(HttpClientName);
             httpClient.Timeout = TimeSpan.FromSeconds(30);
 
             using var response = await httpClient.GetAsync(icalUri, HttpCompletionOption.ResponseHeadersRead);
