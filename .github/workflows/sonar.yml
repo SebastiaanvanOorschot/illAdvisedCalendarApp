@@ -51,10 +51,18 @@ jobs:
             /o:"sebastiaanvanoorschot" \
             /d:sonar.host.url="https://sonarcloud.io" \
             /d:sonar.token="$SONAR_TOKEN" \
-            /d:sonar.exclusions="**/node_modules/**,**/dist/**,**/bin/**,**/obj/**"
+            /d:sonar.exclusions="**/node_modules/**,**/dist/**,**/bin/**,**/obj/**,**/TestResults/**" \
+            /d:sonar.cs.opencover.reportsPaths="**/TestResults/**/coverage.opencover.xml" \
+            /d:sonar.coverage.exclusions="**/Program.cs"
 
       - name: Build backend
         run: dotnet build AgendaApi/AgendaApi.sln --configuration Release
+
+      # Alleen voor de coverage in Sonar; het blokkeren gebeurt in de "Unit tests" job van ci.yml
+      - name: Collect coverage
+        run: >
+          dotnet test AgendaApi/AgendaApi.sln --configuration Release --no-build
+          --collect:"XPlat Code Coverage;Format=opencover"
 
       - name: End analysis
         env:
