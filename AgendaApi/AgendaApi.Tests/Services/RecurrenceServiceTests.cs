@@ -189,6 +189,40 @@ public class RecurrenceServiceTests
     }
 
     [Fact]
+    public void Until_IsInclusive()
+    {
+        // RFC 5545: an UNTIL that matches an occurrence makes it the last one
+        var evt = Event(Utc(2026, 3, 1, 9), rrule: "FREQ=DAILY;UNTIL=20260303T090000Z");
+
+        var occurrences = _service.GetOccurrences(evt, Utc(2026, 3, 1), Utc(2026, 4, 1));
+
+        Assert.Equal(new[] { Utc(2026, 3, 1, 9), Utc(2026, 3, 2, 9), Utc(2026, 3, 3, 9) }, Starts(occurrences));
+    }
+
+    [Fact]
+    public void Until_IsReadAsUtc_WhateverTheMachinesTimeZone()
+    {
+        // 08:30Z on the 3rd is before that day's 09:00 occurrence. Read as local time on a
+        // machine east of UTC it would land after it and add an occurrence.
+        var evt = Event(Utc(2026, 3, 1, 9), rrule: "FREQ=DAILY;UNTIL=20260303T083000Z");
+
+        var occurrences = _service.GetOccurrences(evt, Utc(2026, 3, 1), Utc(2026, 4, 1));
+
+        Assert.Equal(new[] { Utc(2026, 3, 1, 9), Utc(2026, 3, 2, 9) }, Starts(occurrences));
+    }
+
+    [Fact]
+    public void ConvertedSimplePattern_IncludesTheEndDate()
+    {
+        var start = Utc(2026, 3, 2, 18);
+        var evt = Event(start, rrule: _service.ConvertSimplePatternToRRule("weekly", null, Utc(2026, 3, 16, 18)));
+
+        var occurrences = _service.GetOccurrences(evt, Utc(2026, 3, 1), Utc(2026, 4, 1));
+
+        Assert.Equal(new[] { start, start.AddDays(7), start.AddDays(14) }, Starts(occurrences));
+    }
+
+    [Fact]
     public void DailyForever_IsCappedAt10000Iterations()
     {
         var evt = Event(Utc(2026, 1, 1, 9), rrule: "FREQ=DAILY");
@@ -224,6 +258,12 @@ public class RecurrenceServiceTests
         { "FREQ=WEEKLY;INTERVAL=2;BYDAY=TU,TH,SA", Utc(2025, 6, 5, 21) },
         { "FREQ=WEEKLY;INTERVAL=2;BYDAY=MO,SU;WKST=SU", Utc(2026, 1, 7, 7) },
         { "FREQ=WEEKLY;INTERVAL=2;BYDAY=MO,SU;WKST=MO", Utc(2026, 1, 7, 7) },
+        { "FREQ=DAILY;UNTIL=20260305T090000Z", Utc(2026, 3, 1, 9) },
+        { "FREQ=DAILY;UNTIL=20260305T083000Z", Utc(2026, 3, 1, 9) },
+        { "FREQ=DAILY;UNTIL=20260305", Utc(2026, 3, 1, 9) },
+        { "FREQ=WEEKLY;BYDAY=MO,TH;UNTIL=20260402T180000Z", Utc(2026, 2, 2, 18) },
+        { "FREQ=MONTHLY;UNTIL=20260615T120000Z", Utc(2025, 1, 15, 12) },
+        { "FREQ=YEARLY;UNTIL=20260301T000000Z", Utc(2019, 3, 1, 0) },
     };
 
     public static TheoryData<string, DateTime> RulesForIcalNet => new()
@@ -232,6 +272,7 @@ public class RecurrenceServiceTests
         { "FREQ=YEARLY;BYHOUR=8,20", Utc(2020, 2, 29, 8) },
         { "FREQ=MONTHLY;BYDAY=2TU", Utc(2025, 6, 10, 19) },
         { "FREQ=WEEKLY;BYDAY=MO;BYHOUR=7,19", Utc(2025, 3, 3, 7) },
+        { "FREQ=MONTHLY;BYDAY=-1FR;UNTIL=20260529T160000Z", Utc(2026, 1, 30, 16) },
     };
 
     [Theory]

@@ -125,10 +125,12 @@ public class RecurrenceService : IRecurrenceService
                     if (DayCode(v) is { } ws) weekStart = ws;
                     break;
                 case "UNTIL":
-                    // Handles YYYYMMDDTHHMMSSZ, YYYYMMDDTHHMMSS, YYYYMMDD
+                    // Handles YYYYMMDDTHHMMSSZ, YYYYMMDDTHHMMSS, YYYYMMDD — read as UTC, like event times.
+                    // AdjustToUniversal keeps it UTC; AssumeUniversal alone converts to server-local time.
                     if (DateTime.TryParseExact(v, new[]{"yyyyMMddTHHmmssZ","yyyyMMddTHHmmss","yyyyMMdd"},
                             System.Globalization.CultureInfo.InvariantCulture,
-                            System.Globalization.DateTimeStyles.AssumeUniversal, out var u))
+                            System.Globalization.DateTimeStyles.AssumeUniversal | System.Globalization.DateTimeStyles.AdjustToUniversal,
+                            out var u))
                         until = u;
                     break;
                 case "BYDAY":
@@ -189,15 +191,18 @@ public class RecurrenceService : IRecurrenceService
             var duration = (evt.EndDateTime.HasValue ? evt.EndDateTime.Value - evt.StartDateTime : TimeSpan.Zero);
             var except   = new HashSet<DateTime>(ParseExceptionDates(evt.ExceptionDates).Select(d => d.Date));
 
-            var recEnd = rangeEnd;
-            if (r.Until.HasValue && r.Until.Value < recEnd) recEnd = r.Until.Value;
-
-            // Complex or COUNT-based: fall back to Ical.Net (rare)
+            // Complex or COUNT-based: fall back to Ical.Net (rare). It applies UNTIL itself, so it
+            // gets the plain range end: its CalDateTime has whole-second precision, which would
+            // round the fast path's "UNTIL + 1 tick" bound back to an exclusive UNTIL.
             if (r.IsComplex || r.Count > 0)
             {
                 SlowCount++;
-                return GetIcalNetOccurrences(evt, rangeStart, recEnd, duration, except);
+                return GetIcalNetOccurrences(evt, rangeStart, rangeEnd, duration, except);
             }
+
+            // UNTIL is inclusive (RFC 5545) while recEnd is an exclusive bound, hence the extra tick
+            var recEnd = rangeEnd;
+            if (r.Until.HasValue && r.Until.Value < recEnd) recEnd = r.Until.Value.AddTicks(1);
 
             var result = new List<EventOccurrence>();
 
@@ -209,7 +214,7 @@ public class RecurrenceService : IRecurrenceService
                 case "YEARLY":  ExpandYearly (evt, rangeStart, recEnd, r.Interval, duration, except, result); break;
                 default:
                     SlowCount++;
-                    return GetIcalNetOccurrences(evt, rangeStart, recEnd, duration, except);
+                    return GetIcalNetOccurrences(evt, rangeStart, rangeEnd, duration, except);
             }
 
             FastCount++;
