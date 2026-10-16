@@ -5,6 +5,8 @@ VisualStudioVersion = 17.8.34322.80
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AgendaApi", "AgendaApi\AgendaApi.csproj", "{094C701F-DD26-4F72-9A6B-3DA0858C7511}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AgendaApi.Tests", "AgendaApi.Tests\AgendaApi.Tests.csproj", "{B868D69E-C98B-4828-84A8-F695E26DD335}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{094C701F-DD26-4F72-9A6B-3DA0858C7511}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{094C701F-DD26-4F72-9A6B-3DA0858C7511}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{094C701F-DD26-4F72-9A6B-3DA0858C7511}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B868D69E-C98B-4828-84A8-F695E26DD335}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B868D69E-C98B-4828-84A8-F695E26DD335}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B868D69E-C98B-4828-84A8-F695E26DD335}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B868D69E-C98B-4828-84A8-F695E26DD335}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
