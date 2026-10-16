@@ -79,9 +79,10 @@ public static class EventMapper
             Description = dto.Description,
             StartDateTime = dto.StartDateTime,
             EndDateTime = dto.EndDateTime,
-            IsAllDay = dto.IsAllDay,
+            // Not sent by the client -> not all-day / not recurring.
+            IsAllDay = dto.IsAllDay ?? false,
             Color = dto.Color,
-            IsRecurring = dto.IsRecurring,
+            IsRecurring = dto.IsRecurring ?? false,
             RecurrencePattern = dto.RecurrencePattern,
             RecurrenceInterval = dto.RecurrenceInterval,
             RecurrenceEndDate = dto.RecurrenceEndDate,
@@ -98,9 +99,9 @@ public static class EventMapper
         target.Description = dto.Description;
         target.StartDateTime = dto.StartDateTime;
         target.EndDateTime = dto.EndDateTime;
-        target.IsAllDay = dto.IsAllDay;
+        target.IsAllDay = dto.IsAllDay ?? false;
         target.Color = dto.Color;
-        target.IsRecurring = dto.IsRecurring;
+        target.IsRecurring = dto.IsRecurring ?? false;
         target.RecurrencePattern = dto.RecurrencePattern;
         target.RecurrenceInterval = dto.RecurrenceInterval;
         target.RecurrenceEndDate = dto.RecurrenceEndDate;
