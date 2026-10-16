@@ -278,33 +278,45 @@ public class RecurrenceService : IRecurrenceService
         }
     }
 
+    // Monthly and yearly occurrences are computed from DtStart each time rather than by adding to
+    // the previous one: AddMonths clamps Jan 31 to Feb 28, and stepping on from there would stick
+    // on the 28th. A date the month doesn't have (Feb 31, Feb 29 in a common year) is skipped, as
+    // RFC 5545 requires.
     private void ExpandMonthly(Event evt, DateTime rangeStart, DateTime rangeEnd,
         int interval, TimeSpan duration, HashSet<DateTime> exceptions, List<EventOccurrence> result)
     {
-        var cur = evt.StartDateTime;
-        if (cur < rangeStart)
+        var dtStart = evt.StartDateTime;
+        var step = 0;
+        if (dtStart < rangeStart)
         {
-            var totalMonths = (rangeStart.Year - cur.Year) * 12 + rangeStart.Month - cur.Month;
-            var skip = Math.Max(0, totalMonths / interval - 1) * interval;
-            cur = cur.AddMonths(skip);
+            var totalMonths = (rangeStart.Year - dtStart.Year) * 12 + rangeStart.Month - dtStart.Month;
+            step = Math.Max(0, totalMonths / interval - 1);
         }
-        for (var n = 0; cur < rangeEnd && n < 10000; n++, cur = cur.AddMonths(interval))
+        for (var n = 0; n < 10000; n++, step++)
+        {
+            var cur = dtStart.AddMonths(step * interval);
+            if (cur >= rangeEnd) break;
+            if (cur.Day != dtStart.Day) continue;
             if (cur >= rangeStart && !exceptions.Contains(cur.Date))
                 result.Add(MakeOccurrence(evt, cur, duration));
+        }
     }
 
     private void ExpandYearly(Event evt, DateTime rangeStart, DateTime rangeEnd,
         int interval, TimeSpan duration, HashSet<DateTime> exceptions, List<EventOccurrence> result)
     {
-        var cur = evt.StartDateTime;
-        if (cur < rangeStart)
+        var dtStart = evt.StartDateTime;
+        var step = 0;
+        if (dtStart < rangeStart)
+            step = Math.Max(0, (rangeStart.Year - dtStart.Year) / interval - 1);
+        for (var n = 0; n < 10000; n++, step++)
         {
-            var skip = Math.Max(0, (rangeStart.Year - cur.Year) / interval - 1) * interval;
-            cur = cur.AddYears(skip);
-        }
-        for (var n = 0; cur < rangeEnd && n < 10000; n++, cur = cur.AddYears(interval))
+            var cur = dtStart.AddYears(step * interval);
+            if (cur >= rangeEnd) break;
+            if (cur.Day != dtStart.Day) continue;
             if (cur >= rangeStart && !exceptions.Contains(cur.Date))
                 result.Add(MakeOccurrence(evt, cur, duration));
+        }
     }
 
     // Ical.Net fallback for complex patterns (COUNT-based, BYSETPOS, ordinal BYDAY, etc.)

@@ -146,6 +146,27 @@ public class RecurrenceServiceTests
     }
 
     [Fact]
+    public void Monthly_OnThe31st_SkipsMonthsThatAreTooShort()
+    {
+        // RFC 5545: an invalid date (Feb 31, Apr 31) is skipped, not moved to the last day
+        var evt = Event(Utc(2026, 1, 31, 9), rrule: "FREQ=MONTHLY");
+
+        var occurrences = _service.GetOccurrences(evt, Utc(2026, 1, 1), Utc(2026, 9, 1));
+
+        Assert.Equal(new[] { Utc(2026, 1, 31, 9), Utc(2026, 3, 31, 9), Utc(2026, 5, 31, 9), Utc(2026, 7, 31, 9), Utc(2026, 8, 31, 9) }, Starts(occurrences));
+    }
+
+    [Fact]
+    public void Yearly_OnFebruary29_OnlyOccursInLeapYears()
+    {
+        var evt = Event(Utc(2024, 2, 29, 12), rrule: "FREQ=YEARLY");
+
+        var occurrences = _service.GetOccurrences(evt, Utc(2024, 1, 1), Utc(2033, 1, 1));
+
+        Assert.Equal(new[] { Utc(2024, 2, 29, 12), Utc(2028, 2, 29, 12), Utc(2032, 2, 29, 12) }, Starts(occurrences));
+    }
+
+    [Fact]
     public void Yearly_RepeatsOnTheSameDate()
     {
         var evt = Event(Utc(2019, 6, 1, 0), rrule: "FREQ=YEARLY");
@@ -182,7 +203,34 @@ public class RecurrenceServiceTests
         { "FREQ=YEARLY", Utc(2010, 3, 1, 0) },
         { "FREQ=YEARLY;BYMONTH=12", Utc(2015, 12, 24, 18) },
         { "FREQ=YEARLY;INTERVAL=2", Utc(2011, 5, 5, 5) },
+        { "FREQ=MONTHLY", Utc(2025, 1, 31, 9) },
+        { "FREQ=MONTHLY;INTERVAL=2", Utc(2025, 8, 30, 9) },
+        { "FREQ=MONTHLY;BYMONTHDAY=29", Utc(2024, 1, 29, 9) },
+        { "FREQ=YEARLY", Utc(2020, 2, 29, 9) },
     };
+
+    public static TheoryData<string, DateTime> RulesForIcalNet => new()
+    {
+        { "FREQ=MONTHLY;BYHOUR=9,17", Utc(2025, 1, 31, 9) },
+        { "FREQ=YEARLY;BYHOUR=8,20", Utc(2020, 2, 29, 8) },
+        { "FREQ=MONTHLY;BYDAY=2TU", Utc(2025, 6, 10, 19) },
+        { "FREQ=WEEKLY;BYDAY=MO;BYHOUR=7,19", Utc(2025, 3, 3, 7) },
+    };
+
+    [Theory]
+    [MemberData(nameof(RulesForIcalNet))]
+    public void SlowPath_GivesTheSameOccurrencesAsIcalNetFromTheRealStart(string rrule, DateTime start)
+    {
+        // The slow path shifts DTSTART forward before calling Ical.Net; that shift must not change the result
+        var evt = Event(start, end: start.AddHours(1), rrule: rrule);
+        var rangeStart = Utc(2026, 2, 1);
+        var rangeEnd = Utc(2026, 9, 1);
+
+        var occurrences = _service.GetOccurrences(evt, rangeStart, rangeEnd);
+
+        Assert.Equal(1, _service.SlowCount);
+        Assert.Equal(IcalNetStarts(rrule, start, rangeStart, rangeEnd), Starts(occurrences));
+    }
 
     [Theory]
     [MemberData(nameof(RulesTheFastPathHandles))]
@@ -196,6 +244,19 @@ public class RecurrenceServiceTests
 
         Assert.Equal(1, _service.FastCount);
         Assert.Equal(IcalNetStarts(rrule, start, rangeStart, rangeEnd), Starts(occurrences));
+    }
+
+    [Fact]
+    public void SlowPath_SkipAheadIntoAShortMonth_KeepsTheDayOfMonth()
+    {
+        // Any skip-ahead before handing the rule to Ical.Net must not land DTSTART on April 30
+        const string rrule = "FREQ=MONTHLY;BYHOUR=9,17";
+        var start = Utc(2025, 1, 31, 9);
+
+        var occurrences = _service.GetOccurrences(Event(start, end: start.AddHours(1), rrule: rrule), Utc(2026, 5, 1), Utc(2026, 9, 1));
+
+        Assert.Equal(IcalNetStarts(rrule, start, Utc(2026, 5, 1), Utc(2026, 9, 1)), Starts(occurrences));
+        Assert.All(occurrences, o => Assert.Equal(31, o.OccurrenceStart.Day));
     }
 
     // ── routing between fast path and Ical.Net ──────────────────────────────
