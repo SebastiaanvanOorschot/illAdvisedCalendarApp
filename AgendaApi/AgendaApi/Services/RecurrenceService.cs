@@ -86,6 +86,7 @@ public class RecurrenceService : IRecurrenceService
         public int    Count     { get; init; } = -1;       // -1 = unlimited
         public DateTime? Until  { get; init; }
         public List<DayOfWeek> ByDay { get; init; } = new();
+        public DayOfWeek WeekStart { get; init; } = DayOfWeek.Monday; // WKST, RFC 5545 default
         public bool IsComplex   { get; init; }             // needs Ical.Net fallback
     }
 
@@ -103,6 +104,7 @@ public class RecurrenceService : IRecurrenceService
         string freq = ""; int interval = 1; int count = -1;
         DateTime? until = null;
         var byDay   = new List<DayOfWeek>();
+        var weekStart = DayOfWeek.Monday;
         int byMonth    = -1;   // -1 = not specified
         int byMonthDay = 0;    // 0  = not specified
         bool isComplex = false;
@@ -119,12 +121,16 @@ public class RecurrenceService : IRecurrenceService
                 case "FREQ":     freq = v.ToUpperInvariant(); break;
                 case "INTERVAL": if (int.TryParse(v, out var iv)) interval = iv; break;
                 case "COUNT":    if (int.TryParse(v, out var cv)) count = cv;    break;
-                case "WKST":     break; // week-start is harmless to ignore
+                case "WKST":     // decides which days share a week, so it matters for WEEKLY with INTERVAL > 1
+                    if (DayCode(v) is { } ws) weekStart = ws;
+                    break;
                 case "UNTIL":
-                    // Handles YYYYMMDDTHHMMSSZ, YYYYMMDDTHHMMSS, YYYYMMDD
+                    // Handles YYYYMMDDTHHMMSSZ, YYYYMMDDTHHMMSS, YYYYMMDD — read as UTC, like event times.
+                    // AdjustToUniversal keeps it UTC; AssumeUniversal alone converts to server-local time.
                     if (DateTime.TryParseExact(v, new[]{"yyyyMMddTHHmmssZ","yyyyMMddTHHmmss","yyyyMMdd"},
                             System.Globalization.CultureInfo.InvariantCulture,
-                            System.Globalization.DateTimeStyles.AssumeUniversal, out var u))
+                            System.Globalization.DateTimeStyles.AssumeUniversal | System.Globalization.DateTimeStyles.AdjustToUniversal,
+                            out var u))
                         until = u;
                     break;
                 case "BYDAY":
@@ -173,7 +179,7 @@ public class RecurrenceService : IRecurrenceService
         return new SimpleRRule
         {
             Freq = freq, Interval = interval, Count = count,
-            Until = until, ByDay = byDay, IsComplex = isComplex
+            Until = until, ByDay = byDay, WeekStart = weekStart, IsComplex = isComplex
         };
     }
 
@@ -185,27 +191,30 @@ public class RecurrenceService : IRecurrenceService
             var duration = (evt.EndDateTime.HasValue ? evt.EndDateTime.Value - evt.StartDateTime : TimeSpan.Zero);
             var except   = new HashSet<DateTime>(ParseExceptionDates(evt.ExceptionDates).Select(d => d.Date));
 
-            var recEnd = rangeEnd;
-            if (r.Until.HasValue && r.Until.Value < recEnd) recEnd = r.Until.Value;
-
-            // Complex or COUNT-based: fall back to Ical.Net (rare)
+            // Complex or COUNT-based: fall back to Ical.Net (rare). It applies UNTIL itself, so it
+            // gets the plain range end: its CalDateTime has whole-second precision, which would
+            // round the fast path's "UNTIL + 1 tick" bound back to an exclusive UNTIL.
             if (r.IsComplex || r.Count > 0)
             {
                 SlowCount++;
-                return GetIcalNetOccurrences(evt, rangeStart, recEnd, duration, except);
+                return GetIcalNetOccurrences(evt, rangeStart, rangeEnd, duration, except);
             }
+
+            // UNTIL is inclusive (RFC 5545) while recEnd is an exclusive bound, hence the extra tick
+            var recEnd = rangeEnd;
+            if (r.Until.HasValue && r.Until.Value < recEnd) recEnd = r.Until.Value.AddTicks(1);
 
             var result = new List<EventOccurrence>();
 
             switch (r.Freq)
             {
                 case "DAILY":   ExpandDaily  (evt, rangeStart, recEnd, r.Interval, duration, except, result); break;
-                case "WEEKLY":  ExpandWeekly (evt, rangeStart, recEnd, r.Interval, r.ByDay,  duration, except, result); break;
+                case "WEEKLY":  ExpandWeekly (evt, rangeStart, recEnd, r.Interval, r.ByDay, r.WeekStart, duration, except, result); break;
                 case "MONTHLY": ExpandMonthly(evt, rangeStart, recEnd, r.Interval, duration, except, result); break;
                 case "YEARLY":  ExpandYearly (evt, rangeStart, recEnd, r.Interval, duration, except, result); break;
                 default:
                     SlowCount++;
-                    return GetIcalNetOccurrences(evt, rangeStart, recEnd, duration, except);
+                    return GetIcalNetOccurrences(evt, rangeStart, rangeEnd, duration, except);
             }
 
             FastCount++;
@@ -234,7 +243,7 @@ public class RecurrenceService : IRecurrenceService
     }
 
     private void ExpandWeekly(Event evt, DateTime rangeStart, DateTime rangeEnd,
-        int interval, List<DayOfWeek> byDay, TimeSpan duration, HashSet<DateTime> exceptions,
+        int interval, List<DayOfWeek> byDay, DayOfWeek weekStart, TimeSpan duration, HashSet<DateTime> exceptions,
         List<EventOccurrence> result)
     {
         var dtStart = evt.StartDateTime;
@@ -242,10 +251,14 @@ public class RecurrenceService : IRecurrenceService
         if (byDay.Any())
         {
             // BYDAY weekly — e.g. FREQ=WEEKLY;BYDAY=MO,WE
-            var targetDays = byDay.OrderBy(d => d).ToList();
+            // Each listed day as an offset from the start of its week (WKST), so the days come out
+            // in order and stay inside the week: with INTERVAL=2 a Monday after a Wednesday start
+            // belongs to the next series week, not to the week in between.
+            int OffsetInWeek(DayOfWeek d) => ((int)d - (int)weekStart + 7) % 7;
+            var offsets = byDay.Select(OffsetInWeek).Distinct().Order().ToList();
 
             // Anchor to the start of the week that contains dtStart
-            var anchor = dtStart;
+            var anchor = dtStart.Date.AddDays(-OffsetInWeek(dtStart.DayOfWeek));
             if (anchor < rangeStart)
             {
                 var weeksToSkip = Math.Max(0, (int)Math.Floor((rangeStart - anchor).TotalDays / (7.0 * interval)) - 1);
@@ -254,10 +267,9 @@ public class RecurrenceService : IRecurrenceService
 
             for (var n = 0; anchor < rangeEnd && n < 10000; n++, anchor = anchor.AddDays(7 * interval))
             {
-                foreach (var dow in targetDays)
+                foreach (var offset in offsets)
                 {
-                    var daysFromAnchor = ((int)dow - (int)anchor.DayOfWeek + 7) % 7;
-                    var occ = anchor.Date.AddDays(daysFromAnchor).Add(dtStart.TimeOfDay);
+                    var occ = anchor.AddDays(offset).Add(dtStart.TimeOfDay);
                     if (occ >= dtStart && occ >= rangeStart && occ < rangeEnd && !exceptions.Contains(occ.Date))
                         result.Add(MakeOccurrence(evt, occ, duration));
                 }
@@ -278,33 +290,45 @@ public class RecurrenceService : IRecurrenceService
         }
     }
 
+    // Monthly and yearly occurrences are computed from DtStart each time rather than by adding to
+    // the previous one: AddMonths clamps Jan 31 to Feb 28, and stepping on from there would stick
+    // on the 28th. A date the month doesn't have (Feb 31, Feb 29 in a common year) is skipped, as
+    // RFC 5545 requires.
     private void ExpandMonthly(Event evt, DateTime rangeStart, DateTime rangeEnd,
         int interval, TimeSpan duration, HashSet<DateTime> exceptions, List<EventOccurrence> result)
     {
-        var cur = evt.StartDateTime;
-        if (cur < rangeStart)
+        var dtStart = evt.StartDateTime;
+        var step = 0;
+        if (dtStart < rangeStart)
         {
-            var totalMonths = (rangeStart.Year - cur.Year) * 12 + rangeStart.Month - cur.Month;
-            var skip = Math.Max(0, totalMonths / interval - 1) * interval;
-            cur = cur.AddMonths(skip);
+            var totalMonths = (rangeStart.Year - dtStart.Year) * 12 + rangeStart.Month - dtStart.Month;
+            step = Math.Max(0, totalMonths / interval - 1);
         }
-        for (var n = 0; cur < rangeEnd && n < 10000; n++, cur = cur.AddMonths(interval))
+        for (var n = 0; n < 10000; n++, step++)
+        {
+            var cur = dtStart.AddMonths(step * interval);
+            if (cur >= rangeEnd) break;
+            if (cur.Day != dtStart.Day) continue;
             if (cur >= rangeStart && !exceptions.Contains(cur.Date))
                 result.Add(MakeOccurrence(evt, cur, duration));
+        }
     }
 
     private void ExpandYearly(Event evt, DateTime rangeStart, DateTime rangeEnd,
         int interval, TimeSpan duration, HashSet<DateTime> exceptions, List<EventOccurrence> result)
     {
-        var cur = evt.StartDateTime;
-        if (cur < rangeStart)
+        var dtStart = evt.StartDateTime;
+        var step = 0;
+        if (dtStart < rangeStart)
+            step = Math.Max(0, (rangeStart.Year - dtStart.Year) / interval - 1);
+        for (var n = 0; n < 10000; n++, step++)
         {
-            var skip = Math.Max(0, (rangeStart.Year - cur.Year) / interval - 1) * interval;
-            cur = cur.AddYears(skip);
-        }
-        for (var n = 0; cur < rangeEnd && n < 10000; n++, cur = cur.AddYears(interval))
+            var cur = dtStart.AddYears(step * interval);
+            if (cur >= rangeEnd) break;
+            if (cur.Day != dtStart.Day) continue;
             if (cur >= rangeStart && !exceptions.Contains(cur.Date))
                 result.Add(MakeOccurrence(evt, cur, duration));
+        }
     }
 
     // Ical.Net fallback for complex patterns (COUNT-based, BYSETPOS, ordinal BYDAY, etc.)

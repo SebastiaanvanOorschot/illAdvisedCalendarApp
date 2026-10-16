@@ -52,6 +52,7 @@ nul
 
 # Test coverage
 coverage/
+TestResults/
 
 # Local instructions
 CLAUDE.md
