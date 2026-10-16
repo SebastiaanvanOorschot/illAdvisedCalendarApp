@@ -6,9 +6,9 @@ public class CreateEventDto
     public string? Description { get; set; }
     public DateTime StartDateTime { get; set; }
     public DateTime? EndDateTime { get; set; }
-    public bool IsAllDay { get; set; }
+    public bool? IsAllDay { get; set; }
     public string? Color { get; set; }
-    public bool IsRecurring { get; set; }
+    public bool? IsRecurring { get; set; }
     public string? RecurrencePattern { get; set; }
     public int? RecurrenceInterval { get; set; }
     public DateTime? RecurrenceEndDate { get; set; }

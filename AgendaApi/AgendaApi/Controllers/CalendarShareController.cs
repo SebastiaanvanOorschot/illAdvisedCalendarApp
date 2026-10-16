@@ -30,10 +30,13 @@ public class CalendarShareController : ControllerBase
     [HttpPost("invites")]
     public async Task<ActionResult<CalendarShareInvite>> SendInvite([FromBody] SendInviteRequest request)
     {
+        if (request.Permission == null)
+            return BadRequest(new { message = "Permission is required" });
+
         try
         {
             var userId = GetUserId();
-            var invite = await _shareService.SendInviteAsync(userId, request.RecipientEmail, request.Permission);
+            var invite = await _shareService.SendInviteAsync(userId, request.RecipientEmail, request.Permission.Value);
             return Ok(invite);
         }
         catch (InvalidOperationException ex)
@@ -203,10 +206,15 @@ public class CalendarShareController : ControllerBase
     [HttpPut("shares/{shareId}/permission")]
     public async Task<ActionResult<CalendarShare>> UpdateSharePermission(int shareId, [FromBody] UpdatePermissionRequest request)
     {
+        // Checked outside the try block: ArgumentException below means "share not found"
+        // (see the catch clause), so a validation failure here must not be thrown as one.
+        if (request.Permission == null)
+            return BadRequest(new { message = "Permission is required" });
+
         try
         {
             var userId = GetUserId();
-            var share = await _shareService.UpdateSharePermissionAsync(shareId, userId, request.Permission);
+            var share = await _shareService.UpdateSharePermissionAsync(shareId, userId, request.Permission.Value);
             return Ok(share);
         }
         catch (UnauthorizedAccessException ex)
@@ -221,5 +229,5 @@ public class CalendarShareController : ControllerBase
 }
 
 // DTOs
-public record SendInviteRequest(string RecipientEmail, SharePermission Permission);
-public record UpdatePermissionRequest(SharePermission Permission);
+public record SendInviteRequest(string RecipientEmail, SharePermission? Permission);
+public record UpdatePermissionRequest(SharePermission? Permission);

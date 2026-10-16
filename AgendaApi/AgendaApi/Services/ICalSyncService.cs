@@ -202,7 +202,7 @@ public class ICalSyncService
 
         var buffer = new byte[ResponseBufferSize];
         int read;
-        while ((read = await stream.ReadAsync(buffer, 0, buffer.Length)) > 0)
+        while ((read = await stream.ReadAsync(buffer.AsMemory(0, buffer.Length))) > 0)
         {
             if (buffered.Length + read > MaxResponseBytes)
                 return (string.Empty, true);

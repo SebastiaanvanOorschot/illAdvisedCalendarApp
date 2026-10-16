@@ -399,6 +399,7 @@ public class EventService
             StartDateTime = dto.NewStartDateTime,
             EndDateTime = dto.NewEndDateTime,
             Color = dto.Color ?? parentEvent.Color,
+            IsAllDay = parentEvent.IsAllDay,
             IsRecurring = false,
             RecurrenceId = dto.OriginalOccurrenceDate, // Link to original occurrence
             ParentEventId = parentEvent.Id,
