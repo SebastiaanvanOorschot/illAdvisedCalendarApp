@@ -125,6 +125,18 @@ public class RecurrenceServiceTests
     }
 
     [Fact]
+    public void Weekly_EveryOtherWeek_WithByDay_StaysInTheSameWeeks()
+    {
+        // Starts on Wednesday 4 March. Weeks run Monday to Sunday, so the series' weeks are
+        // 2-8 March, 16-22 March, 30 March-5 April: never the Monday of 9 or 23 March.
+        var evt = Event(Utc(2026, 3, 4, 7), rrule: "FREQ=WEEKLY;INTERVAL=2;BYDAY=MO,WE");
+
+        var occurrences = _service.GetOccurrences(evt, Utc(2026, 3, 1), Utc(2026, 4, 6));
+
+        Assert.Equal(new[] { Utc(2026, 3, 4, 7), Utc(2026, 3, 16, 7), Utc(2026, 3, 18, 7), Utc(2026, 3, 30, 7), Utc(2026, 4, 1, 7) }, Starts(occurrences));
+    }
+
+    [Fact]
     public void Monthly_RepeatsOnTheSameDayOfMonth()
     {
         var evt = Event(Utc(2026, 1, 15, 12), rrule: "FREQ=MONTHLY");
@@ -207,6 +219,11 @@ public class RecurrenceServiceTests
         { "FREQ=MONTHLY;INTERVAL=2", Utc(2025, 8, 30, 9) },
         { "FREQ=MONTHLY;BYMONTHDAY=29", Utc(2024, 1, 29, 9) },
         { "FREQ=YEARLY", Utc(2020, 2, 29, 9) },
+        { "FREQ=WEEKLY;INTERVAL=2;BYDAY=MO,WE", Utc(2026, 1, 7, 7) },
+        { "FREQ=WEEKLY;INTERVAL=3;BYDAY=SU,TU", Utc(2025, 11, 13, 7) },
+        { "FREQ=WEEKLY;INTERVAL=2;BYDAY=TU,TH,SA", Utc(2025, 6, 5, 21) },
+        { "FREQ=WEEKLY;INTERVAL=2;BYDAY=MO,SU;WKST=SU", Utc(2026, 1, 7, 7) },
+        { "FREQ=WEEKLY;INTERVAL=2;BYDAY=MO,SU;WKST=MO", Utc(2026, 1, 7, 7) },
     };
 
     public static TheoryData<string, DateTime> RulesForIcalNet => new()
@@ -418,8 +435,8 @@ public class RecurrenceServiceTests
         RecurrenceRule = rrule
     };
 
-    // Sorted: the weekly BYDAY expansion emits a week's days in DayOfWeek order (Sunday first),
-    // not chronologically. EventService sorts all occurrences afterwards, so only the set matters.
+    // Sorted: GetOccurrences doesn't promise an order (EventService sorts all occurrences
+    // afterwards), so these tests compare the set of start times.
     private static List<DateTime> Starts(IEnumerable<EventOccurrence> occurrences) =>
         occurrences.Select(o => o.OccurrenceStart).Order().ToList();
 
