@@ -155,8 +155,8 @@ public sealed class ICalSyncServiceTests : IDisposable
         var evt = Assert.Single(Events());
         Assert.Equal("Standup", evt.Title);
         Assert.Equal("Daily sync", evt.Description);
-        Assert.Equal(new DateTime(2026, 3, 10, 9, 0, 0), evt.StartDateTime);
-        Assert.Equal(new DateTime(2026, 3, 10, 9, 15, 0), evt.EndDateTime);
+        Assert.Equal(new DateTime(2026, 3, 10, 9, 0, 0, DateTimeKind.Utc), evt.StartDateTime);
+        Assert.Equal(new DateTime(2026, 3, 10, 9, 15, 0, DateTimeKind.Utc), evt.EndDateTime);
         Assert.Equal("uid-1", evt.ExternalEventId);
         Assert.Equal(_subscriptionId, evt.CalendarSubscriptionId);
         Assert.Equal(_user.Id, evt.UserId);
@@ -175,7 +175,7 @@ public sealed class ICalSyncServiceTests : IDisposable
 
         await Sync();
 
-        Assert.Equal(new DateTime(2026, 3, 10, 8, 0, 0), Events().Single().StartDateTime);
+        Assert.Equal(new DateTime(2026, 3, 10, 8, 0, 0, DateTimeKind.Utc), Events().Single().StartDateTime);
     }
 
     [Fact]
@@ -188,8 +188,8 @@ public sealed class ICalSyncServiceTests : IDisposable
         await Sync();
 
         var evt = Events().Single();
-        Assert.Equal(new DateTime(2026, 4, 27), evt.StartDateTime);
-        Assert.Equal(new DateTime(2026, 4, 28), evt.EndDateTime);
+        Assert.Equal(new DateTime(2026, 4, 27, 0, 0, 0, DateTimeKind.Utc), evt.StartDateTime);
+        Assert.Equal(new DateTime(2026, 4, 28, 0, 0, 0, DateTimeKind.Utc), evt.EndDateTime);
     }
 
     [Fact]
@@ -229,8 +229,8 @@ public sealed class ICalSyncServiceTests : IDisposable
     {
         using (var context = _database.CreateContext())
         {
-            context.CalendarSubscriptions.Single(s => s.Id == _subscriptionId).LastSyncError = "old error";
-            context.SaveChanges();
+            (await context.CalendarSubscriptions.SingleAsync(s => s.Id == _subscriptionId)).LastSyncError = "old error";
+            await context.SaveChangesAsync();
         }
 
         await Sync();

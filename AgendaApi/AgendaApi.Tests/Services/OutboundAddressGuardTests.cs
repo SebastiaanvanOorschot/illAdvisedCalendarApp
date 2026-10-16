@@ -68,7 +68,10 @@ public class OutboundAddressGuardTests
     [Fact]
     public void EnsureAllPublic_AcceptsOnlyPublicAddresses()
     {
-        OutboundAddressGuard.EnsureAllPublic("example.test", new[] { IPAddress.Parse("8.8.8.8"), IPAddress.Parse("2606:4700:4700::1111") });
+        var error = Record.Exception(() =>
+            OutboundAddressGuard.EnsureAllPublic("example.test", new[] { IPAddress.Parse("8.8.8.8"), IPAddress.Parse("2606:4700:4700::1111") }));
+
+        Assert.Null(error);
     }
 
     [Fact]

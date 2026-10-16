@@ -22,35 +22,34 @@ public static class OutboundAddressGuard
     // Names that only ever resolve inside a private network
     private static readonly string[] InternalNameSuffixes = { ".localhost", ".internal", ".local", ".home.arpa" };
 
-    // IPv4 ranges that are not reachable on (or not meant for) the public internet
-    private static readonly (IPAddress Network, int PrefixLength)[] BlockedIPv4Ranges =
+    // Ranges that are not reachable on (or not meant for) the public internet
+    private static readonly IPNetwork[] BlockedRanges = new[]
     {
-        (IPAddress.Parse("0.0.0.0"), 8),        // "this network"
-        (IPAddress.Parse("10.0.0.0"), 8),       // private
-        (IPAddress.Parse("100.64.0.0"), 10),    // carrier-grade NAT
-        (IPAddress.Parse("127.0.0.0"), 8),      // loopback
-        (IPAddress.Parse("169.254.0.0"), 16),   // link-local, cloud metadata
-        (IPAddress.Parse("172.16.0.0"), 12),    // private
-        (IPAddress.Parse("192.0.0.0"), 24),     // IETF protocol assignments
-        (IPAddress.Parse("192.0.2.0"), 24),     // documentation
-        (IPAddress.Parse("192.168.0.0"), 16),   // private
-        (IPAddress.Parse("198.18.0.0"), 15),    // benchmarking
-        (IPAddress.Parse("198.51.100.0"), 24),  // documentation
-        (IPAddress.Parse("203.0.113.0"), 24),   // documentation
-        (IPAddress.Parse("224.0.0.0"), 4),      // multicast
-        (IPAddress.Parse("240.0.0.0"), 4),      // reserved, broadcast
-    };
+        "0.0.0.0/8",        // "this network"
+        "10.0.0.0/8",       // private
+        "100.64.0.0/10",    // carrier-grade NAT
+        "127.0.0.0/8",      // loopback
+        "169.254.0.0/16",   // link-local, cloud metadata
+        "172.16.0.0/12",    // private
+        "192.0.0.0/24",     // IETF protocol assignments
+        "192.0.2.0/24",     // documentation
+        "192.168.0.0/16",   // private
+        "198.18.0.0/15",    // benchmarking
+        "198.51.100.0/24",  // documentation
+        "203.0.113.0/24",   // documentation
+        "224.0.0.0/4",      // multicast
+        "240.0.0.0/4",      // reserved, broadcast
+        "::/128",           // unspecified
+        "::1/128",          // loopback
+        "fc00::/7",         // unique local, incl. Railway's private network
+        "fe80::/10",        // link-local
+        "fec0::/10",        // site-local (deprecated)
+        "ff00::/8",         // multicast
+        "2001:db8::/32",    // documentation
+    }.Select(IPNetwork.Parse).ToArray();
 
-    private static readonly (IPAddress Network, int PrefixLength)[] BlockedIPv6Ranges =
-    {
-        (IPAddress.Parse("fc00::"), 7),         // unique local, incl. Railway's private network
-        (IPAddress.Parse("fe80::"), 10),        // link-local
-        (IPAddress.Parse("fec0::"), 10),        // site-local (deprecated)
-        (IPAddress.Parse("ff00::"), 8),         // multicast
-        (IPAddress.Parse("2001:db8::"), 32),    // documentation
-    };
-
-    private static readonly (IPAddress Network, int PrefixLength) Nat64Range = (IPAddress.Parse("64:ff9b::"), 96);
+    // NAT64 embeds an IPv4 address in the last 32 bits
+    private static readonly IPNetwork Nat64Range = IPNetwork.Parse("64:ff9b::/96");
 
     /// True when the address is a normal public unicast address.
     public static bool IsPublicAddress(IPAddress address)
@@ -58,20 +57,14 @@ public static class OutboundAddressGuard
         if (address.IsIPv4MappedToIPv6)
             address = address.MapToIPv4();
 
-        if (address.AddressFamily == AddressFamily.InterNetwork)
-            return !BlockedIPv4Ranges.Any(r => IsInRange(address, r.Network, r.PrefixLength));
-
-        if (address.AddressFamily != AddressFamily.InterNetworkV6)
+        if (address.AddressFamily != AddressFamily.InterNetwork && address.AddressFamily != AddressFamily.InterNetworkV6)
             return false;
 
-        if (address.Equals(IPAddress.IPv6Loopback) || address.Equals(IPAddress.IPv6None))
-            return false;
-
-        // NAT64 embeds an IPv4 address in the last 32 bits; judge that address instead
-        if (IsInRange(address, Nat64Range.Network, Nat64Range.PrefixLength))
+        // For NAT64, judge the embedded IPv4 address instead
+        if (Nat64Range.Contains(address))
             return IsPublicAddress(new IPAddress(address.GetAddressBytes()[12..]));
 
-        return !BlockedIPv6Ranges.Any(r => IsInRange(address, r.Network, r.PrefixLength));
+        return !BlockedRanges.Any(range => range.Contains(address));
     }
 
     /// True for hosts that are internal by their name or are a non-public IP literal.
@@ -128,27 +121,6 @@ public static class OutboundAddressGuard
             socket.Dispose();
             throw;
         }
-    }
-
-    private static bool IsInRange(IPAddress address, IPAddress network, int prefixLength)
-    {
-        if (address.AddressFamily != network.AddressFamily)
-            return false;
-
-        var addressBytes = address.GetAddressBytes();
-        var networkBytes = network.GetAddressBytes();
-        var fullBytes = prefixLength / 8;
-        var remainingBits = prefixLength % 8;
-
-        for (var i = 0; i < fullBytes; i++)
-            if (addressBytes[i] != networkBytes[i])
-                return false;
-
-        if (remainingBits == 0)
-            return true;
-
-        var mask = (byte)(0xFF << (8 - remainingBits));
-        return (addressBytes[fullBytes] & mask) == (networkBytes[fullBytes] & mask);
     }
 }
 

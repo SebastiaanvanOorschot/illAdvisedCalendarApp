@@ -47,10 +47,10 @@ public sealed class AuthServiceTests : IDisposable
         var existing = _database.AddUser("Ada", "ada@example.test");
         using (var context = _database.CreateContext())
         {
-            var stored = context.Users.Single();
+            var stored = await context.Users.SingleAsync();
             stored.GoogleId = "google-ada";
             stored.LastLoginAt = new DateTime(2020, 1, 1, 0, 0, 0, DateTimeKind.Utc);
-            context.SaveChanges();
+            await context.SaveChangesAsync();
         }
 
         var result = await NewService().GoogleLoginAsync(new GoogleLoginRequest { GoogleIdToken = "id-token" });
@@ -127,8 +127,8 @@ public sealed class AuthServiceTests : IDisposable
         var login = await LoginAsync();
         using (var context = _database.CreateContext())
         {
-            context.RefreshTokens.Single().ExpiresAt = DateTime.UtcNow.AddSeconds(-1);
-            context.SaveChanges();
+            (await context.RefreshTokens.SingleAsync()).ExpiresAt = DateTime.UtcNow.AddSeconds(-1);
+            await context.SaveChangesAsync();
         }
 
         var result = await NewService().RefreshAsync(new RefreshRequest { RefreshToken = login.RefreshToken });
@@ -161,7 +161,12 @@ public sealed class AuthServiceTests : IDisposable
     [Fact]
     public async Task Logout_WithAnUnknownToken_DoesNothing()
     {
-        await NewService().LogoutAsync(new LogoutRequest { RefreshToken = "made-up" });
+        var login = await LoginAsync();
+
+        var error = await Record.ExceptionAsync(() => NewService().LogoutAsync(new LogoutRequest { RefreshToken = "made-up" }));
+
+        Assert.Null(error);
+        Assert.False(RefreshTokens().Single(t => t.Token == login.RefreshToken).IsRevoked);
     }
 
     [Fact]
