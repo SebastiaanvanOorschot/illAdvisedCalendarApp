@@ -51,9 +51,10 @@ jobs:
             /o:"sebastiaanvanoorschot" \
             /d:sonar.host.url="https://sonarcloud.io" \
             /d:sonar.token="$SONAR_TOKEN" \
-            /d:sonar.exclusions="**/node_modules/**,**/dist/**,**/bin/**,**/obj/**,**/TestResults/**" \
+            /d:sonar.exclusions="**/node_modules/**,**/dist/**,**/bin/**,**/obj/**,**/TestResults/**,**/coverage/**" \
             /d:sonar.cs.opencover.reportsPaths="**/TestResults/**/coverage.opencover.xml" \
-            /d:sonar.coverage.exclusions="**/Program.cs"
+            /d:sonar.javascript.lcov.reportPaths="AgendaFrontend/coverage/lcov.info" \
+            /d:sonar.coverage.exclusions="**/Program.cs,**/__tests__/**,AgendaFrontend/src/main.ts,AgendaFrontend/vite.config.mts,AgendaFrontend/src/api/agenda-api-swagger.ts"
 
       - name: Build backend
         run: dotnet build AgendaApi/AgendaApi.sln --configuration Release
@@ -63,6 +64,20 @@ jobs:
         run: >
           dotnet test AgendaApi/AgendaApi.sln --configuration Release --no-build
           --collect:"XPlat Code Coverage;Format=opencover"
+
+      - name: Setup Node 20
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 20
+          cache: 'yarn'
+          cache-dependency-path: AgendaFrontend/yarn.lock
+
+      # Ook alleen voor de coverage; de frontend tests blokkeren in dezelfde "Unit tests" job
+      - name: Collect frontend coverage
+        working-directory: AgendaFrontend
+        run: |
+          yarn install --frozen-lockfile --ignore-scripts
+          yarn test:coverage
 
       - name: End analysis
         env:

@@ -23,7 +23,8 @@ jobs:
       - name: Build
         run: dotnet build AgendaApi/AgendaApi.sln --configuration Release --no-restore
 
-  # Separate job so it can be the required check on master; the frontend tests join it later
+  # Separate job so it can be the required check on master; backend and frontend tests both
+  # run here, so that one required check covers both
   tests:
     name: Unit tests
     runs-on: ubuntu-latest
@@ -36,6 +37,20 @@ jobs:
 
       - name: Run backend unit tests
         run: dotnet test AgendaApi/AgendaApi.sln --configuration Release
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 20
+          cache: 'yarn'
+          cache-dependency-path: AgendaFrontend/yarn.lock
+
+      - name: Install frontend dependencies
+        working-directory: AgendaFrontend
+        run: yarn install --frozen-lockfile --ignore-scripts
+
+      - name: Run frontend unit tests
+        working-directory: AgendaFrontend
+        run: yarn test
 
   frontend:
     name: Frontend build (Vue/TS)
